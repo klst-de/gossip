@@ -1,3 +1,4 @@
+package de.javabuch;
 /* WindowClosingAdapter.java */
 
 import java.awt.event.*;
