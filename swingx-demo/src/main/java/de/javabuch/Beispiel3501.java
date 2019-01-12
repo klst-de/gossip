@@ -11,6 +11,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -26,6 +27,9 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import com.jgoodies.looks.plastic.theme.SkyBluer;
 
 public class Beispiel3501 extends JFrame {
 //	implements ActionListener ist mit Lambda nicht mehr notwendig!
@@ -70,12 +74,28 @@ public class Beispiel3501 extends JFrame {
 		// Panel mit den Buttons
 		JPanel buttonPanel = new JPanel();
 		
-		JButton button1 = new JButton(METAL);
-		String crossPlatformLookAndFeelClassName = UIManager.getCrossPlatformLookAndFeelClassName();
 		// Set cross-platform Java L&F (also called "Metal")
-		button1.addActionListener(event -> updateLaF(crossPlatformLookAndFeelClassName, new DefaultMetalTheme()));
-		button1.setToolTipText("Metal-Look-and-Feel aktivieren");
-		buttonPanel.add(button1);
+		String crossPlatformLookAndFeelClassName = UIManager.getCrossPlatformLookAndFeelClassName();
+		// statt Button eine JComboBox für METAL themes
+//		JButton button1 = new JButton(METAL);
+//		button1.addActionListener(event -> updateLaF(crossPlatformLookAndFeelClassName, new DefaultMetalTheme()));
+//		button1.setToolTipText("Metal-Look-and-Feel aktivieren");
+//		buttonPanel.add(button1);
+		
+		lafCB = this.createLaFComboBox();
+		buttonPanel.add(lafCB);
+		lafCB.addActionListener(event -> {
+			System.out.println(event.toString());
+			System.out.println(event.getSource()); // == ??? buttonSynth.getText()
+			System.out.println(lafCB.getSelectedItem());
+			if(lafCB.getSelectedIndex()==0) {
+				updateLaF(crossPlatformLookAndFeelClassName, new DefaultMetalTheme());
+			} else if(lafCB.getSelectedIndex()==1) {
+				updateLaF(crossPlatformLookAndFeelClassName, new AquaTheme());
+			} else if(lafCB.getSelectedIndex()==2) {
+				updateLaF(PlasticLookAndFeel.class.getName(), new SkyBluer());
+			}
+		});
 		
 		// Platform spezifische L&F
 		JButton button2 = new JButton("Motif");
@@ -137,6 +157,29 @@ windowClosed(WindowEvent e), windowClosing(WindowEvent e), ...), can't be substi
  */
 		addWindowListener(new WindowClosingAdapter(true));
 	}
+
+	// A component that combines a button or editable field and a drop-down list. 
+	// Type Parameters:<E> the type of the elements of this combo box
+	JComboBox<String> lafCB;
+	
+	// hairCB = (JComboBox) comboBoxPanel.add(createHairComboBox());
+    private JComboBox<String> createLaFComboBox() {
+        JComboBox<String> cb = new JComboBox<String>();
+        //fillComboBox(cb);
+//        cb.addItem(getString("ComboBoxDemo.brent")); // resources/swingset.properties: ComboBoxDemo.brent=Brent
+//        cb.addItem(getString("ComboBoxDemo.georges"));
+//        cb.addItem(getString("ComboBoxDemo.hans"));
+//        cb.addItem(getString("ComboBoxDemo.howard"));
+        MetalTheme metalTheme = new DefaultMetalTheme();
+        cb.addItem(METAL+" : "+metalTheme.getName());
+        MetalTheme aquaTheme = new AquaTheme();
+        cb.addItem(METAL+" : "+aquaTheme.getName());
+        
+        MetalTheme plastikTheme = new SkyBluer();
+        //PlasticTheme pt = new SkyBluer();
+        cb.addItem("Plastic"+" : "+plastikTheme.getName());
+        return cb;
+    }
 
 	/*
 	 * initialisiert auch MetalLookAndFeel theme,

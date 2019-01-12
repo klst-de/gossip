@@ -32,11 +32,8 @@ package de.javabuch;
  */
 
 
-import javax.swing.plaf.*;
-import javax.swing.plaf.metal.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.*;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.metal.DefaultMetalTheme;
 
 /**
  * This class describes a theme using "blue-green" colors.
