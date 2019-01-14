@@ -19,6 +19,7 @@
  * MCT Licenses dialog available at runtime from the MCT Help menu for additional 
  * information. 
  *******************************************************************************/
+// @see https://github.com/nasa/mct
 package gov.nasa.arc.mct.gui.impl;
 
 import gov.nasa.arc.mct.gui.util.UniqueNameGenerator;
@@ -39,9 +40,10 @@ import javax.swing.event.ChangeListener;
  * We implement a portion of the <code>JTabbedPane</code> protocol, intended to be the
  * most useful methods.
  */
-@SuppressWarnings("serial")
 public class HidableTabbedPane extends JPanel {
 	
+	private static final long serialVersionUID = 7051600403834236980L;
+
 	/** The component in the first tab. We have to keep track of it here,
 	 * because we can't insert it simultaneously into the first tab in
 	 * the <code>JTabbedPane</code> and into the top-level panel. We'll
@@ -51,6 +53,19 @@ public class HidableTabbedPane extends JPanel {
 	/** The tabbed pane holding all tabs. */
 	private JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 
+	/*
+     * @param tabPlacement the placement for the tabs relative to the content
+     * @see javax.swing.JTabbedPane#setTabPlacement
+     * 
+	 * @author https://github.com/homebeaver
+	 */
+	public void setTabPlacement(int tabPlacement) {
+		this.tabs.setTabPlacement(tabPlacement);
+	}
+	public int getTabPlacement() {
+		return this.tabs.getTabPlacement();
+	}
+	
 	/** A dummy component used as the first tab component when there is only one tab,
 	 * since Java doesn't like the same object as a child of two different containers.
 	 */
