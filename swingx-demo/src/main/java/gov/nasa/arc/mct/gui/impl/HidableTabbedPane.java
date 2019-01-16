@@ -22,14 +22,15 @@
 // @see https://github.com/nasa/mct
 package gov.nasa.arc.mct.gui.impl;
 
-import gov.nasa.arc.mct.gui.util.UniqueNameGenerator;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+
+import gov.nasa.arc.mct.gui.util.UniqueNameGenerator;
 
 /**
  * A tabbed pane that hides the tabs when there is only one tab. Since <code>JTabbedPane</code>
@@ -243,6 +244,7 @@ public class HidableTabbedPane extends JPanel {
 		tabs.setComponentAt(0, firstComponent);
 		add(tabs, BorderLayout.CENTER);
 		validate();
+		SwingUtilities.updateComponentTreeUI(this);
 	}
 	
 	/**
