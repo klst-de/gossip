@@ -283,7 +283,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		columns = tableModel.getColumns();
 		resultSet = pstmt.executeQuery();
 		while(resultSet.next() && (dbResultRows.size() < rowsToFind) && !isCancelled()) {
-			LOG.config(dbResultRows.size() +"/"+ rowsToFind);
+//			LOG.config(dbResultRows.size() +"/"+ rowsToFind);
 			Object[] rowData = readData(resultSet); //BigInteger number = nextPrimeNumber(); readData liest die cols der DB-row
 			
 			dbResultRows.add(rowData);

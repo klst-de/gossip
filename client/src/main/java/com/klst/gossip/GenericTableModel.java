@@ -20,7 +20,7 @@ import org.compiere.util.Trx;
 //		this(ctx, AD_Table_ID, TableName, WindowNo, TabNo, withAccessControl, false);
 //	}
 
-// Table bedeutet Java Table, nicht DB Table
+// Table bedeutet Java Swing Table, nicht DB Table!
 public class GenericTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -8353798775903481429L;
@@ -46,12 +46,13 @@ public class GenericTableModel extends AbstractTableModel {
 	}
 
 	private int getTable_ID(int tab_ID) {
-		LOG.config("TODO aus AD_Tab holen tab_ID:"+tab_ID); // TODO 
-//		Properties ctx = Env.getCtx();
-//		String trxName =  Trx.createTrxName("GenericTableModel"); 
-//		MTab mTab = new MTab(ctx, tab_ID, trxName); //MTab (Properties ctx, int AD_Tab_ID, String trxName)
-		//erstmal als proxy:
-		return 170;
+		LOG.config("aus AD_Tab holen tab_ID:"+tab_ID);
+		Properties ctx = Env.getCtx();
+		String trxName =  Trx.createTrxName("GenericTableModel"); 
+		MTab mTab = new MTab(ctx, tab_ID, trxName); //MTab (Properties ctx, int AD_Tab_ID, String trxName)
+		int table_ID = mTab.getAD_Table_ID();
+//		LOG.warning(table_ID + " SOLL " + 296);
+		return table_ID;
 	}
 
     /*
@@ -81,11 +82,6 @@ public class GenericTableModel extends AbstractTableModel {
 		if(rowIndex >= getRowCount()) {
 			return new Object();
 		}
-//		switch (columnIndex) {
-//        case 0:
-//            return getBank(rowIndex)[0];
-//        ...	
-//		}
 		if(columnIndex < getRowCount()) {
 			return getRow(rowIndex)[columnIndex];
 		}
@@ -130,26 +126,4 @@ public class GenericTableModel extends AbstractTableModel {
     	return this.columns;
     }
     
-    // haben in Java SwingTable nix zu suchen:
-//    public String getSelectClause() {
-////    	columns.forEach(column -> {
-////    		column.get_ColumnName(index);
-////    	});
-//    	return null;
-//    }
-//    
-//    public String getSelectAll() {
-//    	return "SELECT * FROM "+getDbTableName();
-//    }
-// --------------------------------
-	// ctor
-//	public GenericTableModel(Properties ctx, int tableId, String tableName) {
-//		super();
-//		LOG.info(tableName);
-//		this.ctx = ctx;
-//		this.tableId = tableId;
-//		this.tableName = tableName;
-//		this.countStar = "SELECT COUNT(*) FROM " + tableName;;
-//	}
-
 }
