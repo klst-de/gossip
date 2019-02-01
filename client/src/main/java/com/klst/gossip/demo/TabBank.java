@@ -13,7 +13,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
-import org.compiere.model.I_C_Bank;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -39,25 +38,29 @@ public class TabBank {
 	private static final Logger LOG = Logger.getLogger(TabCountry.class.getName());
 
 	private static final int AD_Tab_ID=227;
+	private static final String NAME="Bank";
 	
 	private GenericTableModel tableModel;
 	private JXTable bankTable;
 	
-	public void showIn(Container jPanel) {
-		LOG.config(">>>");
-		
+	public void showIn(Container rootContainer) {
+		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
+		if(NAME.equals(rootContainer.getName())) {
+			rootContainer.removeAll();
+		}
+		rootContainer.setName(NAME);
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setForeground(Color.GREEN);
 		progressBar.setStringPainted(true);
-		jPanel.setLayout(new BorderLayout());
-		jPanel.add(progressBar, BorderLayout.SOUTH);
+		rootContainer.setLayout(new BorderLayout());
+		rootContainer.add(progressBar, BorderLayout.SOUTH);
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         bankTable = createXTable(); // statt new JXTable();
-        bankTable.setName("countryTable");
+        bankTable.setName("bankTable");
         JScrollPane scrollpane = new JScrollPane(bankTable);
         Stacker stacker = new Stacker(scrollpane);
-        jPanel.add(stacker, BorderLayout.CENTER);
+        rootContainer.add(stacker, BorderLayout.CENTER);
         
         // show column control
         bankTable.setColumnControlVisible(true);
@@ -114,9 +117,12 @@ public class TabBank {
 	private JXTable createXTable() {
 		JXTable table = new JXTable() {
 
+			private static final long serialVersionUID = -2974517519415177299L;
+
 			@Override
 			protected JTableHeader createDefaultTableHeader() {
 				return new JXTableHeader(columnModel) {
+					private static final long serialVersionUID = -4124370542563896297L;
 
 					@Override
 					public void updateUI() {
