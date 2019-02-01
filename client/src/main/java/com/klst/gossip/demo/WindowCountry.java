@@ -13,12 +13,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.MTab;
+import org.compiere.util.Ini;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -76,23 +76,29 @@ public class WindowCountry extends Window {
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         countryTable = createXTable(); // statt new JXTable();
-//        countryTable.setName("countryTable");
         JScrollPane scrollpane = new JScrollPane(countryTable);
         Stacker stacker = new Stacker(scrollpane);
-		this.hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane", stacker);
-        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
+        
         List<MTab> tabs = getTabs(false);
         tabs.forEach(tab -> {
         	LOG.config("Tab Name:"+tab.getName());
         });
+		this.hidableTabbedPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
+        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
         countryTable.setName(tabs.get(0).getName());
         // zur Demo, die Tabs anzeigen
         Iterator<MTab> itr = tabs.iterator();
         itr.next(); // den ersten überspringen
+        //String 
+        boolean p_show_trl = Ini.isPropertyBool(this.P_SHOW_TRL);
         while (itr.hasNext()) {
         	MTab tab = itr.next(); 
-        	JPanel tabPanel = new JPanel();
-        	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+        	if(!tab.isTranslationTab() || p_show_trl) {
+            	JPanel tabPanel = new JPanel();
+            	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+        	} else { // do not show translation tabs
+        		LOG.config(tab.toString()+" not shown "+tab.getName());
+        	}
         }
 
        

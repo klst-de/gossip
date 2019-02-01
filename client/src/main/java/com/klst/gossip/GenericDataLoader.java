@@ -5,14 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
 
-import org.compiere.model.MColumn;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.MField;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
 // aka class Loader implements Serializable, Runnable in GridTable
@@ -256,7 +255,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	private int rowsToFind = -1; // Ergebnis von select count(*)
 	private ResultSet resultSet;
 	private List<Object[]> dbResultRows;                                    //banks3; // V - also eine SQL 
-	private List<MColumn> columns;
+	private List<MField> fields;
 	
 	/*
 	 * (non-Javadoc)
@@ -280,7 +279,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		LOG.config(sql + "; rowsToFind:"+rowsToFind + "; trxName:"+trxName);
 		pstmt = DB.prepareStatement(sql, trxName);
 		// m_rowCount = m_loader.open(maxRows);
-		columns = tableModel.getColumns();
+		fields = tableModel.getColumns();
 		resultSet = pstmt.executeQuery();
 		while(resultSet.next() && (dbResultRows.size() < rowsToFind) && !isCancelled()) {
 //			LOG.config(dbResultRows.size() +"/"+ rowsToFind);
@@ -326,39 +325,31 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     }
     
 	private Object[] readData(ResultSet rs) throws SQLException {
-		int size = this.columns.size();
+		int size = this.fields.size();
 //		LOG.config("columns.size:"+size + " =="+this.tableModel.getColumnCount());
-		Object[] rowData = new Object[size];
-//		for(int c = 0; c < size; c++) {
-//			if(columnIds[c].endsWith("_ID")) {
-//				rowData[c] = new Integer(rs.getInt(c+1));	//	Integer	
-//			} else {
-//				rowData[c] = new String(rs.getString(c+1));	//	String	
-//			}
-//		}
-		
-//		columns.forEach(metacolumn -> { // so bekommen ich den index nicht!
-//			metacolumn.
-//			metacolumn.getColumnName();
-//			
-//		});
-		
-//		Iterator<MColumn> itr = columns.iterator();
-//		while (itr.hasNext()){
-//			MColumn metacolum = itr.next(); 
-//		}
+		Object[] fieldData = new Object[size];
 		for (int c = 0; c < size; c++) {
-			MColumn metacolum = columns.get(c); // das nur einmal machen 
-//			LOG.warning(c + " metacolum"+metacolum);
-			if(metacolum.getColumnName().endsWith("_ID")) {
-				rowData[c] = new Integer(rs.getInt(metacolum.getColumnName()));	//	Integer	
-			} else {
-				String value = rs.getString(metacolum.getColumnName()); //	String	
-				rowData[c] = value==null ? "" : new String(value);	
-			}
+			//MColumn metacolum = columns.get(c); // das nur einmal machen 
+			MField field = fields.get(c);
+			I_AD_Column column = field.getAD_Column();
+//			column.getAD_Element_ID()
+//			column.getAD_Table_ID() // muss == tableModel.table_ID sein
+//			column.getColumnSQL()
+			
+//			if(field.getSeqNoGrid()==0) {
+//				// nicht im Grid benötigt
+//			} else {
+				// TODO Display Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
+				if(column.getColumnName().endsWith("_ID")) {
+					fieldData[c] = new Integer(rs.getInt(column.getColumnName()));	//	Integer	
+				} else {
+					String value = rs.getString(column.getColumnName()); //	String	
+					fieldData[c] = value==null ? "" : new String(value);	
+				}
+//			}
 		}
 
-		return rowData;
+		return fieldData;
 	}
 
 	private void close() {

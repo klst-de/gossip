@@ -1,6 +1,7 @@
 package com.klst.gossip;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -8,6 +9,7 @@ import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 import org.compiere.model.MColumn;
+import org.compiere.model.MField;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
@@ -31,25 +33,32 @@ public class GenericTableModel extends AbstractTableModel {
     private final List<Object[]> tableRows = new ArrayList<Object[]>();
 
 	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
+	private MTab mTab;
+	private List<MField> fields;
+	
 	private int table_ID;
 	private MTable mTable;
 	private String dbTableName; // ist in mTable 
 	private List<MColumn> columns;
-	
+
+	private Properties ctx;
+	private String trxName;
+
 	// ctor
 	public GenericTableModel(int tab_ID) {
 		this.tab_ID = tab_ID;
 		this.table_ID = getTable_ID(tab_ID);
 		this.mTable = MTable.get(Env.getCtx(), table_ID);
-		LOG.config(mTable.toString());
-		columns = mTable.getColumnsAsList();
+		LOG.config(mTab.toString() + " " + mTable.toString());
+		this.columns = mTable.getColumnsAsList();
+		this.fields = Arrays.asList(mTab.getFields(false, trxName)); // reload
 	}
 
 	private int getTable_ID(int tab_ID) {
 		LOG.config("aus AD_Tab holen tab_ID:"+tab_ID);
-		Properties ctx = Env.getCtx();
-		String trxName =  Trx.createTrxName("GenericTableModel"); 
-		MTab mTab = new MTab(ctx, tab_ID, trxName); //MTab (Properties ctx, int AD_Tab_ID, String trxName)
+		this.ctx = Env.getCtx();
+		this.trxName =  Trx.createTrxName(GenericTableModel.class.getName()); 
+		this.mTab = new MTab(ctx, tab_ID, trxName);
 		int table_ID = mTab.getAD_Table_ID();
 //		LOG.warning(table_ID + " SOLL " + 296);
 		return table_ID;
@@ -70,7 +79,8 @@ public class GenericTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public int getColumnCount() {
-		return columns.size();
+		// es werden cpöumns gelesen, aber fields dargestellt!
+		return fields.size();
 	}
 
 	/*
@@ -82,7 +92,7 @@ public class GenericTableModel extends AbstractTableModel {
 		if(rowIndex >= getRowCount()) {
 			return new Object();
 		}
-		if(columnIndex < getRowCount()) {
+		if(columnIndex < getColumnCount()) {
 			return getRow(rowIndex)[columnIndex];
 		}
         return null;
@@ -92,14 +102,20 @@ public class GenericTableModel extends AbstractTableModel {
         return tableRows.get(rowIndex);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+     */
     @Override
     public Class<?> getColumnClass(int column) {
-        return getValueAt(0, column).getClass();
+//    	Object object = getValueAt(0, column);
+//        return object==null ? Object.class : object.getClass();
+    	return getValueAt(0, column).getClass();
     }
 
     @Override
     public String getColumnName(int column) {
-    	return columns.get(column).getName();
+    	return fields.get(column).getName();
     }
 
 
@@ -122,8 +138,8 @@ public class GenericTableModel extends AbstractTableModel {
     	return this.mTable.getTableName();
     }
     
-    public List<MColumn> getColumns() {
-    	return this.columns;
+    public List<MField> getColumns() {
+    	return this.fields;
     }
     
 }
