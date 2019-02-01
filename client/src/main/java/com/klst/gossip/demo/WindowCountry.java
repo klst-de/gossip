@@ -5,9 +5,12 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -15,6 +18,7 @@ import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.I_C_Bank;
+import org.compiere.model.MTab;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -32,7 +36,7 @@ import com.klst.gossip.Window;
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
-- TabCountry : implementiert den Tab Country für Winddow "Country Region and City" als JXTable  
+- WindowCountry : implementiert Window "Country Region and City" als JXTable und dort den ersten Tab 
 	(AD_Window - AD_Window_ID=122)
 	(AD_Tab - AD_Tab_ID=135) 
 	nutzt C_Country (AD_Table - AD_Table_ID=170)
@@ -72,12 +76,26 @@ public class WindowCountry extends Window {
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         countryTable = createXTable(); // statt new JXTable();
-        countryTable.setName("countryTable");
+//        countryTable.setName("countryTable");
         JScrollPane scrollpane = new JScrollPane(countryTable);
         Stacker stacker = new Stacker(scrollpane);
-		this.hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane",stacker);
+		this.hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane", stacker);
         rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
-        
+        List<MTab> tabs = getTabs(false);
+        tabs.forEach(tab -> {
+        	LOG.config("Tab Name:"+tab.getName());
+        });
+        countryTable.setName(tabs.get(0).getName());
+        // zur Demo, die Tabs anzeigen
+        Iterator<MTab> itr = tabs.iterator();
+        itr.next(); // den ersten überspringen
+        while (itr.hasNext()) {
+        	MTab tab = itr.next(); 
+        	JPanel tabPanel = new JPanel();
+        	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+        }
+
+       
         countryTable.setColumnControlVisible(true);
         // replace grid lines with striping 
         countryTable.setShowGrid(false, false);

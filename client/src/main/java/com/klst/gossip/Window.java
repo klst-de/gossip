@@ -33,17 +33,20 @@ public class Window implements WindowListener {
 	JFrame currentFrame; 
 	protected HidableTabbedPane hidableTabbedPane; // TODO protected raus
 	
+	private Properties ctx;
+	String trxName;
+	
 	// ctor
 	protected Window(Gossip rootFrame, int window_ID) {
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
-		Properties ctx = Env.getCtx();
-		String trxName =  Trx.createTrxName(Window.class.getName());
+		this.ctx = Env.getCtx();
+		this.trxName =  Trx.createTrxName(Window.class.getName());
 		mWindow = new MWindow(ctx, window_ID, trxName);
 	}
 
-	protected List<MTab> getTabs(boolean reload, String trxName) {
+	protected List<MTab> getTabs(boolean reload) {
 		 List<MTab> tabs = Arrays.asList(mWindow.getTabs(reload, trxName));
 		 return tabs;
 	}
