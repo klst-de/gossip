@@ -5,11 +5,16 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
@@ -32,10 +37,10 @@ import com.klst.gossip.Stacker;
 	nutzt C_Bank  (AD_Table - AD_Table_ID=296)
 
  */
-public class TabBank {
+public class TabBank implements WindowListener {
 	// vll extends GenericTab
 
-	private static final Logger LOG = Logger.getLogger(TabCountry.class.getName());
+	private static final Logger LOG = Logger.getLogger(WindowCountry.class.getName());
 
 	private static final int AD_Tab_ID=227;
 	private static final String NAME="Bank";
@@ -43,11 +48,22 @@ public class TabBank {
 	private GenericTableModel tableModel;
 	private JXTable bankTable;
 	
+	// TODO:
+	// - LaF propagieren
+	// - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
 	public void showIn(Container rootContainer) {
 		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
 		if(NAME.equals(rootContainer.getName())) {
 			rootContainer.removeAll();
 		}
+		
+		JFrame frame = (JFrame) SwingUtilities.windowForComponent(rootContainer);
+		frame.addWindowListener(this);
+		
+//		if(rootContainer instanceof JRootPane) {
+//			JRootPane rootPane = (JRootPane)rootContainer;
+//			rootPane.getParent()
+//		}
 		rootContainer.setName(NAME);
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setForeground(Color.GREEN);
@@ -139,6 +155,49 @@ public class TabBank {
 
 		};
 		return table;
+	}
+
+	// wg. implements WindowListener
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		// TODO Auto-generated method stub
+		LOG.config("TODO");
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		LOG.config("TODO");
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

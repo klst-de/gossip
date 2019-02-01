@@ -25,7 +25,11 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.klst.gossip.CustomColumnFactory;
 import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericTableModel;
+import com.klst.gossip.Gossip;
 import com.klst.gossip.Stacker;
+import com.klst.gossip.Window;
+
+import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
 - TabCountry : implementiert den Tab Country für Winddow "Country Region and City" als JXTable  
@@ -34,55 +38,53 @@ import com.klst.gossip.Stacker;
 	nutzt C_Country (AD_Table - AD_Table_ID=170)
 
  */
-public class TabCountry {
-	// vll extends GenericTab
+public class WindowCountry extends Window {
 
-	private static final Logger LOG = Logger.getLogger(TabCountry.class.getName());
+	private static final Logger LOG = Logger.getLogger(WindowCountry.class.getName());
 
+	private static final int AD_Window_ID=122;
 	private static final int AD_Tab_ID=135;
 	
 	private GenericTableModel tableModel;
 	private JXTable countryTable;
 	
-	public void showIn(Container jPanel) {
-		LOG.config(">>>");
+	// ctor
+	public WindowCountry(Gossip rootFrame) {
+		super(rootFrame, AD_Window_ID);
+	}
+	
+	public void showIn(Container rootContainer) {
+		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
+//		if(NAME.equals(rootContainer.getName())) {
+//			rootContainer.removeAll();
+//		}
 		
-		JTextArea textArea = new JTextArea();
-		textArea.setRows(10);
+		setWindowListenerFor(rootContainer); // wg. - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
+		LOG.config("TODO setTitle(title) to Name:"+this.mWindow.getName());
+//		currentFrame.setTitle(title);
+//		currentFrame.setIconImages(icons); // TODO
+
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setForeground(Color.GREEN);
 		progressBar.setStringPainted(true);
-		jPanel.setLayout(new BorderLayout());
-//		jPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
-		jPanel.add(progressBar, BorderLayout.SOUTH);
+		rootContainer.setLayout(new BorderLayout());
+		rootContainer.add(progressBar, BorderLayout.SOUTH);
 		
-        //<snip> JXTable data properties
-		// private OscarTableModel oscarModel; ==> private BankTableModel bankTableModel
-		// private JXTable oscarTable;         ==> private JXTable bankTable 
 		tableModel = new GenericTableModel(AD_Tab_ID);
-//        oscarModel = new OscarTableModel();
-        // set the table model after setting the factory
-//        oscarTable.setModel(oscarModel);
         countryTable = createXTable(); // statt new JXTable();
         countryTable.setName("countryTable");
         JScrollPane scrollpane = new JScrollPane(countryTable);
-//        dataPanel = new Stacker(scrollpane);
-//        add(dataPanel, BorderLayout.CENTER);
         Stacker stacker = new Stacker(scrollpane);
-        jPanel.add(stacker, BorderLayout.CENTER);
+		this.hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane",stacker);
+        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
         
-        //<snip> JXTable display properties
-        // show column control
         countryTable.setColumnControlVisible(true);
         // replace grid lines with striping 
         countryTable.setShowGrid(false, false);
         countryTable.addHighlighter(HighlighterFactory.createSimpleStriping());
         // initialize preferred size for table's viewable area
         countryTable.setVisibleRowCount(10);
-//        </snip>
 
-        //<snip> JXTable column properties
-        // create and configure a custom column factory
         CustomColumnFactory factory = new CustomColumnFactory();
 //        OscarRendering.configureColumnFactory(factory, getClass()); // TODO
         // set the factory before setting the table model
