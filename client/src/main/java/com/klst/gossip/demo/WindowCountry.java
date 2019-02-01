@@ -121,8 +121,8 @@ public class WindowCountry extends Window {
         //<snip> JXTable column properties
         // some display properties can be configured only after the model has been set, here:
         // configure the view sequence of columns to be different from the model
-        countryTable.getColumnExt(0).setVisible(false); // A ausblenden
-        countryTable.setColumnSequence(new Object[] {I_C_Bank.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_Name}); // A wird evtl hinten angehängt
+//        countryTable.getColumnExt(0).setVisible(false); // A ausblenden
+//        countryTable.setColumnSequence(new Object[] {I_C_Bank.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_Name}); // A wird evtl hinten angehängt
         // </snip>
 
  		GenericDataLoader task = new GenericDataLoader(tableModel);

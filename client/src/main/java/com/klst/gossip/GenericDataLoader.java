@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -283,7 +284,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		resultSet = pstmt.executeQuery();
 		while(resultSet.next() && (dbResultRows.size() < rowsToFind) && !isCancelled()) {
 //			LOG.config(dbResultRows.size() +"/"+ rowsToFind);
-			Object[] rowData = readData(resultSet); //BigInteger number = nextPrimeNumber(); readData liest die cols der DB-row
+			Object[] rowData = readData(resultSet, dbResultRows.size()); //BigInteger number = nextPrimeNumber(); readData liest die cols der DB-row
 			
 			dbResultRows.add(rowData);
 			publish(rowData); // TODO ? publish(banks3);
@@ -324,31 +325,36 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     	return null;
     }
     
-	private Object[] readData(ResultSet rs) throws SQLException {
-		int size = this.fields.size();
+	private Object[] readData(ResultSet rs, int row) throws SQLException {
+		int size = tableModel.getColumnCount();
 //		LOG.config("columns.size:"+size + " =="+this.tableModel.getColumnCount());
+//		ArrayList<Object> fieldData = new ArrayList<Object>(size);
 		Object[] fieldData = new Object[size];
-		for (int c = 0; c < size; c++) {
-			//MColumn metacolum = columns.get(c); // das nur einmal machen 
-			MField field = fields.get(c);
-			I_AD_Column column = field.getAD_Column();
+		for (int f = tableModel.getFirstField(); f < size; f++) {
+			MField field = fields.get(f);
+			I_AD_Column column = fields.get(f).getAD_Column();
 //			column.getAD_Element_ID()
 //			column.getAD_Table_ID() // muss == tableModel.table_ID sein
 //			column.getColumnSQL()
+			if(row==0) {
+				LOG.config(f+":"+field.toString() + " SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo());
+			}
 			
-//			if(field.getSeqNoGrid()==0) {
-//				// nicht im Grid benötigt
-//			} else {
-				// TODO Display Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
+			if(field.getSeqNo()==0) {
+				// do not display
+			} else {
+				// TODO Display Zeilen Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
 				if(column.getColumnName().endsWith("_ID")) {
-					fieldData[c] = new Integer(rs.getInt(column.getColumnName()));	//	Integer	
+//					fieldData.add( new Integer(rs.getInt(column.getColumnName())) );	//	Integer	
+					fieldData[f-tableModel.getFirstField()] = new Integer(rs.getInt(column.getColumnName()));
 				} else {
 					String value = rs.getString(column.getColumnName()); //	String	
-					fieldData[c] = value==null ? "" : new String(value);	
+//					fieldData.add( value==null ? "" : new String(value) );	
+					fieldData[f-tableModel.getFirstField()] = value==null ? "" : new String(value);
 				}
-//			}
+			}
 		}
-
+//		return fieldData.toArray();
 		return fieldData;
 	}
 
