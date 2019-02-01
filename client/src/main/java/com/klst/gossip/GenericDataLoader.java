@@ -330,7 +330,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 //		LOG.config("columns.size:"+size + " =="+this.tableModel.getColumnCount());
 //		ArrayList<Object> fieldData = new ArrayList<Object>(size);
 		Object[] fieldData = new Object[size];
-		for (int f = tableModel.getFirstField(); f < size; f++) {
+		for (int f = 0; f < size; f++) {
 			MField field = fields.get(f);
 			I_AD_Column column = fields.get(f).getAD_Column();
 //			column.getAD_Element_ID()
@@ -346,11 +346,11 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 				// TODO Display Zeilen Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
 				if(column.getColumnName().endsWith("_ID")) {
 //					fieldData.add( new Integer(rs.getInt(column.getColumnName())) );	//	Integer	
-					fieldData[f-tableModel.getFirstField()] = new Integer(rs.getInt(column.getColumnName()));
+					fieldData[f] = new Integer(rs.getInt(column.getColumnName()));
 				} else {
 					String value = rs.getString(column.getColumnName()); //	String	
 //					fieldData.add( value==null ? "" : new String(value) );	
-					fieldData[f-tableModel.getFirstField()] = value==null ? "" : new String(value);
+					fieldData[f] = value==null ? "" : new String(value);
 				}
 			}
 		}

@@ -35,7 +35,6 @@ public class GenericTableModel extends AbstractTableModel {
 	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
 	private MTab mTab;
 	private List<MField> fields;
-	private int firstField = 0;
 	
 	private int table_ID;
 	private MTable mTable;
@@ -51,8 +50,10 @@ public class GenericTableModel extends AbstractTableModel {
 		this.table_ID = getTable_ID(tab_ID);
 		this.mTable = MTable.get(Env.getCtx(), table_ID);
 		LOG.config(mTab.toString() + " " + mTable.toString());
+		
 		this.columns = mTable.getColumnsAsList();
 		this.fields = Arrays.asList(mTab.getFields(false, trxName)); // reload
+		int firstField = 0;
 		for (int f = 0; f < fields.size(); f++) {
 			if(fields.get(f).getSeqNo()==0) {
 				firstField++;
@@ -60,7 +61,7 @@ public class GenericTableModel extends AbstractTableModel {
 				break;
 			}
 		}
-		LOG.warning(fields.size() + " == " + getFirstField() + "+" + getColumnCount());
+		this.fields = this.fields.subList(firstField, fields.size());
 	}
 
 	private int getTable_ID(int tab_ID) {
@@ -69,14 +70,9 @@ public class GenericTableModel extends AbstractTableModel {
 		this.trxName =  Trx.createTrxName(GenericTableModel.class.getName()); 
 		this.mTab = new MTab(ctx, tab_ID, trxName);
 		int table_ID = mTab.getAD_Table_ID();
-//		LOG.warning(table_ID + " SOLL " + 296);
 		return table_ID;
 	}
 
-	public int getFirstField() {
-		return this.firstField;
-	}
-	
     /*
      * (non-Javadoc)
      * @see javax.swing.table.TableModel#getRowCount()
@@ -93,8 +89,7 @@ public class GenericTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount() {
 		// es werden columns gelesen, aber fields dargestellt!
-		// nicht alle werden dargestellt
-		return fields.size() - this.firstField;
+		return fields.size();
 	}
 
 	/*
@@ -107,7 +102,7 @@ public class GenericTableModel extends AbstractTableModel {
 			return new Object();
 		}
 		if(columnIndex < getColumnCount()) {
-			return getRow(rowIndex)[columnIndex]; // java.lang.ArrayIndexOutOfBoundsException: 27
+			return getRow(rowIndex)[columnIndex];
 		}
         return null;
 	}
@@ -122,14 +117,12 @@ public class GenericTableModel extends AbstractTableModel {
      */
     @Override
     public Class<?> getColumnClass(int column) {
-    	Object object = getValueAt(0, column);
-        return object==null ? Object.class : object.getClass();
-//    	return getValueAt(0, column).getClass();
+    	return getValueAt(0, column).getClass();
     }
 
     @Override
     public String getColumnName(int column) {
-    	return fields.get(column+this.firstField).getName();
+    	return fields.get(column).getName();
     }
 
 
