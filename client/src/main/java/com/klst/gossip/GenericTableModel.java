@@ -102,10 +102,15 @@ public class GenericTableModel extends AbstractTableModel {
 			return new Object();
 		}
 		if(columnIndex < getColumnCount()) {
+//			if(rowIndex==1) { // ist 0 der Header?
+//				LOG.warning("AD_Reference_ID:"+fields.get(columnIndex).getAD_Reference_ID());
+//			}
 			return getRow(rowIndex)[columnIndex];
 		}
         return null;
 	}
+	
+	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
 	
     public Object[] getRow(int rowIndex) {
         return tableRows.get(rowIndex);
