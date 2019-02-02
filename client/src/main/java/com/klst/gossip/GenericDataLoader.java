@@ -327,8 +327,6 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     
 	private Object[] readData(ResultSet rs, int row) throws SQLException {
 		int size = tableModel.getColumnCount();
-//		LOG.config("columns.size:"+size + " =="+this.tableModel.getColumnCount());
-//		ArrayList<Object> fieldData = new ArrayList<Object>(size);
 		Object[] fieldData = new Object[size];
 		for (int f = 0; f < size; f++) {
 			MField field = fields.get(f);
@@ -337,7 +335,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 //			column.getAD_Table_ID() // muss == tableModel.table_ID sein
 //			column.getColumnSQL()
 			if(row==0) {
-				LOG.config(f+":"+field.toString() + " SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo());
+				LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo() + " Name="+field.getName() + " "+field.toString());
 			}
 			
 			if(field.getSeqNo()==0) {
@@ -345,16 +343,13 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 			} else {
 				// TODO Display Zeilen Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
 				if(column.getColumnName().endsWith("_ID")) {
-//					fieldData.add( new Integer(rs.getInt(column.getColumnName())) );	//	Integer	
 					fieldData[f] = new Integer(rs.getInt(column.getColumnName()));
 				} else {
 					String value = rs.getString(column.getColumnName()); //	String	
-//					fieldData.add( value==null ? "" : new String(value) );	
 					fieldData[f] = value==null ? "" : new String(value);
 				}
 			}
 		}
-//		return fieldData.toArray();
 		return fieldData;
 	}
 

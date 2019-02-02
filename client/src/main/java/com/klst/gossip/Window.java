@@ -14,11 +14,13 @@ import javax.swing.SwingUtilities;
 import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
 import org.compiere.util.Trx;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
+ - visualisiert MWindow mWindow
  - besteht aus Tabs : HidableTabbedPane hidableTabbedPane; // hierin die AD tabs
  */
 
@@ -26,15 +28,17 @@ public class Window implements WindowListener {
 	
 	private static final Logger LOG = Logger.getLogger(Window.class.getName());
 	
-	private int window_ID;
-	protected MWindow mWindow;
+	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
 	
 	Gossip rootFrame;
-	JFrame currentFrame; 
-	protected HidableTabbedPane hidableTabbedPane; // TODO protected raus
-	
+	private int window_ID;
 	private Properties ctx;
-	String trxName;
+	private String trxName;
+	protected MWindow mWindow;
+	
+	JFrame currentFrame;
+	List<MTab> tabs;
+	protected HidableTabbedPane hidableTabbedPane; // TODO protected raus
 	
 	// ctor
 	protected Window(Gossip rootFrame, int window_ID) {
@@ -47,8 +51,11 @@ public class Window implements WindowListener {
 	}
 
 	protected List<MTab> getTabs(boolean reload) {
-		 List<MTab> tabs = Arrays.asList(mWindow.getTabs(reload, trxName));
-		 return tabs;
+		ctx.forEach((key,value) -> { // zum Test
+			LOG.info("key:"+key + " : " + value.toString());
+		});
+		this.tabs = Arrays.asList(mWindow.getTabs(reload, trxName));
+		return tabs;
 	}
 	
 	/* Obtain Window/JFrame from inside a JPanel

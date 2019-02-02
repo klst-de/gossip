@@ -96,14 +96,14 @@ public class TabBank implements WindowListener {
         // filterController = new OscarFiltering(oscarTable);
         // some display properties can be configured only after the model has been set, here:
         // configure the view sequence of columns to be different from the model
-        bankTable.getColumnExt(16).setVisible(false); // rückwärts!
-        bankTable.getColumnExt(15).setVisible(false);
-        bankTable.getColumnExt(8).setVisible(false);
-        bankTable.getColumnExt(7).setVisible(false);
-        bankTable.getColumnExt(6).setVisible(false);
-        bankTable.getColumnExt(1).setVisible(false); // B ausblenden
-        bankTable.getColumnExt(0).setVisible(false); // A ausblenden
-        bankTable.setColumnSequence(new Object[] {bankTable.getColumnName(1), "Bank Name"}); // A wird evtl hinten angehängt
+//        bankTable.getColumnExt(16).setVisible(false); // rückwärts!
+//        bankTable.getColumnExt(15).setVisible(false);
+//        bankTable.getColumnExt(8).setVisible(false);
+//        bankTable.getColumnExt(7).setVisible(false);
+//        bankTable.getColumnExt(6).setVisible(false);
+//        bankTable.getColumnExt(1).setVisible(false); // B ausblenden
+//        bankTable.getColumnExt(0).setVisible(false); // A ausblenden
+//        bankTable.setColumnSequence(new Object[] {bankTable.getColumnName(1), "Bank Name"}); // A wird evtl hinten angehängt
        
  		GenericDataLoader task = new GenericDataLoader(tableModel);
         
