@@ -16,7 +16,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
-import org.compiere.model.I_C_Bank;
 import org.compiere.model.MTab;
 import org.compiere.util.Ini;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -81,21 +80,26 @@ public class WindowCountry extends Window {
         
         List<MTab> tabs = getTabs(false);
         tabs.forEach(tab -> {
-        	LOG.config("Tab Name:"+tab.getName());
+        	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
         });
 		this.hidableTabbedPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
         rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
-        countryTable.setName(tabs.get(0).getName());
+        countryTable.setName(tabs.get(0).getName()); 
         // zur Demo, die Tabs anzeigen
         Iterator<MTab> itr = tabs.iterator();
-        itr.next(); // den ersten überspringen
-        //String 
+        itr.next(); // den ersten überspringen TODO this/TabLevel 0 muß dorthin
         boolean p_show_trl = Ini.isPropertyBool(this.P_SHOW_TRL);
         while (itr.hasNext()) {
         	MTab tab = itr.next(); 
         	if(!tab.isTranslationTab() || p_show_trl) {
-            	JPanel tabPanel = new JPanel();
-            	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+            	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
+        		if(tab.getName().equals("Region")) {
+        			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
+                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+       		} else {
+                	JPanel tabPanel = new JPanel();
+                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+        		}
         	} else { // do not show translation tabs
         		LOG.config(tab.toString()+" not shown "+tab.getName());
         	}
