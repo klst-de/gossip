@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -335,14 +334,20 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 //			column.getAD_Table_ID() // muss == tableModel.table_ID sein
 //			column.getColumnSQL()
 			if(row==0) {
-				LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo() + " Name="+field.getName() + " "+field.toString());
+				LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo() 
+				+ " Reference="+column.getAD_Reference_ID()
+				+ " Element="+column.getAD_Element_ID()
+				+ " Name='"+field.getName()+"' "+field.toString());
 			}
 			
 			if(field.getSeqNo()==0) {
 				// do not display
 			} else {
-				// TODO Display Zeilen Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'
-				if(column.getColumnName().endsWith("_ID")) {
+				// TODO Display Zeilen Logic berücksichtigen, zB @IsPostcodeLookup@ = 'Y'			
+				if(column.getAD_Reference_ID()==20) { // AD_Reference_ID=20 : CheckBox
+					String value = rs.getString(column.getColumnName());
+					fieldData[f] = new Boolean( value.equals("Y") ? true : false );
+				} else if(column.getColumnName().endsWith("_ID")) {
 					fieldData[f] = new Integer(rs.getInt(column.getColumnName()));
 				} else {
 					String value = rs.getString(column.getColumnName()); //	String	
