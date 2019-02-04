@@ -77,7 +77,7 @@ public class TabBank extends Tab {
 //		rootContainer.add(progressBar, BorderLayout.SOUTH);
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
-        bankTable = createXTable(); // statt new JXTable();
+        bankTable = createXTable(); // statt new JXTable() in Oberklasse
         JScrollPane scrollpane = new JScrollPane(bankTable);
         stacker = new Stacker(scrollpane);
         
@@ -156,39 +156,6 @@ public class TabBank extends Tab {
 //		task.execute();
 		LOG.config("<<<");
         return task;
-	}
-
-	public void setLoadState(StateValue state) {
-		LOG.config("StateValue:"+state);
-	}
-
-	// aus org.jdesktop.swingx.demos.table.XTableDemo
-	// TODO in Oberklasse
-	private JXTable createXTable() {
-		JXTable table = new JXTable() {
-
-			private static final long serialVersionUID = -2974517519415177299L;
-
-			@Override
-			protected JTableHeader createDefaultTableHeader() {
-				return new JXTableHeader(columnModel) {
-					private static final long serialVersionUID = -4124370542563896297L;
-
-					@Override
-					public void updateUI() {
-						super.updateUI();
-						// need to do in updateUI to survive toggling of LAF
-						if (getDefaultRenderer() instanceof JLabel) {
-							((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
-
-						}
-					}
-
-				};
-			}
-
-		};
-		return table;
 	}
 
 }

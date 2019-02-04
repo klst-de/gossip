@@ -6,12 +6,17 @@ import java.awt.event.ComponentListener;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingWorker.StateValue;
+import javax.swing.table.JTableHeader;
 
 import org.compiere.model.MTab;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.JXTableHeader;
 
 public class Tab extends JPanel implements ComponentListener {
 
@@ -53,6 +58,38 @@ public class Tab extends JPanel implements ComponentListener {
 		progressBar = new JProgressBar(0, 100);
 		progressBar.setStringPainted(true);
 		this.add(progressBar, BorderLayout.PAGE_END);
+	}
+
+	public void setLoadState(StateValue state) {
+		LOG.config("StateValue:"+state);
+	}
+
+	// aus org.jdesktop.swingx.demos.table.XTableDemo
+	protected JXTable createXTable() {
+		JXTable table = new JXTable() {
+
+			private static final long serialVersionUID = -2974517519415177299L;
+
+			@Override
+			protected JTableHeader createDefaultTableHeader() {
+				return new JXTableHeader(columnModel) {
+					private static final long serialVersionUID = -4124370542563896297L;
+
+					@Override
+					public void updateUI() {
+						super.updateUI();
+						// need to do in updateUI to survive toggling of LAF
+						if (getDefaultRenderer() instanceof JLabel) {
+							((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+
+						}
+					}
+
+				};
+			}
+
+		};
+		return table;
 	}
 
 	// wg. ComponentListener

@@ -1,13 +1,11 @@
  package com.klst.gossip.demo;
 
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.util.logging.Logger;
 
-import javax.swing.JPanel;
+import com.klst.gossip.Tab;
 
 // extends Tab (generisch) extends JPanel
-public class TabRegion extends JPanel implements ComponentListener {
+public class TabRegion extends Tab {
 
 	private static final long serialVersionUID = 6863202380722356842L;
 	
@@ -22,33 +20,9 @@ public class TabRegion extends JPanel implements ComponentListener {
 	// rootFrame
 	
 	public TabRegion() {
+		super(136); // (AD_Tab - AD_Tab_ID=136)
 		LOG.config("");
 		this.addComponentListener(this);
-	}
-	
-	// wg. ComponentListener
-	@Override
-	public void componentResized(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
-	}
-
-	@Override
-	public void componentMoved(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
-	}
-
-	@Override
-	public void componentShown(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
-	}
-
-	@Override
-	public void componentHidden(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
 	}
 	
 }

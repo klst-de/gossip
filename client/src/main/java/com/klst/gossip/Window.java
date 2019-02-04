@@ -1,5 +1,6 @@
 package com.klst.gossip;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -9,6 +10,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.compiere.model.MTab;
@@ -21,11 +23,14 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
  - visualisiert MWindow mWindow
- - besteht aus Tabs : HidableTabbedPane hidableTabbedPane; // hierin die AD tabs
+ - dieses JPanel ist das ContentPane im Borderlayout
+ - besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
  */
 
-public class Window implements WindowListener {
+public class Window extends JPanel implements WindowListener {
 	
+	private static final long serialVersionUID = 5098403364836474988L;
+
 	private static final Logger LOG = Logger.getLogger(Window.class.getName());
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
@@ -36,18 +41,23 @@ public class Window implements WindowListener {
 	private String trxName;
 	protected MWindow mWindow;
 	
-	JFrame currentFrame;
+	JFrame currentFrame; // TODO ist null
 	List<MTab> tabs;
 	protected HidableTabbedPane tabPane; // TODO protected raus
 	
 	// ctor
+	protected Window() {
+		super(new BorderLayout());
+	}
 	protected Window(Gossip rootFrame, int window_ID) {
+		this();
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
 		this.ctx = Env.getCtx();
 		this.trxName =  Trx.createTrxName(Window.class.getName());
-		mWindow = new MWindow(ctx, window_ID, trxName);
+		mWindow = new MWindow(ctx, this.window_ID, trxName);
+//		this.setTitle(this.mWindow.getName()); // TODO funktioniert nicht im ctor !?
 	}
 
 	protected List<MTab> getTabs(boolean reload) {
@@ -58,8 +68,20 @@ public class Window implements WindowListener {
 		return tabs;
 	}
 	
+	void setTitle() {
+		setTitle(this.mWindow.getName());
+	}
+	void setTitle(String title) {
+		JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+		if(jFrame==null) {
+			LOG.warning("currentFrame (aka WindowAncestor) is null for "+this + " - Cannot set title to "+title);
+		} else {
+			jFrame.setTitle(title);
+		}
+	}
+	
 	void setTabPane(HidableTabbedPane hidableTabbedPane) {
-		tabPane = hidableTabbedPane;
+		this.tabPane = hidableTabbedPane; 
 	}
 	
 	/* Obtain Window/JFrame from inside a JPanel

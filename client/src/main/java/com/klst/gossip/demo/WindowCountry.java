@@ -62,10 +62,7 @@ public class WindowCountry extends Window {
 //			rootContainer.removeAll();
 //		}
 		
-		setWindowListenerFor(rootContainer); // wg. - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
-		LOG.config("TODO setTitle(title) to Name:"+this.mWindow.getName());
-//		currentFrame.setTitle(title);
-//		currentFrame.setIconImages(icons); // TODO
+//		setWindowListenerFor(rootContainer); // wg. - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
 
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setForeground(Color.GREEN);
