@@ -22,7 +22,6 @@ public class TabRegion extends Tab {
 	public TabRegion() {
 		super(136); // (AD_Tab - AD_Tab_ID=136)
 		LOG.config("");
-		this.addComponentListener(this);
 	}
 	
 }

@@ -30,6 +30,7 @@ import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericTableModel;
 import com.klst.gossip.Gossip;
 import com.klst.gossip.Stacker;
+import com.klst.gossip.Tab;
 import com.klst.gossip.Window;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
@@ -68,7 +69,7 @@ public class WindowCountry extends Window {
 		progressBar.setForeground(Color.GREEN);
 		progressBar.setStringPainted(true);
 		rootContainer.setLayout(new BorderLayout());
-		rootContainer.add(progressBar, BorderLayout.SOUTH);
+		rootContainer.add(progressBar, BorderLayout.PAGE_END);
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         countryTable = createXTable(); // statt new JXTable();
@@ -79,30 +80,41 @@ public class WindowCountry extends Window {
         tabs.forEach(tab -> {
         	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
         });
-		this.tabPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
-        rootContainer.add(this.tabPane, BorderLayout.CENTER);
         countryTable.setName(tabs.get(0).getName()); 
-        // zur Demo, die Tabs anzeigen
+        
+        // IDEE: in Tab der stacker/scrollpane und dieses Tab Objekt an das tabPane:
+        Tab tabRegion = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
+        tabRegion.add(stacker, BorderLayout.CENTER);
+        
+        HidableTabbedPane tabPane 
+        = new HidableTabbedPane(tabs.get(0).getName(), tabRegion); // oder: 
+        //= new HidableTabbedPane(tabs.get(0).getName(), scrollpane); 
+//        = new HidableTabbedPane(); // ohne Komponenten, so geht es nicht! warum?
+        
         Iterator<MTab> itr = tabs.iterator();
-        itr.next(); // den ersten überspringen TODO this/TabLevel 0 muß dorthin
-        boolean p_show_trl = Ini.isPropertyBool(this.P_SHOW_TRL);
+        boolean p_show_trl = Ini.isPropertyBool(Window.P_SHOW_TRL);
         while (itr.hasNext()) {
         	MTab tab = itr.next(); 
         	if(!tab.isTranslationTab() || p_show_trl) {
             	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
-        		if(tab.getName().equals("Region")) {
+        		if(tab.getName().equals("Country")) {
+        			// ist schon da
+//        			Tab tabRegion = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
+//        			tabRegion.add(stacker, BorderLayout.CENTER);
+//        			tabPane.addTab(tab.getName(), tabRegion);
+        		} else if(tab.getName().equals("Region")) {
         			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
-        			this.tabPane.addTab(tab.getName(), tabPanel);
-       		} else {
+        			tabPane.addTab(tab.getName(), tabPanel);
+        		} else {
                 	JPanel tabPanel = new JPanel();
-                	this.tabPane.addTab(tab.getName(), tabPanel);
+                	tabPane.addTab(tab.getName(), tabPanel);
         		}
         	} else { // do not show translation tabs
         		LOG.config(tab.toString()+" not shown "+tab.getName());
         	}
         }
-
-       
+        rootContainer.add(tabPane, BorderLayout.CENTER);
+               
         countryTable.setColumnControlVisible(true);
         // replace grid lines with striping 
         countryTable.setShowGrid(false, false);
@@ -154,9 +166,13 @@ public class WindowCountry extends Window {
 	private JXTable createXTable() {
 		JXTable table = new JXTable() {
 
+			private static final long serialVersionUID = -3181511080613150320L;
+
 			@Override
 			protected JTableHeader createDefaultTableHeader() {
 				return new JXTableHeader(columnModel) {
+
+					private static final long serialVersionUID = 3720942779576064395L;
 
 					@Override
 					public void updateUI() {

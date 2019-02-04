@@ -46,7 +46,7 @@ public class Tab extends JPanel implements ComponentListener {
 	 *     public JPanel(LayoutManager layout) 
 	 *     public JPanel(boolean isDoubleBuffered) 
 	 */
-	protected Tab(int tab_ID) {
+	public Tab(int tab_ID) {
 		super(new BorderLayout());
 		LOG.config("tab_ID "+tab_ID);
 		this.tab_ID = tab_ID;
@@ -95,26 +95,22 @@ public class Tab extends JPanel implements ComponentListener {
 	// wg. ComponentListener
 	@Override
 	public void componentResized(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
+		LOG.warning(""+e.getComponent());
 	}
 
 	@Override
 	public void componentMoved(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
+		LOG.warning(""+e.getComponent());
 	}
 
 	@Override
 	public void componentShown(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
+		LOG.warning(""+e.getComponent());
 	}
 
 	@Override
 	public void componentHidden(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		LOG.warning("");
+		LOG.warning(""+e.getComponent());
 	}
 
 }
