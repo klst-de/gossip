@@ -3,18 +3,12 @@ package com.klst.gossip.demo;
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.logging.Logger;
 
-import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
@@ -29,6 +23,7 @@ import com.klst.gossip.CustomColumnFactory;
 import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericTableModel;
 import com.klst.gossip.Stacker;
+import com.klst.gossip.Tab;
 
 /*
 - TabBank : implementiert den Tab Bank für Window "Bank" als JXTable  
@@ -37,8 +32,9 @@ import com.klst.gossip.Stacker;
 	nutzt C_Bank  (AD_Table - AD_Table_ID=296)
 
  */
-public class TabBank implements WindowListener {
-	// vll extends GenericTab
+public class TabBank extends Tab {
+
+	private static final long serialVersionUID = -274665901539021577L;
 
 	private static final Logger LOG = Logger.getLogger(WindowCountry.class.getName());
 
@@ -48,37 +44,77 @@ public class TabBank implements WindowListener {
 	private GenericTableModel tableModel;
 	private JXTable bankTable;
 	
+	public Stacker stacker;
+	
+	// ctor
+	public TabBank() {
+		super(AD_Tab_ID);
+		// Test
+//		this.add(new JLabel("BorderLayout.SOUTH == PAGE_END"), BorderLayout.PAGE_END);
+//		this.add(new JLabel("BorderLayout.WEST == LINE_START"), BorderLayout.LINE_START);
+	}
+	
 	// TODO:
 	// - LaF propagieren
 	// - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
-	public void showIn(Container rootContainer) {
+	// returns Component component)
+	public GenericDataLoader showIn(Container rootContainer) {
 		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
-		if(NAME.equals(rootContainer.getName())) {
-			rootContainer.removeAll();
-		}
-		
-		JFrame frame = (JFrame) SwingUtilities.windowForComponent(rootContainer);
-		frame.addWindowListener(this);
-		
-//		if(rootContainer instanceof JRootPane) {
-//			JRootPane rootPane = (JRootPane)rootContainer;
-//			rootPane.getParent()
+//		if(NAME.equals(rootContainer.getName())) {
+//			rootContainer.removeAll();
 //		}
-		rootContainer.setName(NAME);
-		JProgressBar progressBar = new JProgressBar(0, 100);
-		progressBar.setForeground(Color.GREEN);
-		progressBar.setStringPainted(true);
-		rootContainer.setLayout(new BorderLayout());
-		rootContainer.add(progressBar, BorderLayout.SOUTH);
+		
+//		setWindowListenerFor(rootContainer); // wg. - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames! TODO muss in Window
+		
+//		LOG.config("TODO setTitle(title) to Name:"+this.mWindow.getName());
+//		currentFrame.setTitle(title);
+//		currentFrame.setIconImages(icons); // TODO
+
+//		JProgressBar progressBar = new JProgressBar(0, 100); // TODO in Window
+//		progressBar.setForeground(Color.GREEN);
+//		progressBar.setStringPainted(true);
+//		rootContainer.setLayout(new BorderLayout());
+//		rootContainer.add(progressBar, BorderLayout.SOUTH);
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         bankTable = createXTable(); // statt new JXTable();
-        bankTable.setName("bankTable");
         JScrollPane scrollpane = new JScrollPane(bankTable);
-        Stacker stacker = new Stacker(scrollpane);
-        rootContainer.add(stacker, BorderLayout.CENTER);
+        stacker = new Stacker(scrollpane);
         
-        // show column control
+//        List<MTab> tabs = getTabs(false);
+//        tabs.forEach(tab -> {
+//        	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
+//        });
+        LOG.config("Tab Name:"+mTab.getName() + " SeqNo:"+mTab.getSeqNo() + " TabLevel:"+mTab.getTabLevel());
+        
+        
+        // TODO:
+//		this.hidableTabbedPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
+//        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
+        this.add(stacker, BorderLayout.CENTER);
+        
+        bankTable.setName(mTab.getName()); 
+        // zur Demo, die Tabs anzeigen
+//        Iterator<MTab> itr = tabs.iterator();
+//        itr.next(); // den ersten überspringen TODO this/TabLevel 0 muß dorthin
+//        boolean p_show_trl = Ini.isPropertyBool(this.P_SHOW_TRL);
+//        while (itr.hasNext()) {
+//        	MTab tab = itr.next(); 
+//        	if(!tab.isTranslationTab() || p_show_trl) {
+//            	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
+//        		if(tab.getName().equals("Region")) {
+//        			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
+//                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+//       		} else {
+//                	JPanel tabPanel = new JPanel();
+//                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+//        		}
+//        	} else { // do not show translation tabs
+//        		LOG.config(tab.toString()+" not shown "+tab.getName());
+//        	}
+//        }
+
+       
         bankTable.setColumnControlVisible(true);
         // replace grid lines with striping 
         bankTable.setShowGrid(false, false);
@@ -90,21 +126,18 @@ public class TabBank implements WindowListener {
 //        OscarRendering.configureColumnFactory(factory, getClass()); // TODO
         // set the factory before setting the table model
 //        bankTable.setColumnFactory(factory);
+//        </snip>
 
         bankTable.setModel(tableModel);
         
         // filterController = new OscarFiltering(oscarTable);
+        //<snip> JXTable column properties
         // some display properties can be configured only after the model has been set, here:
         // configure the view sequence of columns to be different from the model
-//        bankTable.getColumnExt(16).setVisible(false); // rückwärts!
-//        bankTable.getColumnExt(15).setVisible(false);
-//        bankTable.getColumnExt(8).setVisible(false);
-//        bankTable.getColumnExt(7).setVisible(false);
-//        bankTable.getColumnExt(6).setVisible(false);
-//        bankTable.getColumnExt(1).setVisible(false); // B ausblenden
 //        bankTable.getColumnExt(0).setVisible(false); // A ausblenden
-//        bankTable.setColumnSequence(new Object[] {bankTable.getColumnName(1), "Bank Name"}); // A wird evtl hinten angehängt
-       
+//        bankTable.setColumnSequence(new Object[] {I_C_Bank.COLUMNNAME_C_Bank_ID, I_C_Bank.COLUMNNAME_Name}); // A wird evtl hinten angehängt
+        // </snip>
+
  		GenericDataLoader task = new GenericDataLoader(tableModel);
         
         // bind the worker's progress notification to the progressBar
@@ -114,14 +147,15 @@ public class TabBank implements WindowListener {
         BindingGroup group = new BindingGroup();
         group.addBinding(Bindings.createAutoBinding(READ, task, 
         		BeanProperty.create("progress"),
-                progressBar, BeanProperty.create("value")));
+                this.progressBar, BeanProperty.create("value")));
         group.addBinding(Bindings.createAutoBinding(READ, task, 
         		BeanProperty.create("state"),
         		this, BeanProperty.create("loadState"))); // call setLoadState 
         group.bind();
 
-		task.execute();
+//		task.execute();
 		LOG.config("<<<");
+        return task;
 	}
 
 	public void setLoadState(StateValue state) {
@@ -155,49 +189,6 @@ public class TabBank implements WindowListener {
 
 		};
 		return table;
-	}
-
-	// wg. implements WindowListener
-	@Override
-	public void windowOpened(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowClosing(WindowEvent e) {
-		// TODO Auto-generated method stub
-		LOG.config("TODO");
-	}
-
-	@Override
-	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-		LOG.config("TODO");
-	}
-
-	@Override
-	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

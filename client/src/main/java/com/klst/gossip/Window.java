@@ -38,7 +38,7 @@ public class Window implements WindowListener {
 	
 	JFrame currentFrame;
 	List<MTab> tabs;
-	protected HidableTabbedPane hidableTabbedPane; // TODO protected raus
+	protected HidableTabbedPane tabPane; // TODO protected raus
 	
 	// ctor
 	protected Window(Gossip rootFrame, int window_ID) {
@@ -56,6 +56,10 @@ public class Window implements WindowListener {
 		});
 		this.tabs = Arrays.asList(mWindow.getTabs(reload, trxName));
 		return tabs;
+	}
+	
+	void setTabPane(HidableTabbedPane hidableTabbedPane) {
+		tabPane = hidableTabbedPane;
 	}
 	
 	/* Obtain Window/JFrame from inside a JPanel

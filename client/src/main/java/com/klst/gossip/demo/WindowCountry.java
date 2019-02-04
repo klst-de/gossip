@@ -82,8 +82,8 @@ public class WindowCountry extends Window {
         tabs.forEach(tab -> {
         	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
         });
-		this.hidableTabbedPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
-        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
+		this.tabPane = new HidableTabbedPane(tabs.get(0).getName(), stacker); // den Namen in hiddenTabPane, Stacker TODO
+        rootContainer.add(this.tabPane, BorderLayout.CENTER);
         countryTable.setName(tabs.get(0).getName()); 
         // zur Demo, die Tabs anzeigen
         Iterator<MTab> itr = tabs.iterator();
@@ -95,10 +95,10 @@ public class WindowCountry extends Window {
             	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
         		if(tab.getName().equals("Region")) {
         			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
-                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+        			this.tabPane.addTab(tab.getName(), tabPanel);
        		} else {
                 	JPanel tabPanel = new JPanel();
-                	hidableTabbedPane.addTab(tab.getName(), tabPanel);
+                	this.tabPane.addTab(tab.getName(), tabPanel);
         		}
         	} else { // do not show translation tabs
         		LOG.config(tab.toString()+" not shown "+tab.getName());
