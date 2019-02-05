@@ -23,11 +23,12 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
  - visualisiert MWindow mWindow
- - dieses JPanel ist das ContentPane im Borderlayout
- - besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
+ - es ist ein Top Level Component 
+ - enthält JPanel als ContentPane im Borderlayout
+ - das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
  */
 
-public class Window extends JPanel implements WindowListener {
+public class Window extends JFrame implements WindowListener {
 	
 	private static final long serialVersionUID = 5098403364836474988L;
 
@@ -37,33 +38,45 @@ public class Window extends JPanel implements WindowListener {
 	
 	Gossip rootFrame;
 	private int window_ID;
-	private Properties ctx;
+	private Properties ctx = null;
 	private String trxName;
 	protected MWindow mWindow;
 	
-	JFrame currentFrame; // TODO ist null
 	List<MTab> tabs;
 	protected HidableTabbedPane tabPane; // TODO protected raus
 	
 	// ctor
+	/* super ctors
+	 * 	   JFrame() throws HeadlessException 
+	 *     JFrame(GraphicsConfiguration gc)
+	 *     JFrame(String title) throws HeadlessException
+	 *     JFrame(String title, GraphicsConfiguration gc)
+	 */
 	protected Window() {
-		super(new BorderLayout());
+		LOG.warning("implizit ctor");
 	}
-	protected Window(Gossip rootFrame, int window_ID) {
-		this();
+	Window(String title, Gossip rootFrame, int window_ID) {
+		super(title);
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
 		this.ctx = Env.getCtx();
 		this.trxName =  Trx.createTrxName(Window.class.getName());
 		mWindow = new MWindow(ctx, this.window_ID, trxName);
-//		this.setTitle(this.mWindow.getName()); // TODO funktioniert nicht im ctor !?
+		setTitle(); 
+		getContentPane().add(new JPanel(new BorderLayout()));
+		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
 
 	protected List<MTab> getTabs(boolean reload) {
-		ctx.forEach((key,value) -> { // zum Test
-			LOG.info("key:"+key + " : " + value.toString());
-		});
+		// macht eigentlich setTabs TODO
+		if(ctx==null) {
+			LOG.warning("ctx==null");
+		} else {
+			ctx.forEach((key,value) -> { // zum Test
+				LOG.info("key:"+key + " : " + value.toString());
+			});
+		}
 		this.tabs = Arrays.asList(mWindow.getTabs(reload, trxName));
 		return tabs;
 	}
@@ -71,16 +84,8 @@ public class Window extends JPanel implements WindowListener {
 	void setTitle() {
 		setTitle(this.mWindow.getName());
 	}
-	void setTitle(String title) {
-		JFrame jFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-		if(jFrame==null) {
-			LOG.warning("currentFrame (aka WindowAncestor) is null for "+this + " - Cannot set title to "+title);
-		} else {
-			jFrame.setTitle(title);
-		}
-	}
 	
-	void setTabPane(HidableTabbedPane hidableTabbedPane) {
+	void setTabPane(HidableTabbedPane hidableTabbedPane) { // TODO raus
 		this.tabPane = hidableTabbedPane; 
 	}
 	
@@ -103,7 +108,7 @@ JFrame f5 = (JFrame) SwingUtilities.getRootPane(comp).getParent();
 
 	 */
 	protected void setWindowListenerFor(Container rootContainer) {
-		currentFrame = (JFrame) SwingUtilities.getWindowAncestor(rootContainer);
+		JFrame currentFrame = (JFrame) SwingUtilities.getWindowAncestor(rootContainer);
 		if(currentFrame==null) {
 			LOG.warning("currentFrame (aka WindowAncestor) is null for "+rootContainer);
 		} else {
@@ -125,8 +130,8 @@ JFrame f5 = (JFrame) SwingUtilities.getRootPane(comp).getParent();
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		LOG.config("remove "+this.currentFrame);
-		this.rootFrame.remove(this.currentFrame);
+		LOG.config("remove "+this);
+		this.rootFrame.remove(this);
 	}
 
 	@Override

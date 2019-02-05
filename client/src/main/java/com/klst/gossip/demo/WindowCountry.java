@@ -5,6 +5,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -13,11 +14,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.MTab;
+import org.compiere.model.MWindow;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Trx;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -28,7 +33,6 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.klst.gossip.CustomColumnFactory;
 import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericTableModel;
-import com.klst.gossip.Gossip;
 import com.klst.gossip.Stacker;
 import com.klst.gossip.Tab;
 import com.klst.gossip.Window;
@@ -44,6 +48,8 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
  */
 public class WindowCountry extends Window {
 
+	private static final long serialVersionUID = -8622390798553741152L;
+
 	private static final Logger LOG = Logger.getLogger(WindowCountry.class.getName());
 
 	private static final int AD_Window_ID=122;
@@ -53,10 +59,22 @@ public class WindowCountry extends Window {
 	private JXTable countryTable;
 	
 	// ctor
-	public WindowCountry(Gossip rootFrame) {
-		super(rootFrame, AD_Window_ID);
+	public WindowCountry() {
+		super();
+//		this.ctx = Env.getCtx();
+//		this.trxName =  Trx.createTrxName(Window.class.getName())
+		mWindow = new MWindow(Env.getCtx(), AD_Window_ID, Trx.createTrxName(WindowCountry.class.getName()));
+
 	}
+//	public WindowCountry(Gossip rootFrame) {
+//		super(rootFrame, AD_Window_ID);
+//	}
 	
+	protected List<MTab> getTabs(boolean reload) {
+		List<MTab> tabs = Arrays.asList(mWindow.getTabs(reload, Trx.createTrxName(Window.class.getName())));
+		return tabs;
+	}
+
 	public void showIn(Container rootContainer) {
 		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
 //		if(NAME.equals(rootContainer.getName())) {
@@ -73,7 +91,10 @@ public class WindowCountry extends Window {
 		
 		tableModel = new GenericTableModel(AD_Tab_ID);
         countryTable = createXTable(); // statt new JXTable();
-        JScrollPane scrollpane = new JScrollPane(countryTable);
+        JScrollPane scrollpane = new JScrollPane(countryTable); //);
+//        	, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED  
+//        	, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS 
+//        	);
         Stacker stacker = new Stacker(scrollpane);
         
         List<MTab> tabs = getTabs(false);
@@ -83,11 +104,11 @@ public class WindowCountry extends Window {
         countryTable.setName(tabs.get(0).getName()); 
         
         // IDEE: in Tab der stacker/scrollpane und dieses Tab Objekt an das tabPane:
-        Tab tabRegion = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
-        tabRegion.add(stacker, BorderLayout.CENTER);
+        Tab tabCountry = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
+        tabCountry.add(stacker, BorderLayout.CENTER);
         
         HidableTabbedPane tabPane 
-        = new HidableTabbedPane(tabs.get(0).getName(), tabRegion); // oder: 
+        = new HidableTabbedPane(tabs.get(0).getName(), tabCountry); // oder: 
         //= new HidableTabbedPane(tabs.get(0).getName(), scrollpane); 
 //        = new HidableTabbedPane(); // ohne Komponenten, so geht es nicht! warum?
         
@@ -99,9 +120,9 @@ public class WindowCountry extends Window {
             	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
         		if(tab.getName().equals("Country")) {
         			// ist schon da
-//        			Tab tabRegion = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
-//        			tabRegion.add(stacker, BorderLayout.CENTER);
-//        			tabPane.addTab(tab.getName(), tabRegion);
+//        			Tab tabCountry = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
+//        			tabCountry.add(stacker, BorderLayout.CENTER);
+//        			tabPane.addTab(tab.getName(), tabCountry);
         		} else if(tab.getName().equals("Region")) {
         			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
         			tabPane.addTab(tab.getName(), tabPanel);
