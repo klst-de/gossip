@@ -11,7 +11,9 @@ import javax.swing.SwingWorker;
 
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MField;
+import org.compiere.model.MTable;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
 // aka class Loader implements Serializable, Runnable in GridTable
@@ -246,6 +248,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	public GenericDataLoader(GenericTableModel tableModel) {
 		this.tableModel = tableModel;
 		LOG.config("tableModel "+this.tableModel);
+		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getName());
 		tableModel.getDbTableName(); // für select * from XXX
 		getSelectClause(); // für *
 	}
@@ -256,6 +259,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	private ResultSet resultSet;
 	private List<Object[]> dbResultRows;                                    //banks3; // V - also eine SQL 
 	private List<MField> fields;
+	private String trxName;
 	
 	/*
 	 * (non-Javadoc)
@@ -265,7 +269,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	// die zentrale Methode
 	protected List<Object[]> doInBackground() throws Exception {
 		//postgresql need trx to use cursor based resultset
-		String trxName =  Trx.createTrxName("Loader");
+//		String trxName =  Trx.createTrxName("Loader");
 		sql = this.getSelectCountStar();
 		LOG.config(sql + "; trxName:"+trxName);
 		pstmt = DB.prepareStatement(sql, trxName);
@@ -300,9 +304,6 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	@Override
 	protected void process(List<Object[]> chunks) {
 		LOG.config("chunks#:"+chunks.size());
-//		for (Object[] rowData : chunks) {
-//			textArea.append(rowData[1] + ":" + rowData[2] + "\n"); // rowData[0] mit AD_Client_ID lasse ich weg
-//		}
 		tableModel.add(chunks);
 	}
 
@@ -324,9 +325,20 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     	return null;
     }
     
+/* anschauen:
+	private GridFieldVO (Properties Ctx, int windowNo, int tabNo, int ad_Window_ID, int ad_Tab_ID, boolean TabReadOnly)
+und nutzen, da (base)
+
+	GridField public static GridField[] createFields (Properties ctx, int WindowNo, int TabNo,
+
+ */
 	private Object[] readData(ResultSet rs, int row) throws SQLException {
 		int size = tableModel.getColumnCount();
 		Object[] fieldData = new Object[size];
+//		Integer tableId = null;
+		MTable table = null; // MTable.get(Env.getCtx() , tableId);
+		String trxName = Trx.createTrxName("Loader");
+//		List<Integer> recordIds; // = new ArrayList<Integer>();
 		for (int f = 0; f < size; f++) {
 			MField field = fields.get(f);
 			I_AD_Column column = fields.get(f).getAD_Column();
@@ -334,9 +346,14 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 //			column.getAD_Table_ID() // muss == tableModel.table_ID sein
 //			column.getColumnSQL()
 			if(row==0) {
+//				tableId = column.getAD_Table_ID();
+				table = MTable.get(Env.getCtx() , column.getAD_Table_ID());
 				LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " SeqNo="+field.getSeqNo() 
 				+ " Reference="+column.getAD_Reference_ID()
 				+ " Element="+column.getAD_Element_ID()
+				+ " Table_ID="+column.getAD_Table_ID()
+				+ " ColumnName="+column.getColumnName()
+//				+ " ColumnName="+field.getDisplayType // in GridField
 				+ " Name='"+field.getName()+"' "+field.toString());
 			}
 			
@@ -347,6 +364,33 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 				if(column.getAD_Reference_ID()==20) { // AD_Reference_ID=20 : CheckBox
 					String value = rs.getString(column.getColumnName());
 					fieldData[f] = new Boolean( value.equals("Y") ? true : false );
+/*
+				if (displayType == DisplayType.Integer
+					|| (DisplayType.isID(displayType) 
+						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
+							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
+					|| columnName.endsWith("atedBy"))
+				{
+					rowData[j] = new Integer(rs.getInt(j+1));	//	Integer
+					if (rs.wasNull())
+						rowData[j] = null;
+				}
+
+ */
+				} else if(column.getAD_Reference_ID()==19 && column.getColumnName().endsWith("_ID") // AD_Reference_ID=19 : Table Direct
+						|| column.getColumnName().endsWith("_Acct") 
+						|| column.getColumnName().equals("AD_Key") 
+						|| column.getColumnName().equals("AD_Display") 
+						|| column.getColumnName().endsWith("atedBy")) {
+					Integer recordId = new Integer(rs.getInt(column.getColumnName()));
+//					recordIds = new ArrayList<Integer>();
+//					recordIds.add(recordId);
+					// PO static public List<?> getInstances(Integer tableId, List<Integer> recordIds, String trxName) throws AdempiereException
+//					List<?> po = PO.getInstances(tableId, recordIds, Trx.createTrxName("Loader")); // throws AdempiereException
+//					PO po = table.getPO(recordId.intValue(), trxName); // bleibt nach dem ersten Rec stehen!
+//					LOG.config(po.toString());
+					fieldData[f] = recordId; //po.get(0).toString(); po.toString(); 
+					
 				} else if(column.getColumnName().endsWith("_ID")) {
 					fieldData[f] = new Integer(rs.getInt(column.getColumnName()));
 				} else {
