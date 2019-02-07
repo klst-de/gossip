@@ -36,6 +36,9 @@ public class Window extends JFrame implements WindowListener {
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
 	
+	private static int mindowCouter = 0; // wird pro ctor hochgezählt
+	private int windowNo;
+	
 	Gossip rootFrame;
 	private int window_ID;
 	private Properties ctx = null;
@@ -54,9 +57,14 @@ public class Window extends JFrame implements WindowListener {
 	 */
 	protected Window() {
 		LOG.warning("implizit ctor");
+		mindowCouter++;
+		this.windowNo = mindowCouter;
 	}
 	Window(String title, Gossip rootFrame, int window_ID) {
 		super(title);
+		mindowCouter++;
+		this.windowNo = mindowCouter;
+		
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
@@ -68,6 +76,9 @@ public class Window extends JFrame implements WindowListener {
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
 
+	int getWindowNo() {
+		return this.windowNo;
+	}
 	protected List<MTab> getTabs(boolean reload) {
 		// macht eigentlich setTabs TODO
 		if(ctx==null) {
@@ -82,7 +93,7 @@ public class Window extends JFrame implements WindowListener {
 	}
 	
 	void setTitle() {
-		setTitle(this.mWindow.getName());
+		setTitle("["+this.windowNo+"] " + this.mWindow.getName());
 	}
 	
 	void setTabPane(HidableTabbedPane hidableTabbedPane) { // TODO raus
@@ -130,7 +141,7 @@ JFrame f5 = (JFrame) SwingUtilities.getRootPane(comp).getParent();
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		LOG.config("remove "+this);
+		LOG.config("remove windowNo:"+this.windowNo);
 		this.rootFrame.remove(this);
 	}
 

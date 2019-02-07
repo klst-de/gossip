@@ -12,7 +12,6 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
-import org.compiere.model.MTab;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.jdesktop.swingx.JXTable;
@@ -33,7 +32,7 @@ public class Tab extends JPanel implements ComponentListener {
 	// rootFrame
 
 	private int tab_ID;
-	protected MTab mTab;
+//	protected MTab mTab;
 	private Properties ctx;
 	private String trxName;
 
@@ -52,7 +51,7 @@ public class Tab extends JPanel implements ComponentListener {
 		this.tab_ID = tab_ID;
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(Tab.class.getName());
-		this.mTab = new MTab(ctx, this.tab_ID, trxName);
+//		this.mTab = new MTab(ctx, this.tab_ID, trxName); // TODO blocker!!!
 		this.addComponentListener(this);
 		
 		progressBar = new JProgressBar(0, 100);

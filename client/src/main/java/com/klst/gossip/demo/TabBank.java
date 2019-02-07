@@ -54,11 +54,7 @@ public class TabBank extends Tab {
 //		this.add(new JLabel("BorderLayout.WEST == LINE_START"), BorderLayout.LINE_START);
 	}
 	
-	// TODO:
-	// - LaF propagieren
-	// - JFrame.DISPOSE_ON_CLOSE, aber frame ist noch in frames!
-	// returns Component component)
-	public GenericDataLoader showIn(Container rootContainer) {
+	public GenericDataLoader showIn(Container rootContainer, int windowNo) {
 		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
 //		if(NAME.equals(rootContainer.getName())) {
 //			rootContainer.removeAll();
@@ -76,7 +72,9 @@ public class TabBank extends Tab {
 //		rootContainer.setLayout(new BorderLayout());
 //		rootContainer.add(progressBar, BorderLayout.SOUTH);
 		
-		tableModel = new GenericTableModel(AD_Tab_ID);
+// TODO		// benötige int WindowNo, int TabNo, int AD_Tab_ID
+		// AD_Window_ID=158) ==?== WindowNo
+		tableModel = new GenericTableModel(AD_Tab_ID, windowNo);
         bankTable = createXTable(); // statt new JXTable() in Oberklasse
         JScrollPane scrollpane = new JScrollPane(bankTable);
         stacker = new Stacker(scrollpane);
@@ -85,7 +83,7 @@ public class TabBank extends Tab {
 //        tabs.forEach(tab -> {
 //        	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
 //        });
-        LOG.config("Tab Name:"+mTab.getName() + " SeqNo:"+mTab.getSeqNo() + " TabLevel:"+mTab.getTabLevel());
+//        LOG.config("Tab Name:"+mTab.getName() + " SeqNo:"+mTab.getSeqNo() + " TabLevel:"+mTab.getTabLevel()); // TODO kann das weg?
         
         
         // TODO:
@@ -93,7 +91,8 @@ public class TabBank extends Tab {
 //        rootContainer.add(this.hidableTabbedPane, BorderLayout.CENTER);
         this.add(stacker, BorderLayout.CENTER);
         
-        bankTable.setName(mTab.getName()); 
+//        bankTable.setName(mTab.getName()); // TODO kann das weg?
+        
         // zur Demo, die Tabs anzeigen
 //        Iterator<MTab> itr = tabs.iterator();
 //        itr.next(); // den ersten überspringen TODO this/TabLevel 0 muß dorthin

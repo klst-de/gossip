@@ -75,7 +75,7 @@ public class WindowCountry extends Window {
 		return tabs;
 	}
 
-	public void showIn(Container rootContainer) {
+	public void showIn(Container rootContainer, int windowNo) {
 		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
 //		if(NAME.equals(rootContainer.getName())) {
 //			rootContainer.removeAll();
@@ -89,7 +89,7 @@ public class WindowCountry extends Window {
 		rootContainer.setLayout(new BorderLayout());
 		rootContainer.add(progressBar, BorderLayout.PAGE_END);
 		
-		tableModel = new GenericTableModel(AD_Tab_ID);
+		tableModel = new GenericTableModel(AD_Tab_ID, windowNo);
         countryTable = createXTable(); // statt new JXTable();
         JScrollPane scrollpane = new JScrollPane(countryTable); //);
 //        	, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED  

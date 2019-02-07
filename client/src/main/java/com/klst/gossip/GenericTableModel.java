@@ -1,15 +1,13 @@
 package com.klst.gossip;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.compiere.model.MColumn;
-import org.compiere.model.MField;
+import org.compiere.model.GridField;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
@@ -32,36 +30,29 @@ public class GenericTableModel extends AbstractTableModel {
 	// die Zeilen von TableModel
     private final List<Object[]> tableRows = new ArrayList<Object[]>();
 
+    private int windowNo;
 	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
 	private MTab mTab;
-	private List<MField> fields;
+	private GridField[] fields = null;
 	
 	private int table_ID;
 	private MTable mTable;
-	private String dbTableName; // ist in mTable 
-	private List<MColumn> columns;
+//	private String dbTableName; // ist in mTable 
+//	private List<MColumn> columns;
 
 	private Properties ctx;
 	private String trxName;
 
 	// ctor
-	public GenericTableModel(int tab_ID) {
+	public GenericTableModel(int tab_ID, int windowNo) {
+		this.windowNo = windowNo;
 		this.tab_ID = tab_ID;
 		this.table_ID = getTable_ID(tab_ID);
 		this.mTable = MTable.get(Env.getCtx(), table_ID);
 		LOG.config(mTab.toString() + " " + mTable.toString());
 		
-		this.columns = mTable.getColumnsAsList();
-		this.fields = Arrays.asList(mTab.getFields(false, trxName)); // reload
-		int firstField = 0;
-		for (int f = 0; f < fields.size(); f++) {
-			if(fields.get(f).getSeqNo()==0) {
-				firstField++;
-			} else {
-				break;
-			}
-		}
-		this.fields = this.fields.subList(firstField, fields.size());
+//		this.columns = mTable.getColumnsAsList();
+		this.fields = GridField.createFields(ctx, this.windowNo, 0, this.tab_ID); // int TabNo = 0
 	}
 
 	private int getTable_ID(int tab_ID) {
@@ -89,7 +80,8 @@ public class GenericTableModel extends AbstractTableModel {
 	@Override
 	public int getColumnCount() {
 		// es werden columns gelesen, aber fields dargestellt!
-		return fields.size();
+//		return fields.size();
+		return fields.length;
 	}
 
 	/*
@@ -116,18 +108,19 @@ public class GenericTableModel extends AbstractTableModel {
         return tableRows.get(rowIndex);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
-     */
-    @Override
-    public Class<?> getColumnClass(int column) {
-    	return getValueAt(0, column).getClass();
-    }
+//    /*
+//     * (non-Javadoc)
+//     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+//     */
+//    @Override
+//    public Class<?> getColumnClass(int column) {
+//    	return getValueAt(0, column).getClass();
+//    }
 
     @Override
     public String getColumnName(int column) {
-    	return fields.get(column).getName();
+//    	return fields.get(column).getName();
+    	return fields[column].getColumnName();
     }
 
 
@@ -150,7 +143,7 @@ public class GenericTableModel extends AbstractTableModel {
     	return this.mTable.getTableName();
     }
     
-    public List<MField> getColumns() {
+    public GridField[] getColumns() {
     	return this.fields;
     }
     
