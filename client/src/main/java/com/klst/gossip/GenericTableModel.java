@@ -10,6 +10,7 @@ import javax.swing.table.AbstractTableModel;
 import org.compiere.model.GridField;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -79,8 +80,6 @@ public class GenericTableModel extends AbstractTableModel {
 	 */
 	@Override
 	public int getColumnCount() {
-		// es werden columns gelesen, aber fields dargestellt!
-//		return fields.size();
 		return fields.length;
 	}
 
@@ -94,9 +93,6 @@ public class GenericTableModel extends AbstractTableModel {
 			return new Object();
 		}
 		if(columnIndex < getColumnCount()) {
-//			if(rowIndex==1) { // ist 0 der Header?
-//				LOG.warning("AD_Reference_ID:"+fields.get(columnIndex).getAD_Reference_ID());
-//			}
 			return getRow(rowIndex)[columnIndex];
 		}
         return null;
@@ -108,18 +104,22 @@ public class GenericTableModel extends AbstractTableModel {
         return tableRows.get(rowIndex);
     }
 
-//    /*
-//     * (non-Javadoc)
-//     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
-//     */
-//    @Override
-//    public Class<?> getColumnClass(int column) {
-//    	return getValueAt(0, column).getClass();
-//    }
+    /*
+     * (non-Javadoc)
+     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+     */
+    @Override
+    public Class<?> getColumnClass(int column) {
+    	GridField field = this.fields[column];
+    	int displayType = field.getDisplayType(); 
+    	if(displayType == DisplayType.YesNo) {
+    		return Boolean.class; // ==> CheckBox
+    	}
+    	return Object.class;
+    }
 
     @Override
     public String getColumnName(int column) {
-//    	return fields.get(column).getName();
     	return fields[column].getColumnName();
     }
 
@@ -138,8 +138,11 @@ public class GenericTableModel extends AbstractTableModel {
         fireTableRowsInserted(index, index);
     }
     
+    public MTable getMTable() {
+    	return this.mTable;
+    }
+    
     public String getDbTableName() {
-//    	LOG.warning("Table_ID:"+this.mTable.getAD_Table_ID() + " Name:"+this.mTable.getName()  + " TableName:"+this.mTable.getTableName());
     	return this.mTable.getTableName();
     }
     
