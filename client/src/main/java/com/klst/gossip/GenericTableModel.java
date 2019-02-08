@@ -111,11 +111,7 @@ public class GenericTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int column) {
     	GridField field = this.fields[column];
-    	int displayType = field.getDisplayType(); 
-    	if(displayType == DisplayType.YesNo) {
-    		return Boolean.class; // ==> CheckBox
-    	}
-    	return Object.class;
+    	return DisplayType.getClass(field.getDisplayType(), true); // true == Boolean as CheckBox
     }
 
     @Override
@@ -138,9 +134,9 @@ public class GenericTableModel extends AbstractTableModel {
         fireTableRowsInserted(index, index);
     }
     
-    public MTable getMTable() {
-    	return this.mTable;
-    }
+//    public MTable getMTable() {
+//    	return this.mTable;
+//    }
     
     public String getDbTableName() {
     	return this.mTable.getTableName();
