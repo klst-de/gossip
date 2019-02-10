@@ -39,7 +39,7 @@ public class Window extends JFrame implements WindowListener {
 	private static int mindowCouter = 0; // wird pro ctor hochgezählt
 	private int windowNo;
 	
-	Gossip rootFrame;
+	RootFrame rootFrame;
 	private int window_ID;
 	private Properties ctx = null;
 	private String trxName;
@@ -58,20 +58,28 @@ public class Window extends JFrame implements WindowListener {
 	protected Window() {
 		LOG.warning("implizit ctor");
 		mindowCouter++;
-		this.windowNo = mindowCouter;
+		this.windowNo = mindowCouter-1;
 	}
-	Window(String title, Gossip rootFrame, int window_ID) {
+	Window(String title) { // RootFrame
+		this(title, null, -1);
+	}
+	Window(String title, RootFrame rootFrame, int window_ID) {
 		super(title);
 		mindowCouter++;
-		this.windowNo = mindowCouter;
+		this.windowNo = mindowCouter-1;
 		
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
 		this.ctx = Env.getCtx();
 		this.trxName =  Trx.createTrxName(Window.class.getName());
-		mWindow = new MWindow(ctx, this.window_ID, trxName);
-		setTitle(); 
+		if(this.window_ID == -1) {
+			setTitle(title); 
+		} else {
+			mWindow = new MWindow(ctx, this.window_ID, trxName);
+			LOG.config("mWindow:"+mWindow);
+			setTitle(); 
+		}
 		getContentPane().add(new JPanel(new BorderLayout()));
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
@@ -92,6 +100,9 @@ public class Window extends JFrame implements WindowListener {
 		return tabs;
 	}
 	
+	public void setTitle(String title) {
+		super.setTitle(title);
+	}
 	void setTitle() {
 		setTitle("["+this.windowNo+"] " + this.mWindow.getName());
 	}
