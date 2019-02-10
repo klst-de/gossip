@@ -10,6 +10,9 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -35,11 +38,14 @@ public class Window extends JFrame implements WindowListener {
 	private static final Logger LOG = Logger.getLogger(Window.class.getName());
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
+
+	RootFrame rootFrame;
+	JMenuBar menuBar = new JMenuBar();
+	JMenu mFile = new JMenu(); // File : JMenuItem's "Quit",  b,  c, ...
 	
 	private static int mindowCouter = 0; // wird pro ctor hochgezählt
 	private int windowNo;
 	
-	RootFrame rootFrame;
 	private int window_ID;
 	private Properties ctx = null;
 	private String trxName;
@@ -71,6 +77,8 @@ public class Window extends JFrame implements WindowListener {
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
 		
+		initMenuBar();
+
 		this.ctx = Env.getCtx();
 		this.trxName =  Trx.createTrxName(Window.class.getName());
 		if(this.window_ID == -1) {
@@ -84,7 +92,25 @@ public class Window extends JFrame implements WindowListener {
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
 
-	int getWindowNo() {
+	private void initMenuBar() {
+		LOG.config(menuBar.toString());
+		this.setJMenuBar(menuBar);
+		menuBar.add(mFile);
+		mFile.setName("file");
+		mFile.setText("File");
+        if(!Env.isMac()) { 
+            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
+            quitItem.setName("quit");
+            quitItem.setActionCommand("quit");
+            quitItem.addActionListener(event -> {
+            	System.exit(0);
+            });
+            mFile.add(quitItem);
+        }
+
+	}
+
+	public int getWindowNo() {
 		return this.windowNo;
 	}
 	protected List<MTab> getTabs(boolean reload) {

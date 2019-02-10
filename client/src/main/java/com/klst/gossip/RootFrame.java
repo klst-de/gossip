@@ -66,7 +66,6 @@ public class RootFrame extends Window {  // Window extends JFrame
 	}
 	// <<<
 
-	private JMenuBar menuBar = new JMenuBar();
 	JMenuItem miBank;
 	JMenuItem miCountry;
 
@@ -101,7 +100,6 @@ public class RootFrame extends Window {  // Window extends JFrame
 		frames.add(this);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		this.setJMenuBar(menuBar);
 		initMenuBar();
 
 		// button & msg controlPanel
@@ -117,20 +115,21 @@ public class RootFrame extends Window {  // Window extends JFrame
 	}
 
 	private void initMenuBar() {
-		// File : JMenuItem's "Quit",  b,  c, ...
-		JMenu mFile = new JMenu();
-		menuBar.add(mFile);
-		mFile.setName("file");
-		mFile.setText("File");
-        if(!Env.isMac()) { 
-            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
-            quitItem.setName("quit");
-            quitItem.setActionCommand("quit");
-            quitItem.addActionListener(event -> {
-            	System.exit(0);
-            });
-            mFile.add(quitItem);
-        }
+		//super.initMenuBar();
+//		// File : JMenuItem's "Quit",  b,  c, ...
+//		JMenu mFile = new JMenu();
+//		menuBar.add(mFile);
+//		mFile.setName("file");
+//		mFile.setText("File");
+//        if(!Env.isMac()) { 
+//            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
+//            quitItem.setName("quit");
+//            quitItem.setActionCommand("quit");
+//            quitItem.addActionListener(event -> {
+//            	System.exit(0);
+//            });
+//            mFile.add(quitItem);
+//        }
         
         mFile.addSeparator(); // -------------------------
         
@@ -157,6 +156,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
 			HidableTabbedPane tabPane = new HidableTabbedPane(); // ohne Komponenten
+//			frame.setMenuBar(mb);
 			frame.getContentPane().add(tabPane, BorderLayout.CENTER);
 			//rootPane.setTabPane(tabPane);
 			tabPane.addTab("", new JLabel("JLabel")); // TODO warum funktioniert es nur mit zwei Tabs? in dieser Reihenfolge???
@@ -176,11 +176,12 @@ public class RootFrame extends Window {  // Window extends JFrame
 			Window frame = makeWindow(122); // AD_Window_ID=122;
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
-			windowCountry.showIn(rootPane, frame.getWindowNo()); // .showIn(Container jPanel)
+			windowCountry.showIn(rootPane, frame); // .showIn(Container jPanel)
 			
 			frame.pack();
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			frame.setVisible(true);
+//			rootPane.setVisible(true);
 		});
 		mFile.add(miCountry);
 

@@ -4,6 +4,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -75,8 +76,22 @@ public class WindowCountry extends Window {
 		return tabs;
 	}
 
-	public void showIn(Container rootContainer, int windowNo) {
-		LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
+	public void showIn(Container rootContainer, Window frame) {
+		Component[] components = rootContainer.getComponents();
+		LOG.config(">>> rootContainer Component#="+rootContainer.getComponentCount() + ", Name:"+rootContainer.getName());
+		for(Component component : components) {
+			LOG.config(">>> Component#="+rootContainer.getComponentCount() + ", Name:"+component.getName());
+		}
+//		frame ist this!!! frame.getComponent(n)
+		LOG.config(">>> Window frame="+frame);
+		LOG.config(">>>         this="+this); // this ist das verläufige
+		Component[] fcomponents = frame.getComponents();
+		LOG.config(">>> frame Component#="+frame.getComponentCount() + ", Name:"+frame.getName());
+		for(Component component : fcomponents) {
+			LOG.config(">>> frame Component#="+frame.getComponentCount() + ", Name:"+component.getName());
+		}
+		Container contentPane = frame.getContentPane();
+		
 //		if(NAME.equals(rootContainer.getName())) {
 //			rootContainer.removeAll();
 //		}
@@ -86,10 +101,10 @@ public class WindowCountry extends Window {
 		JProgressBar progressBar = new JProgressBar(0, 100);
 		progressBar.setForeground(Color.GREEN);
 		progressBar.setStringPainted(true);
-		rootContainer.setLayout(new BorderLayout());
-		rootContainer.add(progressBar, BorderLayout.PAGE_END);
+//		rootContainer.setLayout(new BorderLayout());
+		contentPane.add(progressBar, BorderLayout.PAGE_END);
 		
-		tableModel = new GenericTableModel(AD_Tab_ID, windowNo);
+		tableModel = new GenericTableModel(AD_Tab_ID, frame.getWindowNo());
         countryTable = createXTable(); // statt new JXTable();
         JScrollPane scrollpane = new JScrollPane(countryTable); //);
 //        	, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED  
@@ -134,7 +149,7 @@ public class WindowCountry extends Window {
         		LOG.config(tab.toString()+" not shown "+tab.getName());
         	}
         }
-        rootContainer.add(tabPane, BorderLayout.CENTER);
+        contentPane.add(tabPane, BorderLayout.CENTER);
                
         countryTable.setColumnControlVisible(true);
         // replace grid lines with striping 
