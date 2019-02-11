@@ -3,17 +3,14 @@ package com.klst.gossip;
 import java.awt.BorderLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
-import org.compiere.util.Env;
-import org.compiere.util.Trx;
+import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 
@@ -31,13 +28,11 @@ public class Tab extends JPanel implements ComponentListener {
 	// window / bzw JFrame
 	// rootFrame
 
-	private int tab_ID;
-//	protected MTab mTab;
-	private Properties ctx;
-	private String trxName;
+	private GridTab gridTab;
+	GenericDataLoader loader;
 
 	// ui
-	protected JProgressBar progressBar;
+	JXTable jXTable = createXTable();
 	
 	// ctor
 	/* super ctors
@@ -45,18 +40,13 @@ public class Tab extends JPanel implements ComponentListener {
 	 *     public JPanel(LayoutManager layout) 
 	 *     public JPanel(boolean isDoubleBuffered) 
 	 */
-	public Tab(int tab_ID) {
+	public Tab(GridTab gridTab) {
 		super(new BorderLayout());
-		LOG.config("tab_ID "+tab_ID);
-		this.tab_ID = tab_ID;
-		this.ctx = Env.getCtx();
-		this.trxName = Trx.createTrxName(Tab.class.getName());
-//		this.mTab = new MTab(ctx, this.tab_ID, trxName); // TODO blocker!!!
+		LOG.config("gridTab "+gridTab);
+		this.gridTab = gridTab;
 		this.addComponentListener(this);
 		
-		progressBar = new JProgressBar(0, 100);
-		progressBar.setStringPainted(true);
-		this.add(progressBar, BorderLayout.PAGE_END);
+		this.jXTable = createXTable();
 	}
 
 	public void setLoadState(StateValue state) {
@@ -105,6 +95,11 @@ public class Tab extends JPanel implements ComponentListener {
 	@Override
 	public void componentShown(ComponentEvent e) {
 		LOG.warning(""+e.getComponent());
+		if(e.getComponent() instanceof Tab) {
+			Tab tab = (Tab)e.getComponent();
+			LOG.config("ParentTab:"+gridTab.getParentTab());
+			this.loader.execute();
+		}
 	}
 
 	@Override

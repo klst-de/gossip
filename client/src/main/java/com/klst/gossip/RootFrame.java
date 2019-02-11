@@ -5,17 +5,15 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -32,8 +30,6 @@ import org.compiere.util.Env;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.client.LoginPanel;
-import com.klst.gossip.demo.TabBank;
-import com.klst.gossip.demo.WindowCountry;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -85,12 +81,6 @@ public class RootFrame extends Window {  // Window extends JFrame
 	HidableTabbedPane hidableTabbedPane; // hierin loginPanel und die (hidden) Demopanels
 	LoginPanel loginPanel;
 	
-	// Banken DEMO:
-//	JPanel hiddenBankPanel;
-	TabBank tabBank;
-//	JPanel hiddenCountryPanel;
-	WindowCountry windowCountry;
-
 	public RootFrame() {
 		super(TITLE);
 		LOG.config(TITLE + ", Component#:"+getContentPane().getComponentCount());
@@ -115,21 +105,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 	}
 
 	private void initMenuBar() {
-		//super.initMenuBar();
-//		// File : JMenuItem's "Quit",  b,  c, ...
-//		JMenu mFile = new JMenu();
-//		menuBar.add(mFile);
-//		mFile.setName("file");
-//		mFile.setText("File");
-//        if(!Env.isMac()) { 
-//            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
-//            quitItem.setName("quit");
-//            quitItem.setActionCommand("quit");
-//            quitItem.addActionListener(event -> {
-//            	System.exit(0);
-//            });
-//            mFile.add(quitItem);
-//        }
+		// gemeinsame JMenuItem's z.B mFile."Quit" in Window
         
         mFile.addSeparator(); // -------------------------
         
@@ -152,21 +128,22 @@ public class RootFrame extends Window {  // Window extends JFrame
 		miBank = new JMenuItem("zeige Banken (Demo)");
 		miBank.addActionListener(event -> {
 			LOG.config("new frame Banken");
+			Properties ctx = Env.getCtx();
+
+			/* Patch wg. Berechtigung: role SuperUser bei Banken
+===========> GridWindowVO.create: No Window - AD_Window_ID=158, AD_Role_ID=MRole[0,System Administrator,UserLevel=S  ,AD_Client_ID=0,AD_Org_ID=0] - SELECT Name,Description,Help,WindowType, AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, IsSOTrx FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive='Y' [23]
+===========> CLogger.saveError: AccessTableNoView - (Not found) [23]
+ */
+			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
+			ctx.forEach((key,value) -> { // zum Test
+				LOG.info("key:"+key + " : " + value.toString());
+			});
+
 			Window frame = makeWindow(158); // AD_Window_ID=158)
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
-			HidableTabbedPane tabPane = new HidableTabbedPane(); // ohne Komponenten
-//			frame.setMenuBar(mb);
-			frame.getContentPane().add(tabPane, BorderLayout.CENTER);
-			//rootPane.setTabPane(tabPane);
-			tabPane.addTab("", new JLabel("JLabel")); // TODO warum funktioniert es nur mit zwei Tabs? in dieser Reihenfolge???
-			tabPane.addTab("bank stacker", tabBank);
-			GenericDataLoader task = tabBank.showIn(rootPane, frame.getWindowNo());
+			GenericDataLoader task = frame.getDataLoader();
 			task.execute();
-			
-			frame.pack();
-			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-			frame.setVisible(true);
+//			frame.setVisible(true); TODO 
 		});
 		mFile.add(miBank);
 
@@ -175,19 +152,11 @@ public class RootFrame extends Window {  // Window extends JFrame
 			LOG.config("new frame Länder");
 			Window frame = makeWindow(122); // AD_Window_ID=122;
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
-			windowCountry.showIn(rootPane, frame); // .showIn(Container jPanel)
-			
-			frame.pack();
-			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-			frame.setVisible(true);
-//			rootPane.setVisible(true);
+			GenericDataLoader task = frame.getDataLoader();
+			task.execute();
 		});
 		mFile.add(miCountry);
 
-		windowCountry = new WindowCountry(); // this);
-		tabBank = new TabBank();
-  
         // Look & Feel : 
 		JMenu mLuf = new JMenu(); // extends AbstractButton
 		menuBar.add(mLuf);

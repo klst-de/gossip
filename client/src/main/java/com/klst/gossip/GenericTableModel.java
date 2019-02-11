@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 import org.compiere.model.GridField;
+import org.compiere.model.GridTab;
 import org.compiere.model.MTab;
-import org.compiere.model.MTable;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -32,14 +32,13 @@ public class GenericTableModel extends AbstractTableModel {
     private final List<Object[]> tableRows = new ArrayList<Object[]>();
 
     private int windowNo;
+    private GridTab gridTab;
 	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
 	private MTab mTab;
 	private GridField[] fields = null;
 	
-	private int table_ID;
-	private MTable mTable;
-//	private String dbTableName; // ist in mTable 
-//	private List<MColumn> columns;
+//	private int table_ID;
+//	private MTable mTable;
 
 	private Properties ctx;
 	private String trxName;
@@ -48,12 +47,20 @@ public class GenericTableModel extends AbstractTableModel {
 	public GenericTableModel(int tab_ID, int windowNo) {
 		this.windowNo = windowNo;
 		this.tab_ID = tab_ID;
-		this.table_ID = getTable_ID(tab_ID);
-		this.mTable = MTable.get(Env.getCtx(), table_ID);
-		LOG.config(mTab.toString() + " " + mTable.toString());
+//		this.table_ID = getTable_ID(tab_ID);
+		LOG.warning("deprecated");
+//		this.mTable = MTable.get(Env.getCtx(), table_ID);
+//		LOG.config(mTab.toString() + " " + mTable.toString());
 		
-//		this.columns = mTable.getColumnsAsList();
 		this.fields = GridField.createFields(ctx, this.windowNo, 0, this.tab_ID); // int TabNo = 0
+	}
+	public GenericTableModel(GridTab gridTab, int windowNo) {
+		this.windowNo = windowNo;
+		this.gridTab = gridTab;
+		//.getAD_Tab_ID();
+//		this.gridTab.getAD_Table_ID()
+//		this.gridTab.get_TableName()
+		this.fields = this.gridTab.getFields();
 	}
 
 	private int getTable_ID(int tab_ID) {
@@ -98,6 +105,7 @@ public class GenericTableModel extends AbstractTableModel {
         return null;
 	}
 	
+	// if data model is editable:
 	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
 	
     public Object[] getRow(int rowIndex) {
@@ -134,12 +142,9 @@ public class GenericTableModel extends AbstractTableModel {
         fireTableRowsInserted(index, index);
     }
     
-//    public MTable getMTable() {
-//    	return this.mTable;
-//    }
-    
     public String getDbTableName() {
-    	return this.mTable.getTableName();
+    	return this.gridTab.get_TableName();
+//    	return this.mTable.getTableName();
     }
     
     public GridField[] getColumns() {
