@@ -19,6 +19,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
+import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MTab;
 import org.compiere.model.MWindow;
 import org.compiere.util.Env;
@@ -71,7 +73,11 @@ public class WindowCountry extends Window {
 //		super(rootFrame, AD_Window_ID);
 //	}
 	
-	protected List<MTab> getTabs(boolean reload) {
+	public List<MTab> getTabs(boolean reload) {
+		LOG.config("Tab#:"+gridWindow.getTabCount());
+		for (int i = 0; i < gridWindow.getTabCount(); i++) {
+			LOG.config(i + ": isTabInitialized="+gridWindow.isTabInitialized(i));
+		}
 		List<MTab> tabs = Arrays.asList(mWindow.getTabs(reload, Trx.createTrxName(Window.class.getName())));
 		return tabs;
 	}
@@ -104,7 +110,10 @@ public class WindowCountry extends Window {
 //		rootContainer.setLayout(new BorderLayout());
 		contentPane.add(progressBar, BorderLayout.PAGE_END);
 		
-		tableModel = new GenericTableModel(AD_Tab_ID, frame.getWindowNo());
+//		tableModel = new GenericTableModel(AD_Tab_ID, frame.getWindowNo()); ======>
+		List<GridTab> gridTabs = frame.getGridTabs();
+		GridTab gridTab = gridTabs.get(0); // first Tab
+		tableModel = new GenericTableModel(gridTab, frame.getWindowNo());
         countryTable = createXTable(); // statt new JXTable();
         JScrollPane scrollpane = new JScrollPane(countryTable); //);
 //        	, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED  
@@ -112,26 +121,30 @@ public class WindowCountry extends Window {
 //        	);
         Stacker stacker = new Stacker(scrollpane);
         
-        List<MTab> tabs = getTabs(false);
-        tabs.forEach(tab -> {
-        	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
-        });
-        countryTable.setName(tabs.get(0).getName()); 
+//        List<MTab> tabs = frame.getTabs(false);
+//        tabs.forEach(tab -> {
+//        	LOG.config("Tab Name:"+tab.getName() + " SeqNo:"+tab.getSeqNo() + " TabLevel:"+tab.getTabLevel());
+//        });
+//        countryTable.setName(tabs.get(0).getName()); 
+        countryTable.setName(gridTab.getName());
         
         // IDEE: in Tab der stacker/scrollpane und dieses Tab Objekt an das tabPane:
-        Tab tabCountry = new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135;
+        Tab tabCountry = //new Tab(WindowCountry.AD_Tab_ID); // extends JPanel // AD_Tab_ID=135; =====>
+        		new Tab(gridTab);
         tabCountry.add(stacker, BorderLayout.CENTER);
         
         HidableTabbedPane tabPane 
-        = new HidableTabbedPane(tabs.get(0).getName(), tabCountry); // oder: 
+        = new HidableTabbedPane(gridTab.getName(), tabCountry); // oder: 
         //= new HidableTabbedPane(tabs.get(0).getName(), scrollpane); 
 //        = new HidableTabbedPane(); // ohne Komponenten, so geht es nicht! warum?
+        frame.setTabPane(tabPane);
         
-        Iterator<MTab> itr = tabs.iterator();
+//        Iterator<MTab> itr = tabs.iterator();  ==========>
+        Iterator<GridTab> itr = gridTabs.iterator();
         boolean p_show_trl = Ini.isPropertyBool(Window.P_SHOW_TRL);
         while (itr.hasNext()) {
-        	MTab tab = itr.next(); 
-        	if(!tab.isTranslationTab() || p_show_trl) {
+        	GridTab tab = itr.next(); 
+        	if(!tab.getValueAsBoolean(I_AD_Tab.COLUMNNAME_IsTranslationTab) || p_show_trl) {
             	// TODO Aktion wenn tabPanel (Region) ausgewählt wird / Tab Name:Region SeqNo:30 TabLevel:1 
         		if(tab.getName().equals("Country")) {
         			// ist schon da
@@ -139,8 +152,10 @@ public class WindowCountry extends Window {
 //        			tabCountry.add(stacker, BorderLayout.CENTER);
 //        			tabPane.addTab(tab.getName(), tabCountry);
         		} else if(tab.getName().equals("Region")) {
-        			TabRegion tabPanel = new TabRegion(); // extends Tab (generisch) extends JPanel
+        			Tab tabPanel = new Tab(tab); //new TabRegion(); // extends Tab (generisch) extends JPanel
         			tabPane.addTab(tab.getName(), tabPanel);
+        			// TODO ohne Region
+//        			contentPane.add(tabPanel, BorderLayout.PAGE_START);
         		} else {
                 	JPanel tabPanel = new JPanel();
                 	tabPane.addTab(tab.getName(), tabPanel);

@@ -11,7 +11,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
@@ -27,13 +26,11 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
-import org.compiere.util.Env;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.client.LoginPanel;
 import com.klst.gossip.demo.TabBank;
-import com.klst.gossip.demo.WindowCountry;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -89,7 +86,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 //	JPanel hiddenBankPanel;
 	TabBank tabBank;
 //	JPanel hiddenCountryPanel;
-	WindowCountry windowCountry;
+//	WindowCountry windowCountry;
 
 	public RootFrame() {
 		super(TITLE);
@@ -175,17 +172,18 @@ public class RootFrame extends Window {  // Window extends JFrame
 			LOG.config("new frame Länder");
 			Window frame = makeWindow(122); // AD_Window_ID=122;
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
-			windowCountry.showIn(rootPane, frame); // .showIn(Container jPanel)
-			
-			frame.pack();
-			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-			frame.setVisible(true);
-//			rootPane.setVisible(true);
+			GenericDataLoader task = frame.getDataLoader();
+			task.execute();
+//			JRootPane rootPane = (JRootPane)frame.getComponent(0); // javax.swing.JRootPane cannot be cast to javax.swing.JPanel
+//			windowCountry.showIn(rootPane, frame); // .showIn(Container jPanel)
+//			
+//			frame.pack();
+//			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+//			frame.setVisible(true);
 		});
 		mFile.add(miCountry);
 
-		windowCountry = new WindowCountry(); // this);
+//		windowCountry = new WindowCountry(); // this);
 		tabBank = new TabBank();
   
         // Look & Feel : 
