@@ -125,7 +125,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 //		mFile.add(miPrimeNumbers);
 		
 //		hiddenBankPanel = new JPanel();
-		miBank = new JMenuItem("zeige Banken (Demo)");
+		miBank = new JMenuItem("zeige Banken (Demo)", AIT.getImageIcon(AIT.PAYMENT, SMALL_ICON_SIZE));
 		miBank.addActionListener(event -> {
 			LOG.config("new frame Banken");
 			Properties ctx = Env.getCtx();
@@ -147,7 +147,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 		});
 		mFile.add(miBank);
 
-		miCountry = new JMenuItem("zeige Länder (Demo)");
+		miCountry = new JMenuItem("zeige Länder (Demo)", AIT.getImageIcon(AIT.ONLINE, SMALL_ICON_SIZE));
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
 			Window frame = makeWindow(122); // AD_Window_ID=122;

@@ -33,6 +33,8 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
+import com.klst.icon.AbstractImageTranscoder;
+
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 /*
@@ -49,6 +51,10 @@ public class Window extends JFrame implements WindowListener {
 	private static final Logger LOG = Logger.getLogger(Window.class.getName());
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
+	
+	static final int SMALL_ICON_SIZE = 16;
+	static final int LARGE_ICON_SIZE = 24;
+	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
 	RootFrame rootFrame;
 	JMenuBar menuBar = new JMenuBar();
@@ -112,7 +118,8 @@ public class Window extends JFrame implements WindowListener {
 		mFile.setName("file");
 		mFile.setText("File");
         if(!Env.isMac()) { 
-            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
+            // JMenuItem(String text) | JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
+            JMenuItem quitItem = new JMenuItem("Quit", AIT.getImageIcon(AIT.EXIT, SMALL_ICON_SIZE));
             quitItem.setName("quit");
             quitItem.setActionCommand("quit");
             quitItem.addActionListener(event -> {
