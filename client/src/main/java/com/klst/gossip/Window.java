@@ -87,8 +87,6 @@ public class Window extends JFrame implements WindowListener {
 	HidableTabbedPane tabPane;
 	JProgressBar progressBar;
 
-	// TODO BUG : Laf change wird nicht propagiert
-	
 	// ctor
 	/* super ctors
 	 * 	   JFrame() throws HeadlessException 
@@ -149,11 +147,7 @@ public class Window extends JFrame implements WindowListener {
 	
 	private void initGridWindow() {
 		this.gridWindow = GridWindow.get(ctx, this.windowNo, this.window_ID); 
-		this.gridTabs = new ArrayList<GridTab>(5);
-/* wg. Berechtigung: role SuperUser bei Banken
-===========> GridWindowVO.create: No Window - AD_Window_ID=158, AD_Role_ID=MRole[0,System Administrator,UserLevel=S  ,AD_Client_ID=0,AD_Org_ID=0] - SELECT Name,Description,Help,WindowType, AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, IsSOTrx FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive='Y' [23]
-===========> CLogger.saveError: AccessTableNoView - (Not found) [23]
- */
+		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
 		LOG.config("gridWindow:"+gridWindow.toString() + " with Tab#:"+gridWindow.getTabCount());
 		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
 		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
@@ -199,7 +193,7 @@ public class Window extends JFrame implements WindowListener {
         tab.jXTable.setShowGrid(false, false);
         tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
         // initialize preferred size for table's viewable area
-        tab.jXTable.setVisibleRowCount(10);
+        tab.jXTable.setVisibleRowCount(10); // TODO
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 

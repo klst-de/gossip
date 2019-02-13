@@ -276,12 +276,14 @@ public class RootFrame extends Window {  // Window extends JFrame
 		} catch (IllegalAccessException e) {
 			LOG.warning(e.toString());
 		}
+		SwingUtilities.updateComponentTreeUI(this);
+		this.pack();
 		// propagieren:
 		Iterator<JFrame> i = frames.iterator();
 		while(i.hasNext()) {
 			JFrame f = i.next();
 			SwingUtilities.updateComponentTreeUI(f);
-			f.pack();
+			f.revalidate();
 		}
 	}
 
