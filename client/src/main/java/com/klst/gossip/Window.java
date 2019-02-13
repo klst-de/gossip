@@ -40,7 +40,7 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 /*
  - visualisiert MWindow mWindow
  - es ist ein Top Level Component 
- - enthält JPanel als ContentPane im Borderlayout
+ - enthält JPanel im Borderlayout im ContentPane 
  - das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
  */
 
@@ -55,14 +55,8 @@ public class Window extends JFrame implements WindowListener {
 	static final int SMALL_ICON_SIZE = 16;
 	static final int LARGE_ICON_SIZE = 24;
 	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
-
-	RootFrame rootFrame;
-	JMenuBar menuBar = new JMenuBar();
-	JMenu mFile = new JMenu(); // File : JMenuItem's "Quit",  b,  c, ...
-	JPanel jPanel = new JPanel(new BorderLayout());
-	JProgressBar progressBar;
 	
-	private static int mindowCouter = 0; // wird pro ctor hochgezählt
+	private static int mindowCounter = 0; // für windowNo wird pro ctor hochgezählt
 	private int windowNo;
 	
 	private int window_ID;
@@ -73,8 +67,27 @@ public class Window extends JFrame implements WindowListener {
 	List<GridTab> gridTabs;
 	List<Tab> tabs;
 	
-//	List<MTab> mTabs;
-	protected HidableTabbedPane tabPane; // TODO protected raus
+	/* ui:
+	 * Windows aka (swing) Frames:
+	 *   rootFrame/windowNo=0, window/windowNo=1, ... window/windowNo=n(this), window/windowNo=n+1, ...
+	 * this frame:
+	 * - menuBar
+	 *   - mFile, ...
+	 *     - quitItem, ...
+	 * this ContentPane contains:
+	 * - jPanel
+	 *   - at PAGE_START: toolBar
+	 *   - at CENTER    : tabPane
+	 *   - at PAGE_END  : progressBar
+	 */
+	RootFrame rootFrame; // mit FrameManager
+	JMenuBar menuBar = new JMenuBar();
+	JMenu mFile = new JMenu(); // File : JMenuItem's "Quit",  b,  c, ...
+	JPanel jPanel = new JPanel(new BorderLayout());
+	HidableTabbedPane tabPane;
+	JProgressBar progressBar;
+
+	// TODO BUG : Laf change wird nicht propagiert
 	
 	// ctor
 	/* super ctors
@@ -88,8 +101,8 @@ public class Window extends JFrame implements WindowListener {
 	}
 	Window(String title, RootFrame rootFrame, int window_ID) {
 		super(title);
-		mindowCouter++;
-		this.windowNo = mindowCouter-1;
+		mindowCounter++;
+		this.windowNo = mindowCounter-1;
 		
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
