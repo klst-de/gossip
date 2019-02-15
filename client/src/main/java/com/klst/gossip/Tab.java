@@ -42,6 +42,7 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private GridTab gridTab;
+	private GenericTableModel tableModel;
 	private GenericDataLoader loader;
 
 	// ui
@@ -76,6 +77,14 @@ public class Tab extends JPanel implements ComponentListener {
 		return this.gridTab;
 	}
 	
+	public void refresh() {
+//		die einzigen setter:
+//		this.jXTable.getModel().setValueAt(aValue, rowIndex, columnIndex);
+//		this.jXTable.getModel().isCellEditable(rowIndex, columnIndex)
+		this.loader = getDataLoader(this.tableModel);
+		this.loader.execute();
+	}
+	
 	private int getWindowNo() {
 		return frame.getWindowNo();
 	}
@@ -98,12 +107,12 @@ public class Tab extends JPanel implements ComponentListener {
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
-        
-        return getDataLoader(gridTab, tab);
+        tab.loader = getDataLoader(gridTab, tab);
+        return tab.loader;
 	}
 
 	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
-		GenericTableModel tableModel = new GenericTableModel(gridTab, tab.getWindowNo());
+		tab.tableModel = new GenericTableModel(gridTab, tab.getWindowNo());
         JScrollPane scrollpane = new JScrollPane(tab.jXTable);
         Stacker stacker = new Stacker(scrollpane);
         tab.jXTable.setName(gridTab.getName());
@@ -118,7 +127,11 @@ public class Tab extends JPanel implements ComponentListener {
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
-        tab.jXTable.setModel(tableModel);
+        tab.jXTable.setModel(tab.tableModel);
+        return getDataLoader(tab.tableModel);
+	}
+	
+	private GenericDataLoader getDataLoader(GenericTableModel tableModel) {
  		GenericDataLoader task = new GenericDataLoader(tableModel);
  		
 		JLabel status = new JLabel();
@@ -132,7 +145,7 @@ public class Tab extends JPanel implements ComponentListener {
         group.bind();
 
 //		setVisible(true); // in setLoadState
-		return task;
+		return task;		
 	}
 
 	// aus org.jdesktop.swingx.demos.table.XTableDemo

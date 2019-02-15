@@ -147,6 +147,15 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mFile.add(quitItem);
             
+            JMenuItem refreshItem = new JMenuItem("refresh", AIT.getImageIcon(AIT.REFRESH, SMALL_ICON_SIZE));
+            refreshItem.setName("refresh");
+            refreshItem.setActionCommand("refresh");
+            refreshItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.refresh();
+            });
+            mEdit.add(refreshItem);
+
             JMenuItem previousItem = new JMenuItem("Previous", AIT.getImageIcon(AIT.PREVIOUS, SMALL_ICON_SIZE));
             previousItem.setName("previous");
             previousItem.setActionCommand("previous");
