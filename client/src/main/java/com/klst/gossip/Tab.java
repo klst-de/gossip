@@ -80,10 +80,10 @@ public class Tab extends JPanel implements ComponentListener {
 		return frame.getWindowNo();
 	}
 	private List<GridTab> getGridTabs() {
-		return frame.gridTabs;
+		return frame.getGridTabs();
 	}
 	private List<Tab> getTabs() {
-		return frame.tabs;
+		return frame.getTabs();
 	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
@@ -96,6 +96,8 @@ public class Tab extends JPanel implements ComponentListener {
         	t.loader = getDataLoader(gt, t);
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
+        frame.pack();
+//		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
         
         return getDataLoader(gridTab, tab);
 	}
@@ -129,10 +131,7 @@ public class Tab extends JPanel implements ComponentListener {
         		this, BeanProperty.create("loadState"))); // call setLoadState 
         group.bind();
 
-        frame.pack();
-//		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 //		setVisible(true); // in setLoadState
-		
 		return task;
 	}
 

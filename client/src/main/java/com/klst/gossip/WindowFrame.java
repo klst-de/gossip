@@ -59,8 +59,8 @@ public class WindowFrame extends JFrame implements WindowListener {
 	protected GridWindow gridWindow; // GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
-	List<GridTab> gridTabs; // TODO verschieben nach WindowPame - wieso List statt Set
-	List<Tab> tabs;
+	private List<GridTab> gridTabs; // TODO verschieben nach WindowPame - wieso List statt Set
+	private List<Tab> tabs;
 //	Tab currentTab; // nur eine Tab kann es sein, die bekommen wir aus tabPane => getSelectedTab
 	
 	/* ui:
@@ -228,70 +228,12 @@ TODO Demo für jeden Typ
 		return task;	
 	}
 	
-//	public GenericDataLoader getDataLoader() {
-////		this.progressBar = new JProgressBar(0, 100);
-////		progressBar.setStringPainted(true);
-////		jPanel.add(progressBar, BorderLayout.PAGE_END);
-//		
-//		GridTab gridTab = gridTabs.get(0); // first Tab
-//		Tab tab = tabs.get(0); 
-//        this.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
-//        for (int i = 1; i < gridTabs.size(); i++) { // ohne first
-//        	GridTab gt = gridTabs.get(i);
-//        	Tab t = tabs.get(i); 
-//        	tabPane.addTab(gridTabs.get(i).getName(), tabs.get(i));
-////        	t.loader = getDataLoader(gt, t);
-//        }
-//        jPanel.add(tabPane, BorderLayout.CENTER);
-//        
-//        return getDataLoader(gridTab, tab);
-//	}
-//	
-//	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
-//		GenericTableModel tableModel = new GenericTableModel(gridTab, getWindowNo());
-//        JScrollPane scrollpane = new JScrollPane(tab.jXTable);
-//        Stacker stacker = new Stacker(scrollpane);
-//        tab.jXTable.setName(gridTab.getName());
-//        tab.add(stacker, BorderLayout.CENTER);
-//
-//        tab.jXTable.setColumnControlVisible(true);
-//        // replace grid lines with striping 
-//        tab.jXTable.setShowGrid(false, false);
-//        tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
-//        // initialize preferred size for table's viewable area
-//        tab.jXTable.setVisibleRowCount(10); // TODO
-//
-////        CustomColumnFactory factory = new CustomColumnFactory();
-//
-//        tab.jXTable.setModel(tableModel);
-// 		GenericDataLoader task = new GenericDataLoader(tableModel);
-// 		
-//		JLabel status = new JLabel();
-//        BindingGroup group = new BindingGroup();
-//        group.addBinding(Bindings.createAutoBinding(READ, task, 
-//        		BeanProperty.create("progress"),
-//                progressBar, BeanProperty.create("value")));
-//        group.addBinding(Bindings.createAutoBinding(READ, task, 
-//        		BeanProperty.create("state"),
-//        		this, BeanProperty.create("loadState"))); // call setLoadState 
-//        group.bind();
-//
-//		pack();
-//		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-////		setVisible(true); // in setLoadState
-//		
-//		return task;
-//	}
-//	
-//	public void setLoadState(StateValue state) {
-//		LOG.config("StateValue:"+state);
-//		if(state.equals(StateValue.STARTED)) {
-//			setVisible(true);
-//		}
-//	}
-
-	public List<GridTab> getGridTabs() {
+	List<GridTab> getGridTabs() {
 		return this.gridTabs;
+	}
+	
+	List<Tab> getTabs() {
+		return this.tabs;
 	}
 	
 	public void setTitle(String title) {

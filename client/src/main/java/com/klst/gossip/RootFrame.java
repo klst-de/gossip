@@ -130,10 +130,6 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			LOG.config("new frame Banken");
 			Properties ctx = Env.getCtx();
 
-			/* Patch wg. Berechtigung: role SuperUser bei Banken
-===========> GridWindowVO.create: No Window - AD_Window_ID=158, AD_Role_ID=MRole[0,System Administrator,UserLevel=S  ,AD_Client_ID=0,AD_Org_ID=0] - SELECT Name,Description,Help,WindowType, AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, IsSOTrx FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive='Y' [23]
-===========> CLogger.saveError: AccessTableNoView - (Not found) [23]
- */
 			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
 			ctx.forEach((key,value) -> { // zum Test
 				LOG.info("key:"+key + " : " + value.toString());
@@ -240,8 +236,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 //			
 //			GenericDataLoader task = frame.getDataLoader(vPanel);
 			
-//			GenericDataLoader task = frame.getDataLoader();
-			GenericDataLoader task = frame.tabs.get(0).getDataLoader(); // first Tab
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
 		});
@@ -253,8 +248,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			WindowFrame frame = makeWindow(122); // AD_Window_ID=122;
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			Tab tab = frame.getSelectedTab(); // null
-//			GenericDataLoader task = frame.getDataLoader();
-			GenericDataLoader task = frame.tabs.get(0).getDataLoader(); // first Tab
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
 		});
