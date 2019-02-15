@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -64,7 +65,7 @@ public class Window extends JFrame implements WindowListener {
 	private String trxName;
 	protected MWindow mWindow;
 	protected GridWindow gridWindow;
-	List<GridTab> gridTabs;
+	List<GridTab> gridTabs; // TODO verschieben nach Tab
 	List<Tab> tabs;
 	
 	/* ui:
@@ -83,6 +84,10 @@ public class Window extends JFrame implements WindowListener {
 	RootFrame rootFrame; // mit FrameManager
 	JMenuBar menuBar = new JMenuBar();
 	JMenu mFile = new JMenu(); // File : JMenuItem's "Quit",  b,  c, ...
+	JMenu mEdit = new JMenu(); // Edit : JMenuItem's "New Record", ... and Navigation goto first, next, last Record etc
+	JMenu mInfo = new JMenu(); // Infofenster
+	JMenu mSetup = new JMenu(); // ...
+	JMenu mHelp = new JMenu(); // ...
 	JPanel jPanel = new JPanel(new BorderLayout());
 	HidableTabbedPane tabPane;
 	JProgressBar progressBar;
@@ -126,8 +131,12 @@ public class Window extends JFrame implements WindowListener {
 		LOG.config(menuBar.toString());
 		this.setJMenuBar(menuBar);
 		menuBar.add(mFile);
+		menuBar.add(mEdit);
+		
 		mFile.setName("file");
 		mFile.setText("File");
+		mEdit.setName("edit");
+		mEdit.setText("Edit");
         if(!Env.isMac()) { 
             // JMenuItem(String text) | JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
             JMenuItem quitItem = new JMenuItem("Quit", AIT.getImageIcon(AIT.EXIT, SMALL_ICON_SIZE));
@@ -137,6 +146,30 @@ public class Window extends JFrame implements WindowListener {
             	System.exit(0);
             });
             mFile.add(quitItem);
+            
+            JMenuItem previousItem = new JMenuItem("Previous", AIT.getImageIcon(AIT.PREVIOUS, SMALL_ICON_SIZE));
+            previousItem.setName("previous");
+            previousItem.setActionCommand("previous");
+            previousItem.addActionListener(event -> {
+/*   aus Apanel m_curGC == currentGridControler
+			m_curGC.getTable().removeEditor();
+			m_curGC.acceptEditorChanges();
+			if ((actionEvent.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+				currentTab.switchRows(currentTab.getCurrentRow(), currentTab.getCurrentRow() - 1, m_curGC.getTable().getSortColumn(), m_curGC.getTable().isSortAscending());
+			} else {
+				currentTab.navigateRelative(-1); <==== die tatsächliche Navogation:
+	// in (base) GridTab			
+	public int navigateRelative (int rowChange)
+	{
+		return navigate (m_currentRow + rowChange);
+	}   //  navigateRelative
+				
+				
+			}
+
+ */
+            });
+            mEdit.add(previousItem);
         }
 
 	}
@@ -160,6 +193,23 @@ public class Window extends JFrame implements WindowListener {
 			this.gridTabs.add(gridTab);
 			this.tabs.add(new Tab(gridTab)); // gridTabs und tabs korrespondieren
 		}
+	}
+	
+	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
+		jPanel.add(vPanel, BorderLayout.CENTER);
+		
+		this.progressBar = new JProgressBar(0, 100);
+		progressBar.setStringPainted(true);
+		jPanel.add(progressBar, BorderLayout.PAGE_END);
+		
+		GridTab gridTab = gridTabs.get(0); // first Tab
+		GenericTableModel tableModel = new GenericTableModel(gridTab, getWindowNo());
+ 		GenericDataLoader task = new GenericDataLoader(tableModel);
+		
+		pack();
+		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+		setVisible(true); 
+		return task;	
 	}
 	
 	public GenericDataLoader getDataLoader() {

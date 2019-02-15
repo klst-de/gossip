@@ -141,9 +141,106 @@ public class RootFrame extends Window {  // Window extends JFrame
 
 			Window frame = makeWindow(158); // AD_Window_ID=158)
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			// TEST
+// TODO Tab muss so etwas wie Grid Controller sein
+//			 *  The Grid Controller is the panel for single and multi-row presentation
+//			 *  and links to the Model Tab.
+
+//			VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
+			
+/* aus GridController.init() :
+		//  Set up Multi Row Table
+		vTable.setModel(m_mTab.getTableModel());
+
+		//  Update Table Info -------------------------------------------------
+		int size = setupVTable (m_aPanel, m_mTab, vTable);
+
+		//  Set Color on Tab Level
+		//  this.setBackgroundColor (mTab.getColor());
+
+		//  Single Row  -------------------------------------------------------
+       ...
+ */
+/* aus GridController.initGrid :
+		vPanel = new VPanel(mTab.getName(), m_WindowNo);
+		vPanel.putClientProperty(AdempiereLookAndFeel.HIDE_IF_ONE_TAB, Boolean.TRUE);
+		if (this.isDetailGrid())
+		{
+			vPanel.setBorder(BorderFactory.createLineBorder(AdempierePLAF.getPrimary2()));
+		}
+		vPane.getViewport().add(xPanel, null); // private JScrollPane vPane = new JScrollPane();
+		xPanel.add(vPanel, BorderLayout.CENTER); // private CPanel xPanel = new CPanel();
+
+		setTabLevel(m_mTab.getTabLevel());
+
+		if (!lazy)
+			init();
+		else
+		{
+			//Load tab meta data, needed for includeTab to work
+			m_mTab.initTab(false);
+		}
+		---
+		private void init() ...
+		//  Single Row  -------------------------------------------------------
+		if (!m_onlyMultiRow) {
+			//	Set Softcoded Mnemonic &x
+			for (int i = 0; i < size; i++) {
+				GridField mField = m_mTab.getField(i);
+				if (mField.isDisplayed())
+					vPanel.setMnemonic(mField); <==============================
+			}   //  for all fields
+
+			//	Add Fields
+			for (int i = 0; i < size; i++) {
+				GridField mField = m_mTab.getField(i);
+				if (mField.isDisplayed()) {
+					VEditor vEditor = VEditorFactory.getEditor(m_mTab, mField, false);
+					if (vEditor == null)
+					{
+						log.warning("Editor not created for " + mField.getColumnName());
+						continue;
+					}
+					//  MField => VEditor - New Field value to be updated to editor
+					mField.addPropertyChangeListener(vEditor);
+					//  VEditor => this - New Editor value to be updated here (MTable)
+					vEditor.addVetoableChangeListener(this);
+					//  Add to VPanel
+					vPanel.addFieldBuffered(vEditor, mField);
+					//  APanel Listen to buttons
+					if (mField.getDisplayType() == DisplayType.Button && m_aPanel != null)
+						((JButton)vEditor).addActionListener (m_aPanel);
+				}
+			}   //  for all fields
+			vPanel.addFieldBuffered(null, null);  // flush the last one through
+
+			//  Use SR to size MR
+			mrPane.setPreferredSize(vPanel.getPreferredSize());
+		}   //  Single-Row
+
+ */
+			//vPanel.putClientProperty(key, value); // (Object key, Object value)
+//			GridTab gridTab = frame.gridTabs.get(0);
+//			if(gridTab.isDetail() || true) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
+//				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
+//				
+////				vPanel.setMnemonic(mField); // TODO
+//				
+//				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
+//					GridField mField = gridTab.getField(i);
+//					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
+//					//     interface VEditor !
+//					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
+//							factoryGetEditor(gridTab, mField, false);
+//					vPanel.addFieldBuffered(editor, mField);
+//				}
+//			} else {
+//				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
+//			}
+//			
+//			GenericDataLoader task = frame.getDataLoader(vPanel);
 			GenericDataLoader task = frame.getDataLoader();
 			task.execute();
-//			frame.setVisible(true); TODO 
 		});
 		mFile.add(miBank);
 
@@ -151,7 +248,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
 			Window frame = makeWindow(122); // AD_Window_ID=122;
-			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());			
 			GenericDataLoader task = frame.getDataLoader();
 			task.execute();
 		});
@@ -253,6 +350,127 @@ public class RootFrame extends Window {  // Window extends JFrame
         group.add(miNimbusLaF);
         mLuf.add(miNimbusLaF);
 	}
+
+	// wie  VEditorFactory.getEditor(m_mTab, mField, false); // TODO
+//	private static VEditor factoryGetEditor(GridTab gridTab, GridField mField, boolean b) {
+/*
+	public static final int String     = 10;
+	public static final int Integer    = 11;
+	public static final int Amount     = 12;
+	public static final int ID         = 13;
+	public static final int Text       = 14;
+	public static final int Date       = 15;
+	public static final int DateTime   = 16;
+	public static final int List       = 17;
+	public static final int Table      = 18;
+	public static final int TableDir   = 19;
+	public static final int YesNo      = 20;
+	public static final int Location   = 21;
+	public static final int Number     = 22;
+	public static final int Binary     = 23;
+	public static final int Time       = 24;
+	public static final int Account    = 25;
+	public static final int RowID      = 26;
+	public static final int Color      = 27;
+	public static final int Button	   = 28;
+	public static final int Quantity   = 29;
+	public static final int Search     = 30;
+	public static final int Locator    = 31;
+	public static final int Image      = 32;
+	public static final int Assignment = 33;
+	public static final int Memo       = 34;
+	public static final int PAttribute = 35;
+	public static final int TextLong   = 36;
+	public static final int CostPrice  = 37;
+	public static final int FilePath   = 38;
+	public static final int FileName   = 39;
+	public static final int URL        = 40;
+	public static final int PrinterName= 42;
+	public static final int Chart           = 53370;
+	public static final int FilePathOrName  = 53670;
+
+ * /
+	private static VEditor factoryGetEditor(GridTab mTab, GridField mField, boolean tableEditor) {
+		if (mField == null)
+			return null;
+		
+		VEditor editor = null;
+		int displayType = mField.getDisplayType();
+		String columnName = mField.getColumnName();
+		boolean mandatory = mField.isMandatory(false);      //  no context check
+		boolean readOnly = mField.isReadOnly();
+		boolean updateable = mField.isUpdateable();
+		int WindowNo = mField.getWindowNo();
+
+		//  Not a Field
+		if (mField.isHeading())
+			return null;
+
+		//	String (clear/password)
+		if (displayType == DisplayType.String
+			|| displayType == DisplayType.PrinterName
+			|| (tableEditor && (displayType == DisplayType.Text || displayType == DisplayType.TextLong)) )
+		{
+			if (mField.isEncryptedField())
+			{	LOG.warning("TODO VPassword"); return null;
+//				VPassword vs = new VPassword (columnName, mandatory, readOnly, updateable,
+//					mField.getDisplayLength(), mField.getFieldLength(), mField.getVFormat());
+//				vs.setName (columnName);
+//				vs.setField (mField);
+//				editor = vs;
+			}
+			else
+			{	LOG.warning("TODO VString"); return null;
+//				VString vs = new VString (columnName, mandatory, readOnly, updateable,
+//					mField.getDisplayLength(), mField.getFieldLength(), 
+//					mField.getVFormat(), mField.getObscureType());
+//				vs.setName (columnName);
+//				vs.setField (mField);
+//				if (mField.isAutocomplete()) {
+//					ADempiereAutoCompleteDecorator.decorate(vs, mField.getEntries(), false);
+//				}
+//				editor = vs;
+			}
+		}
+
+		//	Lookup
+		else if (DisplayType.isLookup(displayType) || displayType == DisplayType.ID)
+		{
+			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable,
+				mField.getLookup());
+			vl.setName(columnName);
+			vl.setField (mField);
+			editor = vl;
+		}
+
+		//	YesNo
+		else if (displayType == DisplayType.YesNo)
+		{
+			VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable,
+				mField.getHeader(), mField.getDescription(), tableEditor);
+			vc.setName(columnName);
+			vc.setField (mField);
+			editor = vc;
+		}
+
+		//	Date
+		else if (DisplayType.isDate(displayType))
+		{
+			if (displayType == DisplayType.DateTime)
+				readOnly = true;
+			VDate vd = new VDate(columnName, mandatory, readOnly, updateable,
+				displayType, mField.getHeader());
+			vd.setName(columnName);
+			vd.setField (mField);
+			editor = vd;
+		}
+
+		else
+			LOG.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
+		
+		return editor;
+	}
+--------------------------- */	
 
 	/*
 	 * initialisiert auch MetalLookAndFeel theme,

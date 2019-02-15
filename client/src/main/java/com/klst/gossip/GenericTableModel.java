@@ -1,7 +1,9 @@
 package com.klst.gossip;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -105,6 +107,24 @@ public class GenericTableModel extends AbstractTableModel {
         return null;
 	}
 	
+	// wird gerufen wenn die celle angeckickt wirs
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+    	GridField field = this.fields[columnIndex];
+    	boolean isEditable = field.isEditable(false); // checkContext
+    	if(isEditable) {
+    		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
+    	}
+    	return field.isEditable(true); // checkContext
+    }
+
+    // TODO das muss in Tab impementiert werden!
+    // ist in JTable und auch in VTable extends CTable extends JTable
+    // aber wir leiten von AbstractTableModel implements TableModel ab
+//	public boolean editCellAt(int row, int column, EventObject e) {
+//		return false;
+//		
+//	}
+	
 	// if data model is editable:
 	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
 	
@@ -119,8 +139,21 @@ public class GenericTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int column) {
     	GridField field = this.fields[column];
-    	return DisplayType.getClass(field.getDisplayType(), true); // true == Boolean as CheckBox
+    	int displayType = field.getDisplayType();
+    	if(logDisplayType.containsKey(field)) {
+    		// schon geloggt
+    	} else {
+        	LOG.warning(field + " displayType:"+displayType);
+        	logDisplayType.put(field, displayType);
+    	}
+    	// Return Storage Class - ist aber nicht die DisplayClass
+    	// die ist nämlich VEditor oder so!
+    	return DisplayType.getClass(displayType, true); // true == Boolean as CheckBox TODO, die anderen displayType
+    	// TODO 
     }
+    // wg. LOG
+    private Map<GridField, Integer> logDisplayType = new Hashtable<GridField, Integer>();
+    // <<<
 
     @Override
     public String getColumnName(int column) {

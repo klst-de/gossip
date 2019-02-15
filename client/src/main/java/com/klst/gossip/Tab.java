@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker.StateValue;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.GridTab;
@@ -32,7 +33,7 @@ public class Tab extends JPanel implements ComponentListener {
 	GenericDataLoader loader;
 
 	// ui
-	JXTable jXTable = createXTable();
+	JXTable jXTable = createXTable(); // JXTable extends JTable implements TableColumnModelExtListener
 	
 	// ctor
 	/* super ctors
@@ -46,6 +47,8 @@ public class Tab extends JPanel implements ComponentListener {
 		this.gridTab = gridTab;
 		this.addComponentListener(this);
 		
+		// in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
+		// wir wollen unser eigenes Model haben GenericTableModel extends AbstractTableModel
 		this.jXTable = createXTable();
 	}
 
@@ -53,6 +56,10 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("StateValue:"+state);
 	}
 
+	public GridTab getGridTab() {
+		return this.gridTab;
+	}
+	
 	// aus org.jdesktop.swingx.demos.table.XTableDemo
 	protected JXTable createXTable() {
 		JXTable table = new JXTable() {
