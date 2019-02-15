@@ -152,7 +152,7 @@ public class WindowFrame extends JFrame implements WindowListener {
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
             	Tab tab = this.getSelectedTab();
-            	tab.refresh();
+            	tab.refresh(); // Exception tab kann null sein, zB im RootFrame TODO
             });
             mEdit.add(refreshItem);
 

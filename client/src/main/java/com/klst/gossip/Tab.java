@@ -10,10 +10,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingWorker.StateValue;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.GridTab;
@@ -94,6 +92,20 @@ public class Tab extends JPanel implements ComponentListener {
 	private List<Tab> getTabs() {
 		return frame.getTabs();
 	}
+	
+	private GenericDataLoader getDataLoaderBUGGY() {
+        frame.tabPane = new HidableTabbedPane(); // BUG. so geht es nicht
+        for (int i = 0; i < getGridTabs().size(); i++) { // ohne first
+        	GridTab gt = getGridTabs().get(i);
+        	Tab t = getTabs().get(i); 
+        	frame.tabPane.addTab(gt.getName(), t);
+        	t.loader = getDataLoader(gt, t);
+        }
+        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
+        frame.pack();
+        
+        return this.loader;
+	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
 		Tab tab = getTabs().get(0); 
@@ -101,7 +113,7 @@ public class Tab extends JPanel implements ComponentListener {
         for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
         	GridTab gt = getGridTabs().get(i);
         	Tab t = getTabs().get(i); 
-        	frame.tabPane.addTab(getGridTabs().get(i).getName(), getTabs().get(i));
+        	frame.tabPane.addTab(gt.getName(), t);
         	t.loader = getDataLoader(gt, t);
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
