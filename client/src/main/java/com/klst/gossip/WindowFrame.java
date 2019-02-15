@@ -156,27 +156,30 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mEdit.add(refreshItem);
 
+            JMenuItem firstItem = new JMenuItem("first", AIT.getImageIcon(AIT.FIRST, SMALL_ICON_SIZE));
+            firstItem.setName("first");
+            firstItem.setActionCommand("first");
+            firstItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.first();
+            });
+            mEdit.add(firstItem);
+
+            JMenuItem lastItem = new JMenuItem("last", AIT.getImageIcon(AIT.LAST, SMALL_ICON_SIZE));
+            lastItem.setName("last");
+            lastItem.setActionCommand("last");
+            lastItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.last();
+            });
+            mEdit.add(lastItem);
+
             JMenuItem previousItem = new JMenuItem("Previous", AIT.getImageIcon(AIT.PREVIOUS, SMALL_ICON_SIZE));
             previousItem.setName("previous");
             previousItem.setActionCommand("previous");
             previousItem.addActionListener(event -> {
-/*   aus Apanel m_curGC == currentGridControler
-			m_curGC.getTable().removeEditor();
-			m_curGC.acceptEditorChanges();
-			if ((actionEvent.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
-				currentTab.switchRows(currentTab.getCurrentRow(), currentTab.getCurrentRow() - 1, m_curGC.getTable().getSortColumn(), m_curGC.getTable().isSortAscending());
-			} else {
-				currentTab.navigateRelative(-1); <==== die tatsächliche Navogation:
-	// in (base) GridTab			
-	public int navigateRelative (int rowChange)
-	{
-		return navigate (m_currentRow + rowChange);
-	}   //  navigateRelative
-				
-				
-			}
-
- */
+            	Tab tab = this.getSelectedTab();
+            	tab.previous();
             });
             mEdit.add(previousItem);
         }
@@ -216,7 +219,7 @@ TODO Demo für jeden Typ
 			return (Tab)null;
 		}
 		int index = tabPane.getSelectedIndex();
-		LOG.config("tabPane selected/TabCount"+index + "/" + tabPane.getTabCount());
+		LOG.config("tabPane selected/tabs:"+index + "/" + tabPane.getTabCount());
 		return (Tab)tabPane.getComponentAt(index);
 	}
 	

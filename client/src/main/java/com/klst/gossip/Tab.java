@@ -8,6 +8,7 @@ import java.awt.event.ComponentListener;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -61,6 +62,10 @@ public class Tab extends JPanel implements ComponentListener {
 		
 		// in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
 		// wir wollen unser eigenes Model haben GenericTableModel extends AbstractTableModel
+		// und org.jdesktop.swingx.JXTable nutzen, darin 
+		// - GenericEditor
+		// - NumberEditor
+		// - BooleanEditor
 		this.jXTable = createXTable();
 	}
 
@@ -81,6 +86,41 @@ public class Tab extends JPanel implements ComponentListener {
 //		this.jXTable.getModel().isCellEditable(rowIndex, columnIndex)
 		this.loader = getDataLoader(this.tableModel);
 		this.loader.execute();
+	}
+	
+	/* setRowSelectionInterval(index0, index1)
+	 * Selects the rows from <code>index0</code> to <code>index1</code>, inclusive.
+	 */
+	public void first() {
+		// includeSpacing if false, return the true cell bounds -computed by subtracting 
+		//  the intercellspacing from the height and widths ofthe column and row models
+		jXTable.scrollRectToVisible(jXTable.getCellRect(0, 0, true)); // includeSpacing:true
+		jXTable.setRowSelectionInterval(0, 0);
+	}
+	
+	public void previous() {
+		// diese methode hat Sinn im SingleRowModus
+		// welches ist die currentRow im MultiRowModus?
+		// - die kleinste selektierte!
+		int currentRow = -1;
+		int[] selected = jXTable.getSelectedRows(); // can be empty
+		if(selected.length==0) {
+			// und nun? TODO
+		} else {
+			currentRow = selected[0];
+			currentRow--;
+		}
+		LOG.config("new currentRow:"+currentRow);
+		if(currentRow<0) return; // nix selektiert oder bereits bei first
+		jXTable.scrollRectToVisible(jXTable.getCellRect(currentRow, 0, true));
+		jXTable.setRowSelectionInterval(currentRow, currentRow);
+	}
+	
+	public void last() {
+		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
+		jXTable.scrollRectToVisible(jXTable.getCellRect(jXTable.getRowCount()-1, 0, true));
+		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
+		jXTable.setRowSelectionInterval(jXTable.getRowCount()-1, jXTable.getRowCount()-1);
 	}
 	
 	private int getWindowNo() {
@@ -106,6 +146,23 @@ public class Tab extends JPanel implements ComponentListener {
         
         return this.loader;
 	}
+	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
+		frame.jPanel.add(vPanel, BorderLayout.CENTER);
+		
+		GridTab gridTab = getGridTabs().get(0); // first Tab
+		Tab tab = getTabs().get(0); 
+        frame.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
+        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
+        	GridTab gt = getGridTabs().get(i);
+        	Tab t = getTabs().get(i); 
+        	frame.tabPane.addTab(gt.getName(), t);
+        	t.loader = getDataLoader(gt, t);
+        }
+        frame.pack();
+//		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
+        tab.loader = getDataLoader(gridTab, tab);
+        return tab.loader;
+	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
 		Tab tab = getTabs().get(0); 
@@ -119,6 +176,29 @@ public class Tab extends JPanel implements ComponentListener {
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
+/*
+public int getSelectedRow() existiert in JTable
+
+Updates the selection models of the table, depending on the state of thetwo flags: toggle and extend. 
+Most changesto the selection that are the result of keyboard or mouse events receivedby the UI are channeled through this method so that the behavior may beoverridden by a subclass. Some UIs may need more functionality thanthis method provides, such as when manipulating the lead for discontiguousselection, and may not call into this method for some selection changes. 
+
+This implementation uses the following conventions: 
+• toggle: false, extend: false.Clear the previous selection and ensure the new cell is selected. 
+• toggle: false, extend: true.Extend the previous selection from the anchor to the specified cell,clearing all other selections. 
+• toggle: true, extend: false.If the specified cell is selected, deselect it. If it is not selected, select it. 
+• toggle: true, extend: true.Apply the selection state of the anchor to all cells between it and thespecified cell. 
+Parameters:
+rowIndex affects the selection at row
+columnIndex affects the selection at columntoggle see description aboveextend if true, extend the current selection
+
+this.jXTable.changeSelection(rowIndex, columnIndex, toggle, extend);
+
+ *
+    * Selects the rows from <code>index0</code> to <code>index1</code>,
+     * inclusive.
+        this.jXTable.setRowSelectionInterval(index0, index1);
+ 
+ */
         tab.loader = getDataLoader(gridTab, tab);
         return tab.loader;
 	}
