@@ -1,19 +1,30 @@
 package com.klst.gossip;
 
+import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
+
 import java.awt.BorderLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 
 import org.compiere.model.GridTab;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
+import org.jdesktop.swingx.decorator.HighlighterFactory;
+
+import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 public class Tab extends JPanel implements ComponentListener {
 
@@ -29,8 +40,9 @@ public class Tab extends JPanel implements ComponentListener {
 	// window / bzw JFrame
 	// rootFrame
 
+	private WindowFrame frame;
 	private GridTab gridTab;
-	GenericDataLoader loader;
+	private GenericDataLoader loader;
 
 	// ui
 	JXTable jXTable = createXTable(); // JXTable extends JTable implements TableColumnModelExtListener
@@ -41,9 +53,10 @@ public class Tab extends JPanel implements ComponentListener {
 	 *     public JPanel(LayoutManager layout) 
 	 *     public JPanel(boolean isDoubleBuffered) 
 	 */
-	public Tab(GridTab gridTab) {
+	public Tab(GridTab gridTab, WindowFrame frame) {
 		super(new BorderLayout());
-		LOG.config("gridTab "+gridTab);
+		LOG.config("gridTab "+gridTab + ", WindowFrame frame:"+frame);
+		this.frame = frame;
 		this.gridTab = gridTab;
 		this.addComponentListener(this);
 		
@@ -54,12 +67,75 @@ public class Tab extends JPanel implements ComponentListener {
 
 	public void setLoadState(StateValue state) {
 		LOG.config("StateValue:"+state);
+		if(state.equals(StateValue.STARTED)) {
+			frame.setVisible(true);
+		}
 	}
 
 	public GridTab getGridTab() {
 		return this.gridTab;
 	}
 	
+	private int getWindowNo() {
+		return frame.getWindowNo();
+	}
+	private List<GridTab> getGridTabs() {
+		return frame.gridTabs;
+	}
+	private List<Tab> getTabs() {
+		return frame.tabs;
+	}
+	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
+		GridTab gridTab = getGridTabs().get(0); // first Tab
+		Tab tab = getTabs().get(0); 
+        frame.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
+        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
+        	GridTab gt = getGridTabs().get(i);
+        	Tab t = getTabs().get(i); 
+        	frame.tabPane.addTab(getGridTabs().get(i).getName(), getTabs().get(i));
+        	t.loader = getDataLoader(gt, t);
+        }
+        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
+        
+        return getDataLoader(gridTab, tab);
+	}
+
+	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
+		GenericTableModel tableModel = new GenericTableModel(gridTab, tab.getWindowNo());
+        JScrollPane scrollpane = new JScrollPane(tab.jXTable);
+        Stacker stacker = new Stacker(scrollpane);
+        tab.jXTable.setName(gridTab.getName());
+        tab.add(stacker, BorderLayout.CENTER);
+
+        tab.jXTable.setColumnControlVisible(true);
+        // replace grid lines with striping 
+        tab.jXTable.setShowGrid(false, false);
+        tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
+        // initialize preferred size for table's viewable area
+        tab.jXTable.setVisibleRowCount(10); // TODO
+
+//        CustomColumnFactory factory = new CustomColumnFactory();
+
+        tab.jXTable.setModel(tableModel);
+ 		GenericDataLoader task = new GenericDataLoader(tableModel);
+ 		
+		JLabel status = new JLabel();
+        BindingGroup group = new BindingGroup();
+        group.addBinding(Bindings.createAutoBinding(READ, task, 
+        		BeanProperty.create("progress"),
+        		frame.progressBar, BeanProperty.create("value")));
+        group.addBinding(Bindings.createAutoBinding(READ, task, 
+        		BeanProperty.create("state"),
+        		this, BeanProperty.create("loadState"))); // call setLoadState 
+        group.bind();
+
+        frame.pack();
+//		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+//		setVisible(true); // in setLoadState
+		
+		return task;
+	}
+
 	// aus org.jdesktop.swingx.demos.table.XTableDemo
 	protected JXTable createXTable() {
 		JXTable table = new JXTable() {

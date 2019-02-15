@@ -1,7 +1,5 @@
 package com.klst.gossip;
 
-import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.WindowEvent;
@@ -13,15 +11,12 @@ import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
@@ -29,10 +24,6 @@ import org.compiere.model.MWindow;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
-import org.jdesktop.beansbinding.BeanProperty;
-import org.jdesktop.beansbinding.BindingGroup;
-import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.klst.icon.AbstractImageTranscoder;
 
@@ -45,11 +36,11 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
  - das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
  */
 
-public class Window extends JFrame implements WindowListener {
+public class WindowFrame extends JFrame implements WindowListener {
 	
 	private static final long serialVersionUID = 5098403364836474988L;
 
-	private static final Logger LOG = Logger.getLogger(Window.class.getName());
+	private static final Logger LOG = Logger.getLogger(WindowFrame.class.getName());
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
 	
@@ -63,13 +54,17 @@ public class Window extends JFrame implements WindowListener {
 	private int window_ID;
 	private Properties ctx = null;
 	private String trxName;
-	protected MWindow mWindow;
-	protected GridWindow gridWindow;
-	List<GridTab> gridTabs; // TODO verschieben nach Tab
+	private MWindow mWindow; // eigentlich sollten allen mWindow Daten aus gridWindow kommen
+	// GridWindow is ein wrapper für MWindow
+	protected GridWindow gridWindow; // GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
+	// in List sind alle / in Set die initalisierten!!!
+	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
+	List<GridTab> gridTabs; // TODO verschieben nach WindowPame - wieso List statt Set
 	List<Tab> tabs;
+//	Tab currentTab; // nur eine Tab kann es sein, die bekommen wir aus tabPane => getSelectedTab
 	
 	/* ui:
-	 * Windows aka (swing) Frames:
+	 * WindowFrame aka (swing) Frames:
 	 *   rootFrame/windowNo=0, window/windowNo=1, ... window/windowNo=n(this), window/windowNo=n+1, ...
 	 * this frame:
 	 * - menuBar
@@ -99,10 +94,10 @@ public class Window extends JFrame implements WindowListener {
 	 *     JFrame(String title) throws HeadlessException
 	 *     JFrame(String title, GraphicsConfiguration gc)
 	 */
-	Window(String title) { // für RootFrame
+	WindowFrame(String title) { // für RootFrame
 		this(title, null, -1);
 	}
-	Window(String title, RootFrame rootFrame, int window_ID) {
+	WindowFrame(String title, RootFrame rootFrame, int window_ID) {
 		super(title);
 		mindowCounter++;
 		this.windowNo = mindowCounter-1;
@@ -113,7 +108,7 @@ public class Window extends JFrame implements WindowListener {
 		initMenuBar();
 
 		this.ctx = Env.getCtx();
-		this.trxName = Trx.createTrxName(Window.class.getName());
+		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
 		if(this.window_ID == -1) {
 			setTitle(title); 
 		} else {
@@ -124,6 +119,11 @@ public class Window extends JFrame implements WindowListener {
 			setTitle(); 
 		}
 		getContentPane().add(jPanel);
+		
+		this.progressBar = new JProgressBar(0, 100);
+		progressBar.setStringPainted(true);
+		jPanel.add(progressBar, BorderLayout.PAGE_END);
+		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
 
@@ -181,18 +181,34 @@ public class Window extends JFrame implements WindowListener {
 	private void initGridWindow() {
 		this.gridWindow = GridWindow.get(ctx, this.windowNo, this.window_ID); 
 		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
-		LOG.config("gridWindow:"+gridWindow.toString() + " with Tab#:"+gridWindow.getTabCount());
+/* WINDOWTYPEs: aus GridWindowVO		
+		public static final String	WINDOWTYPE_QUERY = "Q";
+		public static final String	WINDOWTYPE_TRX = "T";
+		public static final String	WINDOWTYPE_MMAINTAIN = "M";
+TODO Demo für jeden Typ
+*/
+		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
 		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
 		for (int i = 0; i < gridWindow.getTabCount(); i++) {
 			if(gridWindow.isTabInitialized(i)==false) {
 				LOG.config("gridTab "+i+" not initialized. Do it now ...");
-				gridWindow.initTab(i);
+				gridWindow.initTab(i); // TODO verschieben in Tab
 			}
 			GridTab gridTab = gridWindow.getTab(i);
 			this.gridTabs.add(gridTab);
-			this.tabs.add(new Tab(gridTab)); // gridTabs und tabs korrespondieren
+			this.tabs.add(new Tab(gridTab, this)); // gridTabs und tabs korrespondieren
 		}
+	}
+	
+	public Tab getSelectedTab() {
+		if(this.tabPane==null) {
+			LOG.warning("tabPane is null");
+			return (Tab)null;
+		}
+		int index = tabPane.getSelectedIndex();
+		LOG.config("tabPane selected/TabCount"+index + "/" + tabPane.getTabCount());
+		return (Tab)tabPane.getComponentAt(index);
 	}
 	
 	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
@@ -212,67 +228,67 @@ public class Window extends JFrame implements WindowListener {
 		return task;	
 	}
 	
-	public GenericDataLoader getDataLoader() {
-		this.progressBar = new JProgressBar(0, 100);
-		progressBar.setStringPainted(true);
-		jPanel.add(progressBar, BorderLayout.PAGE_END);
-		
-		GridTab gridTab = gridTabs.get(0); // first Tab
-		Tab tab = tabs.get(0); 
-        this.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
-        for (int i = 1; i < gridTabs.size(); i++) { // ohne first
-        	GridTab gt = gridTabs.get(i);
-        	Tab t = tabs.get(i); 
-        	tabPane.addTab(gridTabs.get(i).getName(), tabs.get(i));
-        	t.loader = getDataLoader(gt, t);
-        }
-        jPanel.add(tabPane, BorderLayout.CENTER);
-        
-        return getDataLoader(gridTab, tab);
-	}
-	
-	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
-		GenericTableModel tableModel = new GenericTableModel(gridTab, getWindowNo());
-        JScrollPane scrollpane = new JScrollPane(tab.jXTable);
-        Stacker stacker = new Stacker(scrollpane);
-        tab.jXTable.setName(gridTab.getName());
-        tab.add(stacker, BorderLayout.CENTER);
-
-        tab.jXTable.setColumnControlVisible(true);
-        // replace grid lines with striping 
-        tab.jXTable.setShowGrid(false, false);
-        tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
-        // initialize preferred size for table's viewable area
-        tab.jXTable.setVisibleRowCount(10); // TODO
-
-//        CustomColumnFactory factory = new CustomColumnFactory();
-
-        tab.jXTable.setModel(tableModel);
- 		GenericDataLoader task = new GenericDataLoader(tableModel);
- 		
-		JLabel status = new JLabel();
-        BindingGroup group = new BindingGroup();
-        group.addBinding(Bindings.createAutoBinding(READ, task, 
-        		BeanProperty.create("progress"),
-                progressBar, BeanProperty.create("value")));
-        group.addBinding(Bindings.createAutoBinding(READ, task, 
-        		BeanProperty.create("state"),
-        		this, BeanProperty.create("loadState"))); // call setLoadState 
-        group.bind();
-
-		pack();
-		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-//		setVisible(true); // in setLoadState
-		
-		return task;
-	}
-	
-	public void setLoadState(StateValue state) {
-		LOG.config("StateValue:"+state);
-		if(state.equals(StateValue.STARTED)) {
-			setVisible(true);
-		}
-	}
+//	public GenericDataLoader getDataLoader() {
+////		this.progressBar = new JProgressBar(0, 100);
+////		progressBar.setStringPainted(true);
+////		jPanel.add(progressBar, BorderLayout.PAGE_END);
+//		
+//		GridTab gridTab = gridTabs.get(0); // first Tab
+//		Tab tab = tabs.get(0); 
+//        this.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
+//        for (int i = 1; i < gridTabs.size(); i++) { // ohne first
+//        	GridTab gt = gridTabs.get(i);
+//        	Tab t = tabs.get(i); 
+//        	tabPane.addTab(gridTabs.get(i).getName(), tabs.get(i));
+////        	t.loader = getDataLoader(gt, t);
+//        }
+//        jPanel.add(tabPane, BorderLayout.CENTER);
+//        
+//        return getDataLoader(gridTab, tab);
+//	}
+//	
+//	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
+//		GenericTableModel tableModel = new GenericTableModel(gridTab, getWindowNo());
+//        JScrollPane scrollpane = new JScrollPane(tab.jXTable);
+//        Stacker stacker = new Stacker(scrollpane);
+//        tab.jXTable.setName(gridTab.getName());
+//        tab.add(stacker, BorderLayout.CENTER);
+//
+//        tab.jXTable.setColumnControlVisible(true);
+//        // replace grid lines with striping 
+//        tab.jXTable.setShowGrid(false, false);
+//        tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
+//        // initialize preferred size for table's viewable area
+//        tab.jXTable.setVisibleRowCount(10); // TODO
+//
+////        CustomColumnFactory factory = new CustomColumnFactory();
+//
+//        tab.jXTable.setModel(tableModel);
+// 		GenericDataLoader task = new GenericDataLoader(tableModel);
+// 		
+//		JLabel status = new JLabel();
+//        BindingGroup group = new BindingGroup();
+//        group.addBinding(Bindings.createAutoBinding(READ, task, 
+//        		BeanProperty.create("progress"),
+//                progressBar, BeanProperty.create("value")));
+//        group.addBinding(Bindings.createAutoBinding(READ, task, 
+//        		BeanProperty.create("state"),
+//        		this, BeanProperty.create("loadState"))); // call setLoadState 
+//        group.bind();
+//
+//		pack();
+//		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+////		setVisible(true); // in setLoadState
+//		
+//		return task;
+//	}
+//	
+//	public void setLoadState(StateValue state) {
+//		LOG.config("StateValue:"+state);
+//		if(state.equals(StateValue.STARTED)) {
+//			setVisible(true);
+//		}
+//	}
 
 	public List<GridTab> getGridTabs() {
 		return this.gridTabs;

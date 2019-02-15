@@ -33,7 +33,7 @@ import com.klst.client.LoginPanel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
-public class RootFrame extends Window {  // Window extends JFrame
+public class RootFrame extends WindowFrame {  // Window extends JFrame
 	
 	private static final long serialVersionUID = -400920856924947621L;
 
@@ -47,13 +47,13 @@ public class RootFrame extends Window {  // Window extends JFrame
 	// frame mgt
 	List<JFrame> frames;
 	private static final int FRAMES_INITIAL_CAPACITY = 10;
-	private Window makeFrame(int frameNumber, RootFrame rootFrame, int window_ID) {
-		Window frame = new Window("Frame number " + frameNumber, rootFrame, window_ID);
+	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID) {
+		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID);
 		frame.setDefaultCloseOperation(frames.isEmpty() ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
 		frames.add(frame);
 		return frame;
 	}
-	private Window makeWindow(int window_ID) {
+	private WindowFrame makeWindow(int window_ID) {
 		int frameNumber = frames.size();
 		return makeFrame(frameNumber, this, window_ID);
 	}
@@ -139,7 +139,7 @@ public class RootFrame extends Window {  // Window extends JFrame
 				LOG.info("key:"+key + " : " + value.toString());
 			});
 
-			Window frame = makeWindow(158); // AD_Window_ID=158)
+			WindowFrame frame = makeWindow(158); // AD_Window_ID=158)
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			// TEST
 // TODO Tab muss so etwas wie Grid Controller sein
@@ -239,7 +239,10 @@ public class RootFrame extends Window {  // Window extends JFrame
 //			}
 //			
 //			GenericDataLoader task = frame.getDataLoader(vPanel);
-			GenericDataLoader task = frame.getDataLoader();
+			
+//			GenericDataLoader task = frame.getDataLoader();
+			GenericDataLoader task = frame.tabs.get(0).getDataLoader(); // first Tab
+			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
 		});
 		mFile.add(miBank);
@@ -247,9 +250,12 @@ public class RootFrame extends Window {  // Window extends JFrame
 		miCountry = new JMenuItem("zeige Länder (Demo)", AIT.getImageIcon(AIT.ONLINE, SMALL_ICON_SIZE));
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
-			Window frame = makeWindow(122); // AD_Window_ID=122;
-			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());			
-			GenericDataLoader task = frame.getDataLoader();
+			WindowFrame frame = makeWindow(122); // AD_Window_ID=122;
+			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			Tab tab = frame.getSelectedTab(); // null
+//			GenericDataLoader task = frame.getDataLoader();
+			GenericDataLoader task = frame.tabs.get(0).getDataLoader(); // first Tab
+			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
 		});
 		mFile.add(miCountry);
