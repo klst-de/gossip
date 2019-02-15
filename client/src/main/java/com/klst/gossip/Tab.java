@@ -84,7 +84,7 @@ public class Tab extends JPanel implements ComponentListener {
 //		die einzigen setter:
 //		this.jXTable.getModel().setValueAt(aValue, rowIndex, columnIndex);
 //		this.jXTable.getModel().isCellEditable(rowIndex, columnIndex)
-		this.loader = getDataLoader(this.tableModel);
+		this.loader = initDataLoader();
 		this.loader.execute();
 	}
 	
@@ -155,7 +155,8 @@ public class Tab extends JPanel implements ComponentListener {
         	GridTab gt = getGridTabs().get(i);
         	Tab t = getTabs().get(i); 
         	frame.tabPane.addTab(gt.getName(), t);
-        	t.loader = getDataLoader(gt, t);
+        	t.initModelAndTable();
+        	t.initDataLoader();
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
@@ -165,19 +166,21 @@ public class Tab extends JPanel implements ComponentListener {
 	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
 		frame.jPanel.add(vPanel, BorderLayout.CENTER);
 		
-		GridTab gridTab = getGridTabs().get(0); // first Tab
-		Tab tab = getTabs().get(0); 
-        frame.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
-        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
-        	GridTab gt = getGridTabs().get(i);
-        	Tab t = getTabs().get(i); 
-        	frame.tabPane.addTab(gt.getName(), t);
-        	t.loader = getDataLoader(gt, t);
-        }
+//		GridTab gridTab = getGridTabs().get(0); // first Tab
+//		Tab tab = getTabs().get(0); 
+        frame.tabPane = new HidableTabbedPane(gridTab.getName(), vPanel);
+//        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
+//        	GridTab gt = getGridTabs().get(i);
+//        	Tab t = getTabs().get(i); 
+//        	frame.tabPane.addTab(gt.getName(), t);
+//        	t.loader = getDataLoader(gt, t);
+//        }
+        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
-        tab.loader = getDataLoader(gridTab, tab);
-        return tab.loader;
+        
+        initModelAndTable();
+        return initDataLoader();
 	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
@@ -187,73 +190,53 @@ public class Tab extends JPanel implements ComponentListener {
         	GridTab gt = getGridTabs().get(i);
         	Tab t = getTabs().get(i); 
         	frame.tabPane.addTab(gt.getName(), t);
-        	t.loader = getDataLoader(gt, t);
+        	t.initModelAndTable();
+        	t.initDataLoader();
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
-/*
-public int getSelectedRow() existiert in JTable
-
-Updates the selection models of the table, depending on the state of thetwo flags: toggle and extend. 
-Most changesto the selection that are the result of keyboard or mouse events receivedby the UI are channeled through this method so that the behavior may beoverridden by a subclass. Some UIs may need more functionality thanthis method provides, such as when manipulating the lead for discontiguousselection, and may not call into this method for some selection changes. 
-
-This implementation uses the following conventions: 
-• toggle: false, extend: false.Clear the previous selection and ensure the new cell is selected. 
-• toggle: false, extend: true.Extend the previous selection from the anchor to the specified cell,clearing all other selections. 
-• toggle: true, extend: false.If the specified cell is selected, deselect it. If it is not selected, select it. 
-• toggle: true, extend: true.Apply the selection state of the anchor to all cells between it and thespecified cell. 
-Parameters:
-rowIndex affects the selection at row
-columnIndex affects the selection at columntoggle see description aboveextend if true, extend the current selection
-
-this.jXTable.changeSelection(rowIndex, columnIndex, toggle, extend);
-
- *
-    * Selects the rows from <code>index0</code> to <code>index1</code>,
-     * inclusive.
-        this.jXTable.setRowSelectionInterval(index0, index1);
- 
- */
-        tab.loader = getDataLoader(gridTab, tab);
-        return tab.loader;
+        
+        tab.initModelAndTable();    
+        return tab.initDataLoader();
 	}
 
-	private GenericDataLoader getDataLoader(GridTab gridTab, Tab tab) {
-		tab.tableModel = new GenericTableModel(gridTab, tab.getWindowNo());
-        JScrollPane scrollpane = new JScrollPane(tab.jXTable);
+	private void initModelAndTable() {
+		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
+        JScrollPane scrollpane = new JScrollPane(this.jXTable);
         Stacker stacker = new Stacker(scrollpane);
-        tab.jXTable.setName(gridTab.getName());
-        tab.add(stacker, BorderLayout.CENTER);
+        jXTable.setName(gridTab.getName());
+        add(stacker, BorderLayout.CENTER);
 
-        tab.jXTable.setColumnControlVisible(true);
+        jXTable.setColumnControlVisible(true);
         // replace grid lines with striping 
-        tab.jXTable.setShowGrid(false, false);
-        tab.jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
+        jXTable.setShowGrid(false, false);
+        jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
         // initialize preferred size for table's viewable area
-        tab.jXTable.setVisibleRowCount(10); // TODO
+        jXTable.setVisibleRowCount(10); // TODO
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
-        tab.jXTable.setModel(tab.tableModel);
-        return getDataLoader(tab.tableModel);
+        jXTable.setModel(tableModel);
+//        return getDataLoader(tableModel);
+		
 	}
 	
-	private GenericDataLoader getDataLoader(GenericTableModel tableModel) {
- 		GenericDataLoader task = new GenericDataLoader(tableModel);
+	private GenericDataLoader initDataLoader() {
+ 		this.loader = new GenericDataLoader(this.tableModel);
  		
 		JLabel status = new JLabel();
         BindingGroup group = new BindingGroup();
-        group.addBinding(Bindings.createAutoBinding(READ, task, 
+        group.addBinding(Bindings.createAutoBinding(READ, loader, 
         		BeanProperty.create("progress"),
         		frame.progressBar, BeanProperty.create("value")));
-        group.addBinding(Bindings.createAutoBinding(READ, task, 
+        group.addBinding(Bindings.createAutoBinding(READ, loader, 
         		BeanProperty.create("state"),
         		this, BeanProperty.create("loadState"))); // call setLoadState 
         group.bind();
 
 //		setVisible(true); // in setLoadState
-		return task;		
+		return loader;		
 	}
 
 	// aus org.jdesktop.swingx.demos.table.XTableDemo
