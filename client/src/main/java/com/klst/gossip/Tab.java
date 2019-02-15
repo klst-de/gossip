@@ -91,11 +91,15 @@ public class Tab extends JPanel implements ComponentListener {
 	/* setRowSelectionInterval(index0, index1)
 	 * Selects the rows from <code>index0</code> to <code>index1</code>, inclusive.
 	 */
-	public void first() {
+	private void setRowSelection(int rowIndex) {
 		// includeSpacing if false, return the true cell bounds -computed by subtracting 
 		//  the intercellspacing from the height and widths ofthe column and row models
-		jXTable.scrollRectToVisible(jXTable.getCellRect(0, 0, true)); // includeSpacing:true
-		jXTable.setRowSelectionInterval(0, 0);
+		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
+		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
+	}
+	
+	public void first() {
+		setRowSelection(0);
 	}
 	
 	public void previous() {
@@ -105,22 +109,34 @@ public class Tab extends JPanel implements ComponentListener {
 		int currentRow = -1;
 		int[] selected = jXTable.getSelectedRows(); // can be empty
 		if(selected.length==0) {
-			// und nun? TODO
+			// und nun? wrap around
+			currentRow = jXTable.getRowCount();
 		} else {
 			currentRow = selected[0];
-			currentRow--;
 		}
-		LOG.config("new currentRow:"+currentRow);
-		if(currentRow<0) return; // nix selektiert oder bereits bei first
-		jXTable.scrollRectToVisible(jXTable.getCellRect(currentRow, 0, true));
-		jXTable.setRowSelectionInterval(currentRow, currentRow);
+		LOG.config("currentRow:"+currentRow);
+		currentRow--;
+		if(currentRow<0) {
+			last(); // wrap around
+			return; // nix selektiert oder bereits bei first
+		}
+		setRowSelection(currentRow);
 	}
 	
+	public void next() {
+		int[] selected = jXTable.getSelectedRows(); // can be empty
+		int currentRow = selected.length==0 ? -1 : selected[selected.length-1];
+		LOG.config("currentRow:"+currentRow);
+		currentRow++;
+		setRowSelection( currentRow<jXTable.getRowCount() ? currentRow : 0 );
+	}
+
 	public void last() {
-		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
-		jXTable.scrollRectToVisible(jXTable.getCellRect(jXTable.getRowCount()-1, 0, true));
-		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
-		jXTable.setRowSelectionInterval(jXTable.getRowCount()-1, jXTable.getRowCount()-1);
+//		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
+//		jXTable.scrollRectToVisible(jXTable.getCellRect(jXTable.getRowCount()-1, 0, true));
+//		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
+//		jXTable.setRowSelectionInterval(jXTable.getRowCount()-1, jXTable.getRowCount()-1);
+		setRowSelection(jXTable.getRowCount()-1);
 	}
 	
 	private int getWindowNo() {

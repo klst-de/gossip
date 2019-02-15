@@ -147,7 +147,7 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mFile.add(quitItem);
             
-            JMenuItem refreshItem = new JMenuItem("refresh", AIT.getImageIcon(AIT.REFRESH, SMALL_ICON_SIZE));
+            JMenuItem refreshItem = new JMenuItem("Refresh", AIT.getImageIcon(AIT.REFRESH, SMALL_ICON_SIZE));
             refreshItem.setName("refresh");
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
@@ -156,7 +156,7 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mEdit.add(refreshItem);
 
-            JMenuItem firstItem = new JMenuItem("first", AIT.getImageIcon(AIT.FIRST, SMALL_ICON_SIZE));
+            JMenuItem firstItem = new JMenuItem("First", AIT.getImageIcon(AIT.FIRST, SMALL_ICON_SIZE));
             firstItem.setName("first");
             firstItem.setActionCommand("first");
             firstItem.addActionListener(event -> {
@@ -164,15 +164,6 @@ public class WindowFrame extends JFrame implements WindowListener {
             	tab.first();
             });
             mEdit.add(firstItem);
-
-            JMenuItem lastItem = new JMenuItem("last", AIT.getImageIcon(AIT.LAST, SMALL_ICON_SIZE));
-            lastItem.setName("last");
-            lastItem.setActionCommand("last");
-            lastItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.last();
-            });
-            mEdit.add(lastItem);
 
             JMenuItem previousItem = new JMenuItem("Previous", AIT.getImageIcon(AIT.PREVIOUS, SMALL_ICON_SIZE));
             previousItem.setName("previous");
@@ -182,6 +173,24 @@ public class WindowFrame extends JFrame implements WindowListener {
             	tab.previous();
             });
             mEdit.add(previousItem);
+
+            JMenuItem nextItem = new JMenuItem("Next", AIT.getImageIcon(AIT.NEXT, SMALL_ICON_SIZE));
+            nextItem.setName("next");
+            nextItem.setActionCommand("next");
+            nextItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.next();
+            });
+            mEdit.add(nextItem);
+
+            JMenuItem lastItem = new JMenuItem("Last", AIT.getImageIcon(AIT.LAST, SMALL_ICON_SIZE));
+            lastItem.setName("last");
+            lastItem.setActionCommand("last");
+            lastItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.last();
+            });
+            mEdit.add(lastItem);
         }
 
 	}
