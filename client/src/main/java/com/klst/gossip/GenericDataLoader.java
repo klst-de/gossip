@@ -141,9 +141,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 				columnName = field.getColumnName();
 				displayType = field.getDisplayType(); // aka AD_Reference_ID 
 				if(row==0) {
-					LOG.config(f+":"+field.toString() + " -- toStringX:"+field.toStringX());
-					// 0:GridField[AD_Client_ID=null, IsDisplayed=true] -- toStringX:MField[AD_Client_ID=null,DisplayType=19] 
-					
+//					LOG.config(f+":"+field.toString() + " -- toStringX:"+field.toStringX());
 					LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " columnName="+columnName 
 					+ " DisplayType="+displayType + " Field_ID="+field.getAD_Field_ID() 
 					+ " Reference="+field.getAD_Reference_Value_ID() + " DefaultValue="+field.getDefaultValue() 

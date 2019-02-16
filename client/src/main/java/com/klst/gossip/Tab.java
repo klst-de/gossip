@@ -239,24 +239,30 @@ public class Tab extends JPanel implements ComponentListener {
         return tab.initDataLoader();
 	}
 
+	private void singleRowPanel() { // TODO test mit VPanel
+		LOG.warning("new VPanel("+this.getName()+", "+this.getWindowNo()+")");
+		vPanel = new VPanel(this.getName(), this.getWindowNo()); //public VPanel(String Name, int WindowNo) {
+		for (Iterator<GridField> iterator = fields.iterator(); iterator.hasNext();) {
+			GridField field = iterator.next();
+			VEditor editor = getEditor(field); // factory TODO
+			if (editor == null) {
+				LOG.warning("kein Editor für "+field);
+				continue;
+			} else {
+				LOG.config(field+ " editoe:"+editor);
+			}
+//			field.addPropertyChangeListener(editor);
+			vPanel.addFieldBuffered(editor, field);	
+		}
+		add(vPanel, BorderLayout.CENTER);		
+	}
+	
 	private void initModelAndTable() {
 		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
 		
 		LOG.config(this.getName()+" isSingleRow:"+gridTab.isSingleRow());
-		if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
-			vPanel = new VPanel(this.getName(), this.getWindowNo());
-			//public VPanel(String Name, int WindowNo) {
-			for (Iterator<GridField> iterator = fields.iterator(); iterator.hasNext();) {
-				GridField field = iterator.next();
-				VEditor editor = getEditor(field); // factory TODO
-				if (editor == null) {
-					LOG.warning("kein Editor für "+field);
-					continue;
-				}
-				field.addPropertyChangeListener(editor);
-				vPanel.addFieldBuffered(editor, field);	
-			}
-			add(vPanel, BorderLayout.CENTER);	
+		if(gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab
+			singleRowPanel();
 		} else {
 	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
 	        Stacker stacker = new Stacker(scrollpane);
@@ -330,6 +336,14 @@ public class Tab extends JPanel implements ComponentListener {
 		boolean readOnly = mField.isReadOnly();
 		boolean updateable = mField.isUpdateable();
 		int WindowNo = mField.getWindowNo();
+		LOG.config("displayType:"+displayType
+				+ " columnName:"+columnName
+				+ " mandatory:"+mandatory
+				+ " readOnly:"+readOnly
+				+ " updateable:"+updateable
+				+ " WindowNo:"+WindowNo
+				+ " Not a Field:"+mField.isHeading()
+				);
 		
 		//  Not a Field
 		if (mField.isHeading())

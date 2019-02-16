@@ -24,7 +24,6 @@ import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
-import org.compiere.grid.VPanel;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VEditor;
@@ -151,7 +150,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 //			 *  The Grid Controller is the panel for single and multi-row presentation
 //			 *  and links to the Model Tab.
 
-			VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
+			//VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
 			
 /* aus GridController.init() :
 		//  Set up Multi Row Table
@@ -224,33 +223,31 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 		}   //  Single-Row
 
  */
-			//vPanel.putClientProperty(key, value); // (Object key, Object value)
-			GridTab gridTab = frame.getGridTabs().get(0);
-			if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
-				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
-				
-//				vPanel.setMnemonic(mField); // TODO
-				
-				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
-					GridField mField = gridTab.getField(i);
-					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
-					//     interface VEditor !
-					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
-							factoryGetEditor(gridTab, mField, false);
-					vPanel.addFieldBuffered(editor, mField);
-				}
-			} else {
-				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
-			}
+//			//vPanel.putClientProperty(key, value); // (Object key, Object value)
+//			GridTab gridTab = frame.getGridTabs().get(0);
+//			if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
+//				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
+//				
+////				vPanel.setMnemonic(mField); // TODO
+//				
+//				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
+//					GridField mField = gridTab.getField(i);
+//					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
+//					//     interface VEditor !
+//					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
+//							factoryGetEditor(gridTab, mField, false);
+//					vPanel.addFieldBuffered(editor, mField);
+//				}
+//			} else {
+//				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
+//			}
+//			
+//			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(vPanel);
 			
-			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(vPanel);
-			
-//			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
 			
-//			vPanel.scrollRectToVisible(vPanel.getCellRect(0, 0, true)); // includeSpacing:true
-//			vPanel.setRowSelectionInterval(0, 0);
 		});
 		mFile.add(miBank);
 
@@ -259,7 +256,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			LOG.config("new frame Länder");
 			WindowFrame frame = makeWindow(122); // AD_Window_ID=122;
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			Tab tab = frame.getSelectedTab(); // null
+//			Tab tab = frame.getSelectedTab(); // wie erwartet null
 			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();

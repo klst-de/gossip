@@ -132,7 +132,7 @@ public class GenericTableModel extends AbstractTableModel {
     	if(logDisplayType.containsKey(field)) {
     		// schon geloggt
     	} else {
-        	LOG.warning(field + " displayType:"+displayType);
+        	LOG.config(field + " displayType:"+displayType);
         	logDisplayType.put(field, displayType);
     	}
     	// Return Storage Class - ist aber nicht die DisplayClass
