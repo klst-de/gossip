@@ -7,11 +7,14 @@ import java.awt.Component;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,6 +45,8 @@ public class Tab extends JPanel implements ComponentListener {
 	
 	private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
+	private static EnumMap<StateValue, Icon> statusToTrafficlights = new EnumMap<>(StateValue.class);
+	
 	// AD Komponenten:
 	// MTab mit den Metadaten
 	// swing Komponenten:
@@ -84,11 +89,18 @@ public class Tab extends JPanel implements ComponentListener {
 		// - BooleanEditor
 		this.jXTable = createXTable();
 		this.listSelectionModel = jXTable.getSelectionModel();
+		
+		if(statusToTrafficlights.isEmpty()) {
+			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
+			statusToTrafficlights.put(StateValue.STARTED, frame.AIT.getImageIcon(frame.AIT.YLI, WindowFrame.SMALL_ICON_SIZE));
+			statusToTrafficlights.put(StateValue.DONE   , frame.AIT.getImageIcon(frame.AIT.GLI, WindowFrame.SMALL_ICON_SIZE));
+		}
 	}
 
 	public void setLoadState(StateValue state) {
 		LOG.config(this.getName()+" StateValue:"+state);
-		frame.actionStatus.setText(state.name()); // TODO das sieht nicht gut aus => Ampel
+//		frame.actionStatus.setText(state.name()); // sieht nicht gut aus => Ampel:
+		frame.actionStatus.setIcon(statusToTrafficlights.get(state));
 		if(state.equals(StateValue.STARTED)) {
 			frame.setVisible(true);
 		} else if(state.equals(StateValue.DONE)) {
