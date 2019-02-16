@@ -3,9 +3,13 @@ package com.klst.gossip;
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
@@ -15,7 +19,13 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
+import org.compiere.grid.VPanel;
+import org.compiere.grid.ed.VDate;
+import org.compiere.grid.ed.VEditor;
+import org.compiere.grid.ed.VLookup;
+import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.util.DisplayType;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -41,11 +51,13 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private GridTab gridTab;
+	private List<GridField> fields;
 	private GenericTableModel tableModel;
 	private GenericDataLoader loader;
 
 	// ui
 	JXTable jXTable = createXTable(); // JXTable extends JTable implements TableColumnModelExtListener
+	VPanel vPanel = null; // VPanel extends JTabbedPane TODO
 	
 	// ctor
 	/* super ctors
@@ -58,7 +70,9 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("gridTab "+gridTab + ", WindowFrame frame:"+frame);
 		this.frame = frame;
 		this.gridTab = gridTab;
+		this.fields = Arrays.asList(this.gridTab.getFields());
 		this.addComponentListener(this);
+		this.setName(this.gridTab.getName());
 		
 		// in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
 		// wir wollen unser eigenes Model haben GenericTableModel extends AbstractTableModel
@@ -70,10 +84,19 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	public void setLoadState(StateValue state) {
-		LOG.config("StateValue:"+state);
+		LOG.config(this.getName()+" StateValue:"+state);
+		frame.actionStatus.setText(state.name()); // TODO das sieht nicht gut aus => Ampel
 		if(state.equals(StateValue.STARTED)) {
 			frame.setVisible(true);
 		}
+//		if(state.equals(StateValue.PENDING)) {
+//			frame.actionStatus.setText("PENDING"); // TODO das sieht nicht gut aus => Ampel
+//		} else if(state.equals(StateValue.STARTED)) {
+//			frame.setVisible(true);
+//			frame.actionStatus.setText("STARTED");
+//		} else if(state.equals(StateValue.DONE)) {
+//			frame.actionStatus.setText("DONE");
+//		}
 	}
 
 	public GridTab getGridTab() {
@@ -81,9 +104,6 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void refresh() {
-//		die einzigen setter:
-//		this.jXTable.getModel().setValueAt(aValue, rowIndex, columnIndex);
-//		this.jXTable.getModel().isCellEditable(rowIndex, columnIndex)
 		this.loader = initDataLoader();
 		this.loader.execute();
 	}
@@ -96,6 +116,22 @@ public class Tab extends JPanel implements ComponentListener {
 		//  the intercellspacing from the height and widths ofthe column and row models
 		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
 		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
+		frame.tableRows.setText(""+(rowIndex+1)+"/"+jXTable.getRowCount()); // TODO tableRows wird bei selection/Click nicht geändertS
+		
+		// experiment:
+//		if(vPanel!=null) {
+//			LOG.warning(this.getName()+"TODO currentRow:"+rowIndex);
+//			Component[] comps = vPanel.getComponentsRecursive();
+//			LOG.warning("TODO comps.length:"+comps.length);
+//			for (int i = 0; i < comps.length; i++) { //... GridControler Zeile 1031
+//				Component comp = comps[i];
+//				LOG.config(comp.toString());
+//				if(comp instanceof VLookup) {
+//					VLookup vl = (VLookup)comp;
+//					LOG.warning("TODO comps vl.getValue():"+vl.getValue());
+//				}
+//			}
+//		}
 	}
 	
 	public void first() {
@@ -149,6 +185,7 @@ public class Tab extends JPanel implements ComponentListener {
 		return frame.getTabs();
 	}
 	
+	// nur zur Doku
 	private GenericDataLoader getDataLoaderBUGGY() {
         frame.tabPane = new HidableTabbedPane(); // BUG. so geht es nicht
         for (int i = 0; i < getGridTabs().size(); i++) { // ohne first
@@ -203,10 +240,28 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private void initModelAndTable() {
 		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
-        JScrollPane scrollpane = new JScrollPane(this.jXTable);
-        Stacker stacker = new Stacker(scrollpane);
-        jXTable.setName(gridTab.getName());
-        add(stacker, BorderLayout.CENTER);
+		
+		LOG.config(this.getName()+" isSingleRow:"+gridTab.isSingleRow());
+		if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
+			vPanel = new VPanel(this.getName(), this.getWindowNo());
+			//public VPanel(String Name, int WindowNo) {
+			for (Iterator<GridField> iterator = fields.iterator(); iterator.hasNext();) {
+				GridField field = iterator.next();
+				VEditor editor = getEditor(field); // factory TODO
+				if (editor == null) {
+					LOG.warning("kein Editor für "+field);
+					continue;
+				}
+				field.addPropertyChangeListener(editor);
+				vPanel.addFieldBuffered(editor, field);	
+			}
+			add(vPanel, BorderLayout.CENTER);	
+		} else {
+	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
+	        Stacker stacker = new Stacker(scrollpane);
+	        jXTable.setName(gridTab.getName());
+	        add(stacker, BorderLayout.CENTER);			
+		}
 
         jXTable.setColumnControlVisible(true);
         // replace grid lines with striping 
@@ -217,15 +272,100 @@ public class Tab extends JPanel implements ComponentListener {
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
-        jXTable.setModel(tableModel);
-//        return getDataLoader(tableModel);
-		
+        jXTable.setModel(tableModel);		
 	}
 	
+	/*
+	public static final int String     = 10;
+	public static final int Integer    = 11;
+	public static final int Amount     = 12;
+	public static final int ID         = 13; Lookup
+	public static final int Text       = 14;
+	public static final int Date       = 15;
+	public static final int DateTime   = 16;
+	public static final int List       = 17; Lookup
+	public static final int Table      = 18; Lookup
+	public static final int TableDir   = 19; Lookup
+	public static final int YesNo      = 20;
+	public static final int Location   = 21;
+	public static final int Number     = 22;
+	public static final int Binary     = 23;
+	public static final int Time       = 24;
+	public static final int Account    = 25;
+	public static final int RowID      = 26;
+	public static final int Color      = 27;
+	public static final int Button	   = 28;
+	public static final int Quantity   = 29;
+	public static final int Search     = 30; Lookup
+	public static final int Locator    = 31;
+	public static final int Image      = 32;
+	public static final int Assignment = 33;
+	public static final int Memo       = 34;
+	public static final int PAttribute = 35;
+	public static final int TextLong   = 36;
+	public static final int CostPrice  = 37;
+	public static final int FilePath   = 38;
+	public static final int FileName   = 39;
+	public static final int URL        = 40;
+	public static final int PrinterName= 42;
+	public static final int Chart           = 53370;
+	public static final int FilePathOrName  = 53670;
+
+ */
+	private VEditor getEditor(GridField mField) { // TODO mField in fied umbenennen
+		LOG.config(mField.toString());
+		if (mField == null)
+			return null; // gut ist das nicht
+		
+		VEditor editor = null;
+		int displayType = mField.getDisplayType();
+		String columnName = mField.getColumnName();
+		boolean mandatory = mField.isMandatory(false);      //  no context check
+		boolean readOnly = mField.isReadOnly();
+		boolean updateable = mField.isUpdateable();
+		int WindowNo = mField.getWindowNo();
+		
+		//  Not a Field
+		if (mField.isHeading())
+			return null;
+
+		//	Lookup (displayType == List || displayType == Table || displayType == TableDir || displayType == Search)
+		if (DisplayType.isLookup(displayType) || displayType == DisplayType.ID)
+		{
+			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, mField.getLookup());
+			vl.setName(columnName);
+			vl.setField (mField);
+			editor = vl;
+		}
+		//	YesNo - BooleanEditor
+//		else if (displayType == DisplayType.YesNo)
+//		{
+//			VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable, mField.getHeader(), mField.getDescription(), tableEditor);
+//			vc.setName(columnName);
+//			vc.setField (mField);
+//			editor = vc;
+//		}
+
+		//	Date
+		else if (DisplayType.isDate(displayType))
+		{
+			if (displayType == DisplayType.DateTime)
+				readOnly = true;
+			VDate vd = new VDate(columnName, mandatory, readOnly, updateable, displayType, mField.getHeader());
+			vd.setName(columnName);
+			vd.setField (mField);
+			editor = vd;
+		}
+
+		else
+			LOG.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
+
+		return editor;
+	}
+
 	private GenericDataLoader initDataLoader() {
  		this.loader = new GenericDataLoader(this.tableModel);
  		
-		JLabel status = new JLabel();
         BindingGroup group = new BindingGroup();
         group.addBinding(Bindings.createAutoBinding(READ, loader, 
         		BeanProperty.create("progress"),

@@ -13,8 +13,6 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MTab;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Trx;
 
 // aka GridTable
 //public GridTable(Properties ctx, int AD_Table_ID, String TableName, int WindowNo, int TabNo,
@@ -39,40 +37,31 @@ public class GenericTableModel extends AbstractTableModel {
 	private MTab mTab;
 	private GridField[] fields = null;
 	
-//	private int table_ID;
-//	private MTable mTable;
-
 	private Properties ctx;
 	private String trxName;
 
 	// ctor
-	public GenericTableModel(int tab_ID, int windowNo) {
-		this.windowNo = windowNo;
-		this.tab_ID = tab_ID;
-//		this.table_ID = getTable_ID(tab_ID);
-		LOG.warning("deprecated");
-//		this.mTable = MTable.get(Env.getCtx(), table_ID);
-//		LOG.config(mTab.toString() + " " + mTable.toString());
-		
-		this.fields = GridField.createFields(ctx, this.windowNo, 0, this.tab_ID); // int TabNo = 0
-	}
+//	public GenericTableModel(int tab_ID, int windowNo) {
+//		this.windowNo = windowNo;
+//		this.tab_ID = tab_ID;
+//		LOG.warning("deprecated");
+//		
+//		this.fields = GridField.createFields(ctx, this.windowNo, 0, this.tab_ID); // int TabNo = 0
+//	}
 	public GenericTableModel(GridTab gridTab, int windowNo) {
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
-		//.getAD_Tab_ID();
-//		this.gridTab.getAD_Table_ID()
-//		this.gridTab.get_TableName()
 		this.fields = this.gridTab.getFields();
 	}
 
-	private int getTable_ID(int tab_ID) {
-		LOG.config("aus AD_Tab holen tab_ID:"+tab_ID);
-		this.ctx = Env.getCtx();
-		this.trxName =  Trx.createTrxName(GenericTableModel.class.getName()); 
-		this.mTab = new MTab(ctx, tab_ID, trxName);
-		int table_ID = mTab.getAD_Table_ID();
-		return table_ID;
-	}
+//	private int getTable_ID(int tab_ID) {
+//		LOG.config("aus AD_Tab holen tab_ID:"+tab_ID);
+//		this.ctx = Env.getCtx();
+//		this.trxName =  Trx.createTrxName(GenericTableModel.class.getName()); 
+//		this.mTab = new MTab(ctx, tab_ID, trxName);
+//		int table_ID = mTab.getAD_Table_ID();
+//		return table_ID;
+//	}
 
     /*
      * (non-Javadoc)

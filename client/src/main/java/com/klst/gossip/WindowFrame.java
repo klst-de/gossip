@@ -2,6 +2,7 @@ package com.klst.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
@@ -9,8 +10,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -24,6 +27,7 @@ import org.compiere.model.MWindow;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
+import org.jdesktop.swingx.JXStatusBar;
 
 import com.klst.icon.AbstractImageTranscoder;
 
@@ -74,7 +78,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	 * - jPanel
 	 *   - at PAGE_START: toolBar
 	 *   - at CENTER    : tabPane
-	 *   - at PAGE_END  : progressBar
+	 *   - at PAGE_END  : statusBar mit progressBar
 	 */
 	RootFrame rootFrame; // mit FrameManager
 	JMenuBar menuBar = new JMenuBar();
@@ -85,7 +89,12 @@ public class WindowFrame extends JFrame implements WindowListener {
 	JMenu mHelp = new JMenu(); // ...
 	JPanel jPanel = new JPanel(new BorderLayout());
 	HidableTabbedPane tabPane;
+	// statusBar:
+	JComponent statusBarLeft;
+	JLabel actionStatus;
 	JProgressBar progressBar;
+    JLabel tableStatus;
+    JLabel tableRows;
 
 	// ctor
 	/* super ctors
@@ -120,9 +129,8 @@ public class WindowFrame extends JFrame implements WindowListener {
 		}
 		getContentPane().add(jPanel);
 		
-		this.progressBar = new JProgressBar(0, 100);
-		progressBar.setStringPainted(true);
-		jPanel.add(progressBar, BorderLayout.PAGE_END);
+//		jPanel.add(progressBar, BorderLayout.PAGE_END);
+		jPanel.add(createStatusBar(), BorderLayout.PAGE_END);
 		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
@@ -232,23 +240,6 @@ TODO Demo für jeden Typ
 		return (Tab)tabPane.getComponentAt(index);
 	}
 	
-	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
-		jPanel.add(vPanel, BorderLayout.CENTER);
-		
-		this.progressBar = new JProgressBar(0, 100);
-		progressBar.setStringPainted(true);
-		jPanel.add(progressBar, BorderLayout.PAGE_END);
-		
-		GridTab gridTab = gridTabs.get(0); // first Tab
-		GenericTableModel tableModel = new GenericTableModel(gridTab, getWindowNo());
- 		GenericDataLoader task = new GenericDataLoader(tableModel);
-		
-		pack();
-		setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-		setVisible(true); 
-		return task;	
-	}
-	
 	List<GridTab> getGridTabs() {
 		return this.gridTabs;
 	}
@@ -257,6 +248,46 @@ TODO Demo für jeden Typ
 		return this.tabs;
 	}
 	
+	// aus org.jdesktop.swingx.demos.table.XTableDemo
+    protected Container createStatusBar() {
+        JXStatusBar statusBar = new JXStatusBar(); // aus jdesktop
+        statusBar.putClientProperty("auto-add-separator", Boolean.FALSE);
+        // Left status area
+        statusBar.add(Box.createRigidArea(new Dimension(10, 22)));
+        statusBarLeft = Box.createHorizontalBox();
+        statusBar.add(statusBarLeft, JXStatusBar.Constraint.ResizeBehavior.FILL);
+        actionStatus = new JLabel();
+        actionStatus.setName("loadingStatusLabel");
+        actionStatus.setHorizontalAlignment(JLabel.LEADING);
+        statusBarLeft.add(actionStatus);
+
+        // Middle (should stretch)
+//        statusBar.add(Box.createHorizontalGlue());
+//        statusBar.add(Box.createHorizontalGlue());
+        statusBar.add(Box.createVerticalGlue());
+        statusBar.add(Box.createRigidArea(new Dimension(50, 0)));
+
+        // Right status area
+        tableStatus = new JLabel(); 
+        tableStatus.setName("rowCountLabel");
+        JComponent bar = Box.createHorizontalBox();
+        bar.add(tableStatus);
+        tableRows = new JLabel("0");
+        bar.add(tableRows);
+        
+        statusBar.add(bar);
+        statusBar.add(Box.createHorizontalStrut(12));
+        
+		this.progressBar = new JProgressBar(0, 100);
+		progressBar.setStringPainted(true);
+        statusBarLeft.add(progressBar); // in XTableDemo wird sie ein/ausgeblendet, wie actionStatus:
+        // in setLoadState:
+        // statusBarLeft.remove(progressBar);
+        // statusBarLeft.remove(actionStatus);
+        // revalidate(); repaint();
+        return statusBar;
+    }
+
 	public void setTitle(String title) {
 		super.setTitle(title);
 	}

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
@@ -23,8 +24,16 @@ import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
+import org.compiere.grid.VPanel;
+import org.compiere.grid.ed.VCheckBox;
+import org.compiere.grid.ed.VDate;
+import org.compiere.grid.ed.VEditor;
+import org.compiere.grid.ed.VLookup;
+import org.compiere.model.GridField;
+import org.compiere.model.GridTab;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
@@ -138,11 +147,11 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			WindowFrame frame = makeWindow(158); // AD_Window_ID=158)
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			// TEST
-// TODO Tab muss so etwas wie Grid Controller sein
+// TODO Tab muss so etwas wie GridController sein
 //			 *  The Grid Controller is the panel for single and multi-row presentation
 //			 *  and links to the Model Tab.
 
-//			VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
+			VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
 			
 /* aus GridController.init() :
 		//  Set up Multi Row Table
@@ -216,29 +225,32 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 
  */
 			//vPanel.putClientProperty(key, value); // (Object key, Object value)
-//			GridTab gridTab = frame.gridTabs.get(0);
-//			if(gridTab.isDetail() || true) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
-//				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
-//				
-////				vPanel.setMnemonic(mField); // TODO
-//				
-//				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
-//					GridField mField = gridTab.getField(i);
-//					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
-//					//     interface VEditor !
-//					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
-//							factoryGetEditor(gridTab, mField, false);
-//					vPanel.addFieldBuffered(editor, mField);
-//				}
-//			} else {
-//				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
-//			}
-//			
-//			GenericDataLoader task = frame.getDataLoader(vPanel);
+			GridTab gridTab = frame.getGridTabs().get(0);
+			if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
+				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
+				
+//				vPanel.setMnemonic(mField); // TODO
+				
+				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
+					GridField mField = gridTab.getField(i);
+					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
+					//     interface VEditor !
+					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
+							factoryGetEditor(gridTab, mField, false);
+					vPanel.addFieldBuffered(editor, mField);
+				}
+			} else {
+				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
+			}
 			
-			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(vPanel);
+			
+//			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
 			task.execute();
+			
+//			vPanel.scrollRectToVisible(vPanel.getCellRect(0, 0, true)); // includeSpacing:true
+//			vPanel.setRowSelectionInterval(0, 0);
 		});
 		mFile.add(miBank);
 
@@ -389,7 +401,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 	public static final int Chart           = 53370;
 	public static final int FilePathOrName  = 53670;
 
- * /
+ */
 	private static VEditor factoryGetEditor(GridTab mTab, GridField mField, boolean tableEditor) {
 		if (mField == null)
 			return null;
@@ -470,7 +482,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 		
 		return editor;
 	}
---------------------------- */	
+//--------------------------- */	
 
 	/*
 	 * initialisiert auch MetalLookAndFeel theme,
