@@ -16,6 +16,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.table.JTableHeader;
 
@@ -56,7 +57,8 @@ public class Tab extends JPanel implements ComponentListener {
 	private GenericDataLoader loader;
 
 	// ui
-	JXTable jXTable = createXTable(); // JXTable extends JTable implements TableColumnModelExtListener
+	JXTable jXTable; // JXTable extends JTable implements TableColumnModelExtListener
+	ListSelectionModel listSelectionModel; // the ListSelectionModel that is used to maintain rowselection state
 	VPanel vPanel = null; // VPanel extends JTabbedPane TODO
 	
 	// ctor
@@ -81,6 +83,7 @@ public class Tab extends JPanel implements ComponentListener {
 		// - NumberEditor
 		// - BooleanEditor
 		this.jXTable = createXTable();
+		this.listSelectionModel = jXTable.getSelectionModel();
 	}
 
 	public void setLoadState(StateValue state) {
@@ -88,15 +91,9 @@ public class Tab extends JPanel implements ComponentListener {
 		frame.actionStatus.setText(state.name()); // TODO das sieht nicht gut aus => Ampel
 		if(state.equals(StateValue.STARTED)) {
 			frame.setVisible(true);
+		} else if(state.equals(StateValue.DONE)) {
+			updateStatusBar(0);
 		}
-//		if(state.equals(StateValue.PENDING)) {
-//			frame.actionStatus.setText("PENDING"); // TODO das sieht nicht gut aus => Ampel
-//		} else if(state.equals(StateValue.STARTED)) {
-//			frame.setVisible(true);
-//			frame.actionStatus.setText("STARTED");
-//		} else if(state.equals(StateValue.DONE)) {
-//			frame.actionStatus.setText("DONE");
-//		}
 	}
 
 	public GridTab getGridTab() {
@@ -108,6 +105,10 @@ public class Tab extends JPanel implements ComponentListener {
 		this.loader.execute();
 	}
 	
+	private void updateStatusBar(int rowIndex) {
+		frame.tableRows.setText(""+(rowIndex+1)+"/"+jXTable.getRowCount());
+	}
+
 	/* setRowSelectionInterval(index0, index1)
 	 * Selects the rows from <code>index0</code> to <code>index1</code>, inclusive.
 	 */
@@ -116,7 +117,7 @@ public class Tab extends JPanel implements ComponentListener {
 		//  the intercellspacing from the height and widths ofthe column and row models
 		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
 		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
-		frame.tableRows.setText(""+(rowIndex+1)+"/"+jXTable.getRowCount()); // TODO tableRows wird bei selection/Click nicht geändertS
+		updateStatusBar(rowIndex);
 		
 		// experiment:
 //		if(vPanel!=null) {
@@ -272,7 +273,12 @@ public class Tab extends JPanel implements ComponentListener {
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
-        jXTable.setModel(tableModel);		
+        jXTable.setModel(tableModel);
+        listSelectionModel.addListSelectionListener(event -> {
+            int firstIndex = event.getFirstIndex();
+            //int lastIndex = event.getLastIndex();
+            updateStatusBar(firstIndex);
+        });
 	}
 	
 	/*
