@@ -203,55 +203,36 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	// nur zur Doku
-	private GenericDataLoader getDataLoaderBUGGY() {
-        frame.tabPane = new HidableTabbedPane(); // BUG. so geht es nicht
-        for (int i = 0; i < getGridTabs().size(); i++) { // ohne first
-        	GridTab gt = getGridTabs().get(i);
-        	Tab t = getTabs().get(i); 
-        	frame.tabPane.addTab(gt.getName(), t);
-        	t.initModelAndTable();
-        	t.initDataLoader();
-        }
-        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
-        frame.pack();
-        
-        return this.loader;
-	}
-//	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
-//		frame.jPanel.add(vPanel, BorderLayout.CENTER);
-//		
-////		GridTab gridTab = getGridTabs().get(0); // first Tab
-////		Tab tab = getTabs().get(0); 
-//        frame.tabPane = new HidableTabbedPane(gridTab.getName(), vPanel);
-////        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
-////        	GridTab gt = getGridTabs().get(i);
-////        	Tab t = getTabs().get(i); 
-////        	frame.tabPane.addTab(gt.getName(), t);
-////        	t.loader = getDataLoader(gt, t);
-////        }
+//	private GenericDataLoader getDataLoaderBUGGY() {
+//        frame.tabPane = new HidableTabbedPane(); // BUG. so geht es nicht
+//        for (int i = 0; i < getGridTabs().size(); i++) { // ohne first
+//        	GridTab gt = getGridTabs().get(i);
+//        	Tab t = getTabs().get(i); 
+//        	frame.tabPane.addTab(gt.getName(), t);
+//        	t.initModelAndTable(???);
+//        	t.initDataLoader();
+//        }
 //        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
 //        frame.pack();
-////		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
 //        
-//        initModelAndTable();
-//        return initDataLoader();
+//        return this.loader;
 //	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
 		Tab tab = getTabs().get(0); 
+		Dimension preferredDim = tab.initModelAndTable(null); // null == calculate preferredDim    
         frame.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
         for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
         	GridTab gt = getGridTabs().get(i);
         	Tab t = getTabs().get(i); 
         	frame.tabPane.addTab(gt.getName(), t);
-        	t.initModelAndTable();
+        	t.initModelAndTable(preferredDim);
         	t.initDataLoader();
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
         
-        tab.initModelAndTable();    
         return tab.initDataLoader();
 	}
 
@@ -274,16 +255,25 @@ public class Tab extends JPanel implements ComponentListener {
 		return vPanel;
 	}
 	
-	private void initModelAndTable() {
+	// returns preferredDim
+	private Dimension initModelAndTable(Dimension useDim) {
 		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
 		
 		LOG.config(this.getName()+" isSingleRow:"+gridTab.isSingleRow());
-		// --- wg. Dimension:
-		VPanel vp = singleRowPanel(); // liefert this.vPanel ohne add
-		Dimension preferredDim =vPanel.getPreferredSize(); // preferredSize
-		LOG.warning("vPanel dimension:"+preferredDim);
+		Dimension preferredDim = useDim;
+		if(preferredDim==null) {
+			VPanel vp = singleRowPanel(); // liefert this.vPanel ohne add, vp nicht notwendig
+			preferredDim =vPanel.getPreferredSize(); // preferredSize
+			LOG.warning("vPanel dimension:"+preferredDim);
+		} else {
+			LOG.config("preferredDim set to useDim:"+useDim);
+		}
 		if(gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab
-			add(vPanel, BorderLayout.CENTER);	
+			if(this.vPanel==null) {
+				add(new JLabel("Platzhalter"), BorderLayout.CENTER); // diesen lazy berechnen
+			} else {
+				add(vPanel, BorderLayout.CENTER);	
+			} 
 		} else {
 			this.setPreferredSize(preferredDim);
 	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
@@ -296,10 +286,6 @@ public class Tab extends JPanel implements ComponentListener {
         // replace grid lines with striping 
         jXTable.setShowGrid(false, false);
         jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
-        // initialize preferred size for table's viewable area
-//        jXTable.setVisibleRowCount(10); // ergibt sich aus preferredDim zB bei country 13, da es sich aus city berechnet!
-//        ! es berrechnet sich aus dem größten SingleRow Tab !?
-//        TODO aber es sollte sich aus country SingleRow Panel berechnen!
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
@@ -309,6 +295,8 @@ public class Tab extends JPanel implements ComponentListener {
             //int lastIndex = event.getLastIndex();
             updateStatusBar(firstIndex);
         });
+        
+        return preferredDim;
 	}
 	
 	/*
