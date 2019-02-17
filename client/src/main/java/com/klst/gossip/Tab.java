@@ -4,6 +4,8 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Arrays;
@@ -29,6 +31,7 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.Lookup;
 import org.compiere.util.DisplayType;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
@@ -103,6 +106,7 @@ public class Tab extends JPanel implements ComponentListener {
 		frame.actionStatus.setIcon(statusToTrafficlights.get(state));
 		if(state.equals(StateValue.STARTED)) {
 			frame.setVisible(true);
+			updateStatusBar(0);
 		} else if(state.equals(StateValue.DONE)) {
 			updateStatusBar(0);
 		}
@@ -213,25 +217,25 @@ public class Tab extends JPanel implements ComponentListener {
         
         return this.loader;
 	}
-	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
-		frame.jPanel.add(vPanel, BorderLayout.CENTER);
-		
-//		GridTab gridTab = getGridTabs().get(0); // first Tab
-//		Tab tab = getTabs().get(0); 
-        frame.tabPane = new HidableTabbedPane(gridTab.getName(), vPanel);
-//        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
-//        	GridTab gt = getGridTabs().get(i);
-//        	Tab t = getTabs().get(i); 
-//        	frame.tabPane.addTab(gt.getName(), t);
-//        	t.loader = getDataLoader(gt, t);
-//        }
-        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
-        frame.pack();
-//		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
-        
-        initModelAndTable();
-        return initDataLoader();
-	}
+//	public GenericDataLoader getDataLoader(JComponent vPanel) { // TEST TODO
+//		frame.jPanel.add(vPanel, BorderLayout.CENTER);
+//		
+////		GridTab gridTab = getGridTabs().get(0); // first Tab
+////		Tab tab = getTabs().get(0); 
+//        frame.tabPane = new HidableTabbedPane(gridTab.getName(), vPanel);
+////        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
+////        	GridTab gt = getGridTabs().get(i);
+////        	Tab t = getTabs().get(i); 
+////        	frame.tabPane.addTab(gt.getName(), t);
+////        	t.loader = getDataLoader(gt, t);
+////        }
+//        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
+//        frame.pack();
+////		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
+//        
+//        initModelAndTable();
+//        return initDataLoader();
+//	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 		GridTab gridTab = getGridTabs().get(0); // first Tab
 		Tab tab = getTabs().get(0); 
@@ -251,7 +255,7 @@ public class Tab extends JPanel implements ComponentListener {
         return tab.initDataLoader();
 	}
 
-	private void singleRowPanel() { // TODO test mit VPanel
+	private VPanel singleRowPanel() { // TODO test mit VPanel
 		LOG.warning("new VPanel("+this.getName()+", "+this.getWindowNo()+")");
 		vPanel = new VPanel(this.getName(), this.getWindowNo()); //public VPanel(String Name, int WindowNo) {
 		for (Iterator<GridField> iterator = fields.iterator(); iterator.hasNext();) {
@@ -266,16 +270,22 @@ public class Tab extends JPanel implements ComponentListener {
 //			field.addPropertyChangeListener(editor);
 			vPanel.addFieldBuffered(editor, field);	
 		}
-		add(vPanel, BorderLayout.CENTER);		
+//		add(vPanel, BorderLayout.CENTER);	
+		return vPanel;
 	}
 	
 	private void initModelAndTable() {
 		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
 		
 		LOG.config(this.getName()+" isSingleRow:"+gridTab.isSingleRow());
+		// --- wg. Dimension:
+		VPanel vp = singleRowPanel(); // liefert this.vPanel ohne add
+		Dimension preferredDim =vPanel.getPreferredSize(); // preferredSize
+		LOG.warning("vPanel dimension:"+preferredDim);
 		if(gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab
-			singleRowPanel();
+			add(vPanel, BorderLayout.CENTER);	
 		} else {
+			this.setPreferredSize(preferredDim);
 	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
 	        Stacker stacker = new Stacker(scrollpane);
 	        jXTable.setName(gridTab.getName());
@@ -287,7 +297,9 @@ public class Tab extends JPanel implements ComponentListener {
         jXTable.setShowGrid(false, false);
         jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
         // initialize preferred size for table's viewable area
-        jXTable.setVisibleRowCount(10); // TODO
+//        jXTable.setVisibleRowCount(10); // ergibt sich aus preferredDim zB bei country 13, da es sich aus city berechnet!
+//        ! es berrechnet sich aus dem größten SingleRow Tab !?
+//        TODO aber es sollte sich aus country SingleRow Panel berechnen!
 
 //        CustomColumnFactory factory = new CustomColumnFactory();
 
@@ -389,8 +401,16 @@ public class Tab extends JPanel implements ComponentListener {
 			editor = vd;
 		}
 
-		else
-			LOG.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
+		else {
+			LOG.warning(columnName + " - Unknown Type: " + displayType + " ersatzweise VLookup!!!");
+			Lookup getLookup = mField.getLookup();
+			LOG.warning("ignoriert: " + getLookup + " ersatzweise null");
+			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, null);
+			vl.setName(columnName);
+			vl.setField (mField);
+			editor = vl;
+
+		}
 
 		return editor;
 	}
