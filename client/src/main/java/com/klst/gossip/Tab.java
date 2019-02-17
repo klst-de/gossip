@@ -63,6 +63,7 @@ public class Tab extends JPanel implements ComponentListener {
 	private List<GridField> fields;
 	private GenericTableModel tableModel;
 	private GenericDataLoader loader;
+	int currentRow = 0;
 
 	// ui
 	JXTable jXTable; // JXTable extends JTable implements TableColumnModelExtListener
@@ -105,10 +106,10 @@ public class Tab extends JPanel implements ComponentListener {
 //		frame.actionStatus.setText(state.name()); // sieht nicht gut aus => Ampel:
 		frame.actionStatus.setIcon(statusToTrafficlights.get(state));
 		if(state.equals(StateValue.STARTED)) {
-			frame.setVisible(true);
-			updateStatusBar(0);
+			frame.setVisible(true);		
+			updateStatusBar();
 		} else if(state.equals(StateValue.DONE)) {
-			updateStatusBar(0);
+			updateStatusBar();
 		}
 	}
 
@@ -121,8 +122,8 @@ public class Tab extends JPanel implements ComponentListener {
 		this.loader.execute();
 	}
 	
-	private void updateStatusBar(int rowIndex) {
-		frame.tableRows.setText(""+(rowIndex+1)+"/"+jXTable.getRowCount());
+	private void updateStatusBar() {
+		frame.tableRows.setText(""+(currentRow+1)+"/"+jXTable.getRowCount());
 	}
 
 	/* setRowSelectionInterval(index0, index1)
@@ -133,7 +134,8 @@ public class Tab extends JPanel implements ComponentListener {
 		//  the intercellspacing from the height and widths ofthe column and row models
 		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
 		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
-		updateStatusBar(rowIndex);
+		currentRow = rowIndex;
+		updateStatusBar();
 		
 		// experiment:
 //		if(vPanel!=null) {
@@ -185,10 +187,6 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	public void last() {
-//		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
-//		jXTable.scrollRectToVisible(jXTable.getCellRect(jXTable.getRowCount()-1, 0, true));
-//		LOG.config("VisibleRowCount:"+jXTable.getVisibleRowCount() + " RowCount:"+jXTable.getRowCount());
-//		jXTable.setRowSelectionInterval(jXTable.getRowCount()-1, jXTable.getRowCount()-1);
 		setRowSelection(jXTable.getRowCount()-1);
 	}
 	
@@ -291,9 +289,8 @@ public class Tab extends JPanel implements ComponentListener {
 
         jXTable.setModel(tableModel);
         listSelectionModel.addListSelectionListener(event -> {
-            int firstIndex = event.getFirstIndex();
-            //int lastIndex = event.getLastIndex();
-            updateStatusBar(firstIndex);
+        	currentRow = event.getFirstIndex();
+            updateStatusBar();
         });
         
         return preferredDim;
