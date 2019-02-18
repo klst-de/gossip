@@ -126,6 +126,8 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void refresh() {
+		this.tableModel.clear(); // remove all elements
+		frame.tableStatus.setText(""); // cancelled Status
 		this.loader = initDataLoader();
 		this.loader.execute();
 	}
@@ -434,7 +436,7 @@ public class Tab extends JPanel implements ComponentListener {
         loader.addPropertyChangeListener(event -> {
         	if ("cancelled".equals(event.getPropertyName())) {
         		if(loader.isCancelled()) {
-        			frame.tableStatus.setText("cancelled "); // TODO Rows 0/loaded/toLoad
+        			frame.tableStatus.setText("cancelled ");
         			setLoadState(StateValue.PENDING);
         		}
         	}

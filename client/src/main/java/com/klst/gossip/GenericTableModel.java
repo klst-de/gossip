@@ -182,4 +182,8 @@ public class GenericTableModel extends AbstractTableModel {
     	this.rowsToLoad = rowsToLoad;
     }
     
+    public void clear() {
+    	this.tableRows.clear();
+    }
+    
 }
