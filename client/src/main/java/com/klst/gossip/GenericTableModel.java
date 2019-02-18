@@ -36,6 +36,7 @@ public class GenericTableModel extends AbstractTableModel {
 	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
 	private MTab mTab;
 	private GridField[] fields = null;
+	private int rowsToLoad = -1; // der Loader liefert es
 	
 	private Properties ctx;
 	private String trxName;
@@ -171,6 +172,14 @@ public class GenericTableModel extends AbstractTableModel {
     
     public GridField[] getColumns() {
     	return this.fields;
+    }
+    
+    public int getRowsToLoad() {
+    	return this.rowsToLoad;
+    }
+    
+    public void setRowsToLoad(int rowsToLoad) {
+    	this.rowsToLoad = rowsToLoad;
     }
     
 }

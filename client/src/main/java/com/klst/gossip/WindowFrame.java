@@ -155,6 +155,15 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mFile.add(quitItem);
             
+            JMenuItem cancelItem = new JMenuItem("Cancel", AIT.getImageIcon(AIT.CANCEL, SMALL_ICON_SIZE));
+            cancelItem.setName("cancel");
+            cancelItem.setActionCommand("cancel");
+            cancelItem.addActionListener(event -> {
+            	Tab tab = this.getSelectedTab();
+            	tab.cancel(); // Exception tab kann null sein, zB im RootFrame TODO
+            });
+            mEdit.add(cancelItem);
+            
             JMenuItem refreshItem = new JMenuItem("Refresh", AIT.getImageIcon(AIT.REFRESH, SMALL_ICON_SIZE));
             refreshItem.setName("refresh");
             refreshItem.setActionCommand("refresh");

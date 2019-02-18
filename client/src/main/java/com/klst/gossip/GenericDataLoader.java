@@ -61,6 +61,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		resultSet = pstmt.executeQuery();
 		resultSet.next();
 		rowsToFind = resultSet.getInt(1);	
+		tableModel.setRowsToLoad(rowsToFind);
 		close();
 		
 		dbResultRows = new ArrayList<Object[]>(rowsToFind);
@@ -89,6 +90,10 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 			setProgress(100 * dbResultRows.size() / rowsToFind);
 		}
 		close();
+		if(isCancelled()) {
+			LOG.warning("cancelled "+dbResultRows.size()+"/"+rowsToFind + " "+100 * dbResultRows.size() / rowsToFind);
+			firePropertyChange("cancelled", false, true);
+		}
 		return dbResultRows;
 	}
 
@@ -125,12 +130,11 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		Object[] fieldData = new Object[size]; // renamed from rowData
 		String columnName = null;
 		int displayType = 0;
-		try { // slow down for testing
-			Thread.sleep( 10 );
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//		try { // slow down for testing
+//			Thread.sleep( 10 );
+//		} catch (InterruptedException e1) {
+//			e1.printStackTrace();
+//		}
 		try
 		{	
 			//	get row data

@@ -131,7 +131,13 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	private void updateStatusBar() {
-		frame.tableRows.setText(""+(currentRow+1)+"/"+jXTable.getRowCount());
+		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(tableModel.getRowCount());
+		if(tableModel.getRowCount()==tableModel.getRowsToLoad()) {
+			// OK alles geladen
+		} else {
+			text.append("/").append(tableModel.getRowsToLoad());
+		}
+		frame.tableRows.setText(text.toString());
 	}
 
 	/* setRowSelectionInterval(index0, index1)
@@ -418,9 +424,21 @@ public class Tab extends JPanel implements ComponentListener {
         group.addBinding(Bindings.createAutoBinding(READ, loader, 
         		BeanProperty.create("state"),
         		this, BeanProperty.create("loadState"))); // call setLoadState 
+//        group.addBinding(Bindings.createAutoBinding(READ, loader, 
+//        		BeanProperty.create("cancelled"), // liefert Boolean.TRUE
+//        		frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
         group.bind();
 
 //		setVisible(true); // in setLoadState
+        
+        loader.addPropertyChangeListener(event -> {
+        	if ("cancelled".equals(event.getPropertyName())) {
+        		if(loader.isCancelled()) {
+        			frame.tableStatus.setText("cancelled "); // TODO Rows 0/loaded/toLoad
+        			setLoadState(StateValue.PENDING);
+        		}
+        	}
+        });
 		return loader;		
 	}
 
