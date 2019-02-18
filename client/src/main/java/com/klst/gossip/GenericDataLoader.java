@@ -12,12 +12,10 @@ import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.GridField;
-import org.compiere.model.MTable;
-import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 
@@ -127,10 +125,6 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		Object[] fieldData = new Object[size]; // renamed from rowData
 		String columnName = null;
 		int displayType = 0;
-		
-		MTable mTable = null;
-//		List<Integer> recordIds;
-		//	Types see also MField.createDefault
 		try
 		{
 			//	get row data
@@ -141,66 +135,73 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 				columnName = field.getColumnName();
 				displayType = field.getDisplayType(); // aka AD_Reference_ID 
 				if(row==0) {
-//					LOG.config(f+":"+field.toString() + " -- toStringX:"+field.toStringX());
 					LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " columnName="+columnName 
 					+ " DisplayType="+displayType + " Field_ID="+field.getAD_Field_ID() 
 					+ " Reference="+field.getAD_Reference_Value_ID() + " DefaultValue="+field.getDefaultValue() 
 					+ " Tab_ID="+field.getAD_Tab_ID() + " Column_ID="+field.getAD_Column_ID()
 					);
 				}
-//				if(field.getSeqNoGrid()==0) {
-//					// do not display
-//				} else {	
 				
-				
-//	So ist es gut, aber nur für	f==0:		
-//				if(displayType==DisplayType.TableDir && f==0) { // AD_Reference_ID=19 : Table Direct
-				if(displayType==DisplayType.TableDir && columnName.endsWith("_ID")) { // AD_Reference_ID=19 : Table Direct
-					int recordId = rs.getInt(f+1);
-//					int tableId = 112;
-//					MTable mTable = new MTable(Env.getCtx(), tableId, trxName);
-//					LOG.warning("tableName:"+columnName.substring(0, columnName.lastIndexOf("_ID")));
-					mTable = MTable.get(Env.getCtx(), columnName.substring(0, columnName.lastIndexOf("_ID")));
-					PO po = mTable.getPO(recordId, trxName);
-//					LOG.warning(mTable + " recordId:"+recordId + " po:"+po.toString());
-					fieldData[f] = po.toString(); // das liefert ja nach Definition von toString()
-// 	MClient[0-SYSTEM] --besser--> Name	
-//	X_AD_Org[0] --besser--> value
-//	MCurrency[102-EUR-€,Euro,Precision=2/4 --besser--> iso_code
-					// besser: Name oder Value? TODO
-//					fieldData[f] = po.get_Value("Name"); 
-				} 
-				//	YesNo
-				else if(displayType == DisplayType.YesNo) // AD_Reference_ID=20 : CheckBox
-				{
+				if(displayType == DisplayType.String
+				|| displayType == DisplayType.PrinterName
+				|| displayType == DisplayType.Text
+				|| displayType == DisplayType.TextLong
+				|| displayType == DisplayType.URL 
+				|| displayType == DisplayType.PrinterName
+				|| displayType == DisplayType.FilePath 
+				|| displayType == DisplayType.FileName 
+				|| displayType == DisplayType.FilePathOrName
+				|| displayType == DisplayType.Memo
+				|| displayType == DisplayType.Button   // TODO testen
+				|| displayType == DisplayType.List		// obwohl es in isLookup liegt
+				|| columnName.equals("AD_Language") // BUG?: columnName=AD_Language DisplayType=18 , aber character varying(6)
+				// BUG: columnName=AD_Language DisplayType=18 Field_ID=5753 Reference=106 DefaultValue= Tab_ID=135 Column_ID=7050
+				//      Unzulässiger Wert für den Typ int : es_HN
+				) {                                                // ==> String (clear/password)
+					fieldData[f] = rs.getString(f+1);
+					
+//				} else if( DisplayType.isLookup(displayType) // List/17 | Table/18 | TableDir/19 | Search/30 ,
+					// ABER columnName=BankType DisplayType=17 Field_ID=83995 Reference=53978 DefaultValue=B Tab_ID=227 Column_ID=85656
+					// ist banktype character(1) DEFAULT 'B'::bpchar,
+					// das gilt für alle List, daher ==> String
+				} else if( displayType == DisplayType.Table
+						|| displayType == DisplayType.TableDir
+						|| displayType == DisplayType.Search
+						|| displayType == DisplayType.ID
+						|| displayType == DisplayType.RowID
+						|| displayType == DisplayType.Location
+						|| displayType == DisplayType.Locator
+						|| displayType == DisplayType.Account
+						|| displayType == DisplayType.Assignment // TODO testen
+						|| displayType == DisplayType.Color // TODO testen
+						|| displayType == DisplayType.PAttribute
+						|| displayType == DisplayType.Integer		// isNumeric!
+						|| displayType == DisplayType.Image // TODO testen
+						|| displayType == DisplayType.Chart // TODO testen
+				) {                                                // ==> Integer
+//					if(field.getAD_Column_ID()==85656) {
+//						fieldData[f] = rs.getString(f+1);
+//					} else {
+						fieldData[f] = new Integer(rs.getInt(f+1));
+						if(rs.wasNull()) fieldData[f] = null;
+//					}
+					
+				} else if( DisplayType.isNumeric(displayType)
+				) {                                                // Amount, Number!, CostPrice, Integer!, Quantity ==> BigDecimal
+					fieldData[f] = rs.getBigDecimal(f+1);
+					
+				} else if( displayType == DisplayType.YesNo
+				) {                                                // YesNo ==> Boolean : CheckBox
 					String value = rs.getString(f+1);
 					if (field.isEncryptedColumn()) value = (String)decrypt(value);
 					fieldData[f] = value.equals("Y") ? Boolean.TRUE : Boolean.FALSE; 
-				} else
-				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
-				if (displayType == DisplayType.Integer
-					|| (DisplayType.isID(displayType) 
-						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
-							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
-					|| columnName.endsWith("atedBy"))
-				{
-					fieldData[f] = new Integer(rs.getInt(f+1));	//	Integer
-					if (rs.wasNull())
-						fieldData[f] = null;
-				}
-				//	Number
-				else if (DisplayType.isNumeric(displayType))
-					fieldData[f] = rs.getBigDecimal(f+1);			//	BigDecimal
-				//	Date
-				else if (DisplayType.isDate(displayType))
-					fieldData[f] = rs.getTimestamp(f+1);			//	Timestamp
-				//	RowID or Key (and Selection)
-				else if (displayType == DisplayType.RowID) {
-					fieldData[f] = null;
-				}
-				//	LOB
-				else if (DisplayType.isLOB(displayType))
-				{
+					
+				} else if( DisplayType.isDate(displayType)
+				) {                                                // Date, DateTime, Time ==> Timestamp
+					fieldData[f] = rs.getTimestamp(f+1);
+					
+				} else if( DisplayType.isLOB(displayType)
+				) {                                                // LOB: Binary, TextLong ==> Clob | Blob | String			
 					Object value = rs.getObject(f+1);
 					if (rs.wasNull())
 						fieldData[f] = null;
@@ -220,10 +221,73 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 						fieldData[f] = value;
 					else if (value instanceof byte[])
 						fieldData[f] = value;
+					
+				} else {
+					LOG.log(Level.SEVERE, "row:"+row + ", col:"+columnName + ", displayType=" + displayType);
+					throw new AdempiereException("cannot readData displayType=" + displayType + " row:"+row + ", col:"+columnName);
 				}
-				//	String
-				else
-					fieldData[f] = rs.getString(f+1);				//	String
+				
+
+//				if(displayType==DisplayType.TableDir && columnName.endsWith("_ID")) { // AD_Reference_ID=19 : Table Direct
+//					int recordId = rs.getInt(f+1);
+//					mTable = MTable.get(Env.getCtx(), columnName.substring(0, columnName.lastIndexOf("_ID")));
+//					PO po = mTable.getPO(recordId, trxName);
+//					fieldData[f] = po.toString(); // das liefert ja nach Definition von toString()
+//				} 
+//				//	YesNo
+//				else if(displayType == DisplayType.YesNo) // AD_Reference_ID=20 : CheckBox
+//				{
+//					String value = rs.getString(f+1);
+//					if (field.isEncryptedColumn()) value = (String)decrypt(value);
+//					fieldData[f] = value.equals("Y") ? Boolean.TRUE : Boolean.FALSE; 
+//				} else
+//				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
+//				if (displayType == DisplayType.Integer
+//					|| (DisplayType.isID(displayType) 
+//						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
+//							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
+//					|| columnName.endsWith("atedBy"))
+//				{
+//					fieldData[f] = new Integer(rs.getInt(f+1));	//	Integer
+//					if (rs.wasNull())
+//						fieldData[f] = null;
+//				}
+//				//	Number
+//				else if (DisplayType.isNumeric(displayType))
+//					fieldData[f] = rs.getBigDecimal(f+1);			//	BigDecimal
+//				//	Date
+//				else if (DisplayType.isDate(displayType))
+//					fieldData[f] = rs.getTimestamp(f+1);			//	Timestamp
+//				//	RowID or Key (and Selection)
+//				else if (displayType == DisplayType.RowID) {
+//					fieldData[f] = null;
+//				}
+//				//	LOB
+//				else if (DisplayType.isLOB(displayType))
+//				{
+//					Object value = rs.getObject(f+1);
+//					if (rs.wasNull())
+//						fieldData[f] = null;
+//					else if (value instanceof Clob) 
+//					{
+//						Clob lob = (Clob)value;
+//						long length = lob.length();
+//						fieldData[f] = lob.getSubString(1, (int)length);
+//					}
+//					else if (value instanceof Blob)
+//					{
+//						Blob lob = (Blob)value;
+//						long length = lob.length();
+//						fieldData[f] = lob.getBytes(1, (int)length);
+//					}
+//					else if (value instanceof String)
+//						fieldData[f] = value;
+//					else if (value instanceof byte[])
+//						fieldData[f] = value;
+//				}
+//				//	String
+//				else
+//					fieldData[f] = rs.getString(f+1);				//	String
 				
 				//	Encrypted
 				if (field.isEncryptedColumn() && displayType != DisplayType.YesNo) {
