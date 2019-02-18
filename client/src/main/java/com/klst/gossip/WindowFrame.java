@@ -208,7 +208,9 @@ public class WindowFrame extends JFrame implements WindowListener {
 	}
 	
 	private void initGridWindow() {
+		LOG.config(">>>>GridWindow.get ...");
 		this.gridWindow = GridWindow.get(ctx, this.windowNo, this.window_ID); 
+		LOG.config("<<<<");
 		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
 /* WINDOWTYPEs: aus GridWindowVO		
 		public static final String	WINDOWTYPE_QUERY = "Q";

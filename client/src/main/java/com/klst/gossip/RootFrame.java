@@ -262,6 +262,10 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			task.execute();
 		});
 		mFile.add(miCountry);
+		
+		// TODO guter Test: AD_Window_ID=135 Document Type 
+		// oder AD_Window_ID=140 Product
+		// oder AD_Window_ID=143 Sales Order
 
         // Look & Feel : 
 		JMenu mLuf = new JMenu(); // extends AbstractButton
