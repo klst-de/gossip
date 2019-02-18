@@ -117,6 +117,14 @@ public class Tab extends JPanel implements ComponentListener {
 		return this.gridTab;
 	}
 	
+	void cancel() {
+		if(this.loader==null) {
+			return;
+		}
+		LOG.config("mayInterruptIfRunning");
+		loader.cancel(true); // true == mayInterruptIfRunning 
+	}
+	
 	public void refresh() {
 		this.loader = initDataLoader();
 		this.loader.execute();

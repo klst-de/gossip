@@ -125,8 +125,14 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		Object[] fieldData = new Object[size]; // renamed from rowData
 		String columnName = null;
 		int displayType = 0;
+		try { // slow down for testing
+			Thread.sleep( 10 );
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try
-		{
+		{	
 			//	get row data
 			for (int f = 0; f < size; f++)
 			{

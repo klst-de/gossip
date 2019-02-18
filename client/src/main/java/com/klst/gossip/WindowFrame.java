@@ -290,6 +290,14 @@ TODO Demo für jeden Typ
         return statusBar;
     }
 
+    // überschreiben, damit beim DISPOSE_ON_CLOSE der Loader worker gestoppt wird : cancel
+    public void dispose() {
+    	tabs.forEach( (tab) -> {
+    		tab.cancel();
+		});
+    	super.dispose();
+    }
+    
 	public void setTitle(String title) {
 		super.setTitle(title);
 	}
