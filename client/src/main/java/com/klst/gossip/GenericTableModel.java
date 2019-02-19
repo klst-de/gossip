@@ -97,7 +97,7 @@ public class GenericTableModel extends AbstractTableModel {
         return null;
 	}
 	
-	// wird gerufen wenn die celle angeckickt wirs
+	// wird gerufen wenn celle angeckickt
     public boolean isCellEditable(int rowIndex, int columnIndex) {
     	GridField field = this.fields[columnIndex];
     	boolean isEditable = field.isEditable(false); // checkContext
