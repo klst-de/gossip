@@ -6,7 +6,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -17,11 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 
-import org.compiere.grid.VPanel;
-import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
@@ -50,7 +46,7 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private GridTab gridTab;
-	private List<GridField> fields;
+//	private List<GridField> fields;
 	private GenericTableModel tableModel;
 	private GenericDataLoader loader;
 	int currentRow = -1;
@@ -71,7 +67,7 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("gridTab "+gridTab + ", WindowFrame frame:"+frame);
 		this.frame = frame;
 		this.gridTab = gridTab;
-		this.fields = Arrays.asList(this.gridTab.getFields());
+//		this.fields = Arrays.asList(this.gridTab.getFields());
 		this.addComponentListener(this);
 		this.setName(this.gridTab.getName());
 		
@@ -141,22 +137,7 @@ public class Tab extends JPanel implements ComponentListener {
 		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
 		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
 		currentRow = rowIndex;
-		updateStatusBar();
-		
-		// experiment:
-//		if(vPanel!=null) {
-//			LOG.warning(this.getName()+"TODO currentRow:"+rowIndex);
-//			Component[] comps = vPanel.getComponentsRecursive();
-//			LOG.warning("TODO comps.length:"+comps.length);
-//			for (int i = 0; i < comps.length; i++) { //... GridControler Zeile 1031
-//				Component comp = comps[i];
-//				LOG.config(comp.toString());
-//				if(comp instanceof VLookup) {
-//					VLookup vl = (VLookup)comp;
-//					LOG.warning("TODO comps vl.getValue():"+vl.getValue());
-//				}
-//			}
-//		}
+		updateStatusBar();	
 	}
 	
 	public void first() {
@@ -244,8 +225,7 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-		LOG.warning("new VPanel("+this.getName()+", "+this.getWindowNo()+")");
-		singleRowPanel = new SingleRowPanel(this.tableModel, new VPanel(this.getName(), this.getWindowNo()));
+		singleRowPanel = new SingleRowPanel(this.tableModel); // darin VPanel gekapselt!
 		return singleRowPanel.getSingleRowPanelSize();
 	}
 	
@@ -262,7 +242,8 @@ public class Tab extends JPanel implements ComponentListener {
 		Dimension preferredDim = useDim;
 		if(preferredDim==null) {
 			preferredDim = getSingleRowPanelSize();
-			LOG.warning("vPanel dimension: H/W "+preferredDim.getHeight()+"/"+preferredDim.getWidth());
+			// TODO die Berechnung der preferredDim ist ohne included Tab!!!!
+			LOG.warning("dimension: H/W "+preferredDim.getHeight()+"/"+preferredDim.getWidth());
 		} else {
 			LOG.config("preferredDim set to useDim:"+useDim);
 		}

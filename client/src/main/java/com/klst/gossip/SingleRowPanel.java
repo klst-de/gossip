@@ -28,10 +28,10 @@ public class SingleRowPanel extends JPanel {
 //	public SingleRowPanel() {
 //		this(null);
 //	}
-//	public SingleRowPanel(GenericTableModel tm) {
-//		this(null, null);
-//	}
-	public SingleRowPanel(GenericTableModel tm, VPanel vPanel) {
+	public SingleRowPanel(GenericTableModel tm) {
+		this(tm, new VPanel(tm.getName(), tm.getWindowNo()));
+	}
+	private SingleRowPanel(GenericTableModel tm, VPanel vPanel) {
 		super(); // default ist FlowLayout
 		this.tableModel = tm;
 		this.vPanel = vPanel;

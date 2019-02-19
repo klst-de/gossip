@@ -33,13 +33,13 @@ public class GenericTableModel extends AbstractTableModel {
 
     private int windowNo;
     private GridTab gridTab;
-	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
-	private MTab mTab;
+//	private int tab_ID; // hieraus kann man table_ID ermitteln, für Country (AD_Table - AD_Table_ID=170)
+//	private MTab mTab;
 	private GridField[] fields = null;
 	private int rowsToLoad = -1; // der Loader liefert es
 	
-	private Properties ctx;
-	private String trxName;
+//	private Properties ctx;
+//	private String trxName;
 
 	// ctor
 //	public GenericTableModel(int tab_ID, int windowNo) {
@@ -165,11 +165,18 @@ public class GenericTableModel extends AbstractTableModel {
         fireTableRowsInserted(index, index);
     }
     
-    public String getDbTableName() {
-    	return this.gridTab.get_TableName();
-//    	return this.mTable.getTableName();
+    public String getName() {
+    	return this.gridTab.getName();
     }
     
+    public String getDbTableName() {
+    	return this.gridTab.get_TableName();
+    }
+    
+	public int getWindowNo() {
+		return this.windowNo;
+	}
+	
     public GridField[] getColumns() {
     	return this.fields;
     }
