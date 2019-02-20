@@ -77,7 +77,7 @@ public class Tab extends JPanel implements ComponentListener {
 		// - GenericEditor
 		// - NumberEditor
 		// - BooleanEditor
-		this.jXTable = createXTable();
+		this.jXTable = JXTableGrid.createXTable();
 		this.listSelectionModel = jXTable.getSelectionModel();
 		
 		if(statusToTrafficlights.isEmpty()) {
@@ -247,7 +247,8 @@ public class Tab extends JPanel implements ComponentListener {
 		} else {
 			LOG.config("preferredDim set to useDim:"+useDim);
 		}
-		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! NOT raus
+//		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
+		if(gridTab.isSingleRow()) {	
 			if(this.singleRowPanel==null) {
 				add(new JLabel("Platzhalter"), BorderLayout.CENTER); // diesen lazy berechnen
 			} else {
@@ -304,34 +305,6 @@ public class Tab extends JPanel implements ComponentListener {
         	}
         });
 		return loader;		
-	}
-
-	// aus org.jdesktop.swingx.demos.table.XTableDemo
-	protected JXTable createXTable() {
-		JXTable table = new JXTable() {
-
-			private static final long serialVersionUID = -2974517519415177299L;
-
-			@Override
-			protected JTableHeader createDefaultTableHeader() {
-				return new JXTableHeader(columnModel) {
-					private static final long serialVersionUID = -4124370542563896297L;
-
-					@Override
-					public void updateUI() {
-						super.updateUI();
-						// need to do in updateUI to survive toggling of LAF
-						if (getDefaultRenderer() instanceof JLabel) {
-							((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
-
-						}
-					}
-
-				};
-			}
-
-		};
-		return table;
 	}
 
 	// wg. ComponentListener
