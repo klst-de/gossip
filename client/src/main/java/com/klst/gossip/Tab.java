@@ -48,7 +48,7 @@ public class Tab extends JPanel implements ComponentListener {
 	int currentRow = -1;
 
 	// ui
-	JXTable jXTable; // JXTable extends JTable implements TableColumnModelExtListener
+	MulirRowPanel jXTable; // MulirRowPanel extendsJXTable extends JTable implements TableColumnModelExtListener
 	ListSelectionModel listSelectionModel; // the ListSelectionModel that is used to maintain rowselection state
 	SingleRowPanel singleRowPanel = null; // kapselt VPanel 
 	
@@ -245,7 +245,7 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		this.jXTable = JXTableGrid.createXTable(dataModel, gridTab);
+		this.jXTable = MulirRowPanel.createXTable(dataModel, gridTab);
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(gridTab.isSingleRow()) {	

@@ -27,20 +27,20 @@ DefaultCellEditor editor = new DefaultCellEditor(......); // abstract or custom 
 editor.setClickCountToStart(2); // for Compound JComponents (JComboBox) is more userfriendly invoke Editor on second click
 table.getColumnModel().getColumn(1).setCellEditor(editor);
  */
-public class JXTableGrid extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
+public class MulirRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
 //	implements TableCellEditor 
 
 	private static final long serialVersionUID = 4527635643876059507L;
 	
-	private static final Logger LOG = Logger.getLogger(JXTableGrid.class.getName());
+	private static final Logger LOG = Logger.getLogger(MulirRowPanel.class.getName());
 
 	private GridTab gridTab = null;
 	
 	// ctor use factory method createXTable()
-	private JXTableGrid() {
+	private MulirRowPanel() {
 		super();
 	}
-	private JXTableGrid(TableModel dm, GridTab gridTab) {
+	private MulirRowPanel(TableModel dm, GridTab gridTab) {
 		super(dm);
 		this.gridTab = gridTab;
 		
@@ -85,8 +85,8 @@ public class JXTableGrid extends JXTable { // JXTable extends JTable implements 
 	}
 	
 	// aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert
-	protected static JXTable createXTable(TableModel dm, GridTab gridTab) {
-		JXTable table = new JXTableGrid(dm, gridTab);
+	protected static MulirRowPanel createXTable(TableModel dm, GridTab gridTab) {
+		MulirRowPanel table = new MulirRowPanel(dm, gridTab);
 		return table;
 	}
 	
