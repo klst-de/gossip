@@ -44,7 +44,7 @@ public class Tab extends JPanel implements ComponentListener {
 	private WindowFrame frame;
 	private GridTab gridTab;
 //	private List<GridField> fields;
-	private GenericTableModel tableModel;
+	private GenericDataModel tableModel;
 	private GenericDataLoader loader;
 	int currentRow = -1;
 
@@ -227,7 +227,7 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
+		this.tableModel = new GenericDataModel(this.gridTab, getWindowNo());
 		tableModel.addTableModelListener(event -> {
 //			jXTable.tableChanged(event); muss man nicht propagieren - jXTable ist selbst ein listener
 			LOG.warning("!!! erste Zeile geladen!!! event Rows"+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+tableModel.getRowCount()+"/"+tableModel.getRowsToLoad());

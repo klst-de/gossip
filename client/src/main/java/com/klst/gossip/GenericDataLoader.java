@@ -27,10 +27,10 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 
 	private static final Logger LOG = Logger.getLogger(GenericDataLoader.class.getName());
 	
-	private GenericTableModel tableModel;
+	private GenericDataModel tableModel;
 
 	// ctor
-	public GenericDataLoader(GenericTableModel tableModel) {
+	public GenericDataLoader(GenericDataModel tableModel) {
 		this.tableModel = tableModel;
 		LOG.config("tableModel "+this.tableModel);
 		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getName());

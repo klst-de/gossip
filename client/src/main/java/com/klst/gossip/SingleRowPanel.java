@@ -19,7 +19,7 @@ public class SingleRowPanel extends JPanel {
 	
 	private static final Logger LOG = Logger.getLogger(SingleRowPanel.class.getName());
 	
-	private GenericTableModel tableModel;
+	private GenericDataModel tableModel;
 	private int currentRow = -1;
 	// kapselt
 	VPanel vPanel;
@@ -28,10 +28,10 @@ public class SingleRowPanel extends JPanel {
 //	public SingleRowPanel() {
 //		this(null);
 //	}
-	public SingleRowPanel(GenericTableModel tm) {
+	public SingleRowPanel(GenericDataModel tm) {
 		this(tm, new VPanel(tm.getName(), tm.getWindowNo()));
 	}
-	private SingleRowPanel(GenericTableModel tm, VPanel vPanel) {
+	private SingleRowPanel(GenericDataModel tm, VPanel vPanel) {
 		super(); // default ist FlowLayout
 		this.tableModel = tm;
 		this.vPanel = vPanel;

@@ -20,11 +20,11 @@ import org.compiere.util.DisplayType;
 //	}
 
 // Table bedeutet Java Swing Table, nicht DB Table!
-public class GenericTableModel extends AbstractTableModel {
+public class GenericDataModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -8353798775903481429L;
 
-	private static final Logger LOG = Logger.getLogger(GenericTableModel.class.getName());
+	private static final Logger LOG = Logger.getLogger(GenericDataModel.class.getName());
 
 	// die Zeilen von TableModel
     private final List<Object[]> tableRows = new ArrayList<Object[]>();
@@ -47,7 +47,7 @@ public class GenericTableModel extends AbstractTableModel {
 //		
 //		this.fields = GridField.createFields(ctx, this.windowNo, 0, this.tab_ID); // int TabNo = 0
 //	}
-	public GenericTableModel(GridTab gridTab, int windowNo) {
+	public GenericDataModel(GridTab gridTab, int windowNo) {
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
 		this.fields = this.gridTab.getFields();
