@@ -27,14 +27,14 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 
 	private static final Logger LOG = Logger.getLogger(GenericDataLoader.class.getName());
 	
-	private GenericDataModel tableModel;
+	private GenericDataModel dataModel;
 
 	// ctor
-	public GenericDataLoader(GenericDataModel tableModel) {
-		this.tableModel = tableModel;
-		LOG.config("tableModel "+this.tableModel);
+	public GenericDataLoader(GenericDataModel dm) {
+		this.dataModel = dm;
+		LOG.config("dataModel "+this.dataModel);
 		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getName());
-		tableModel.getDbTableName(); // für select * from XXX
+		dm.getDbTableName(); // für select * from XXX
 		getSelectClause(); // für *
 	}
 
@@ -61,11 +61,11 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		resultSet = pstmt.executeQuery();
 		resultSet.next();
 		rowsToFind = resultSet.getInt(1);	
-		tableModel.setRowsToLoad(rowsToFind);
+		dataModel.setRowsToLoad(rowsToFind);
 		close();
 		
 		dbResultRows = new ArrayList<Object[]>(rowsToFind);
-		fields = tableModel.getColumns();
+		fields = dataModel.getColumns();
 		//	Create SELECT Part
 		StringBuffer select = new StringBuffer("SELECT ");
 		for (int i = 0; i < fields.length; i++)
@@ -74,7 +74,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 			GridField field = fields[i];
 			select.append(field.getColumnSQL(true));	//	ColumnName or Virtual Column // boolean withAS
 		}
-		select.append(" FROM ").append(tableModel.getDbTableName());
+		select.append(" FROM ").append(dataModel.getDbTableName());
 		sql = select.toString();
 		LOG.config(sql + ";\n rowsToFind:"+rowsToFind + "; trxName:"+trxName);
 		//
@@ -104,16 +104,15 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	@Override
 	protected void process(List<Object[]> chunks) {
 		LOG.config("chunks#:"+chunks.size());
-		tableModel.add(chunks);
+		dataModel.add(chunks);
 	}
 
     protected void done() {
     	setProgress(100);
-//    	dataPanel.hideMessageLayer(); // TODO Stacker dataPanel; 
     }
 
     private String getSelectCountStar() {
-    	return "SELECT COUNT(*) FROM "+tableModel.getDbTableName();
+    	return "SELECT COUNT(*) FROM "+dataModel.getDbTableName();
     }
     
 //    private String getSelectAll() {
@@ -126,7 +125,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     }
     
 	private Object[] readData(ResultSet rs, int row) throws SQLException {
-		int size = tableModel.getColumnCount();
+		int size = dataModel.getColumnCount();
 		Object[] fieldData = new Object[size]; // renamed from rowData
 		String columnName = null;
 		int displayType = 0;

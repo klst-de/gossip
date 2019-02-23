@@ -43,9 +43,8 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private GridTab gridTab;
-//	private List<GridField> fields;
-	private GenericDataModel tableModel;
-	private GenericDataLoader loader;
+	private GenericDataModel dataModel;
+	private GenericDataLoader dataLoader;
 	int currentRow = -1;
 
 	// ui
@@ -64,7 +63,6 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("gridTab "+gridTab + ", WindowFrame frame:"+frame);
 		this.frame = frame;
 		this.gridTab = gridTab;
-//		this.fields = Arrays.asList(this.gridTab.getFields());
 		this.addComponentListener(this);
 		this.setName(this.gridTab.getName());
 		
@@ -101,26 +99,26 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	void cancel() {
-		if(this.loader==null) {
+		if(this.dataLoader==null) {
 			return;
 		}
 		LOG.config("mayInterruptIfRunning");
-		loader.cancel(true); // true == mayInterruptIfRunning 
+		dataLoader.cancel(true); // true == mayInterruptIfRunning 
 	}
 	
 	public void refresh() {
-		this.tableModel.clear(); // remove all elements
+		this.dataModel.clear(); // remove all elements
 		frame.tableStatus.setText(""); // cancelled Status
-		this.loader = initDataLoader();
-		this.loader.execute();
+		this.dataLoader = initDataLoader();
+		this.dataLoader.execute();
 	}
 	
 	private void updateStatusBar() {
-		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(tableModel.getRowCount());
-		if(tableModel.getRowCount()==tableModel.getRowsToLoad()) {
+		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(dataModel.getRowCount());
+		if(dataModel.getRowCount()==dataModel.getRowsToLoad()) {
 			// OK alles geladen
 		} else {
-			text.append("/").append(tableModel.getRowsToLoad());
+			text.append("/").append(dataModel.getRowsToLoad());
 		}
 		frame.tableRows.setText(text.toString());
 	}
@@ -222,15 +220,15 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-		singleRowPanel = new SingleRowPanel(this.tableModel); // darin VPanel gekapselt!
+		singleRowPanel = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
 		return singleRowPanel.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-		this.tableModel = new GenericDataModel(this.gridTab, getWindowNo());
-		tableModel.addTableModelListener(event -> {
+		this.dataModel = new GenericDataModel(this.gridTab, getWindowNo());
+		dataModel.addTableModelListener(event -> {
 //			jXTable.tableChanged(event); muss man nicht propagieren - jXTable ist selbst ein listener
-			LOG.warning("!!! erste Zeile geladen!!! event Rows"+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+tableModel.getRowCount()+"/"+tableModel.getRowsToLoad());
+			LOG.warning("!!! erste Zeile geladen!!! event Rows"+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
 			if(event.getFirstRow()==0 && this.currentRow<0) {
 				first();
 			}
@@ -247,7 +245,7 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		this.jXTable = JXTableGrid.createXTable(tableModel, gridTab);
+		this.jXTable = JXTableGrid.createXTable(dataModel, gridTab);
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(gridTab.isSingleRow()) {	
@@ -280,13 +278,13 @@ public class Tab extends JPanel implements ComponentListener {
 	
 
 	private GenericDataLoader initDataLoader() {
- 		this.loader = new GenericDataLoader(this.tableModel);
+ 		this.dataLoader = new GenericDataLoader(this.dataModel);
  		
         BindingGroup group = new BindingGroup();
-        group.addBinding(Bindings.createAutoBinding(READ, loader, 
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, 
         		BeanProperty.create("progress"),
         		frame.progressBar, BeanProperty.create("value")));
-        group.addBinding(Bindings.createAutoBinding(READ, loader, 
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, 
         		BeanProperty.create("state"),
         		this, BeanProperty.create("loadState"))); // call setLoadState 
 //        group.addBinding(Bindings.createAutoBinding(READ, loader, 
@@ -296,15 +294,15 @@ public class Tab extends JPanel implements ComponentListener {
 
 //		setVisible(true); // in setLoadState
         
-        loader.addPropertyChangeListener(event -> {
+        dataLoader.addPropertyChangeListener(event -> {
         	if ("cancelled".equals(event.getPropertyName())) {
-        		if(loader.isCancelled()) {
+        		if(dataLoader.isCancelled()) {
         			frame.tableStatus.setText("cancelled ");
         			setLoadState(StateValue.PENDING);
         		}
         	}
         });
-		return loader;		
+		return dataLoader;		
 	}
 
 	// wg. ComponentListener
@@ -324,7 +322,7 @@ public class Tab extends JPanel implements ComponentListener {
 		if(e.getComponent() instanceof Tab) {
 			Tab tab = (Tab)e.getComponent();
 			LOG.config("ParentTab:"+gridTab.getParentTab());
-			this.loader.execute();
+			this.dataLoader.execute();
 		}
 	}
 
