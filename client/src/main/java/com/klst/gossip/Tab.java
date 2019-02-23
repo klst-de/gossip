@@ -16,15 +16,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
-import javax.swing.table.JTableHeader;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingx.JXTable;
-import org.jdesktop.swingx.JXTableHeader;
-import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -77,8 +74,8 @@ public class Tab extends JPanel implements ComponentListener {
 		// - GenericEditor
 		// - NumberEditor
 		// - BooleanEditor
-		this.jXTable = JXTableGrid.createXTable();
-		this.listSelectionModel = jXTable.getSelectionModel();
+//		this.jXTable = JXTableGrid.createXTable();
+//		this.listSelectionModel = jXTable.getSelectionModel();
 		
 		if(statusToTrafficlights.isEmpty()) {
 			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
@@ -232,7 +229,8 @@ public class Tab extends JPanel implements ComponentListener {
 	private Dimension initModelAndTable(Dimension useDim) {
 		this.tableModel = new GenericTableModel(this.gridTab, getWindowNo());
 		tableModel.addTableModelListener(event -> {
-			LOG.warning("getFirstRow:"+event.getFirstRow());
+//			jXTable.tableChanged(event); muss man nicht propagieren - jXTable ist selbst ein listener
+			LOG.warning("!!! erste Zeile geladen!!! event Rows"+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+tableModel.getRowCount()+"/"+tableModel.getRowsToLoad());
 			if(event.getFirstRow()==0 && this.currentRow<0) {
 				first();
 			}
@@ -247,6 +245,10 @@ public class Tab extends JPanel implements ComponentListener {
 		} else {
 			LOG.config("preferredDim set to useDim:"+useDim);
 		}
+		
+		// init
+		this.jXTable = JXTableGrid.createXTable(tableModel, gridTab);
+		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(gridTab.isSingleRow()) {	
 			if(this.singleRowPanel==null) {
@@ -259,21 +261,19 @@ public class Tab extends JPanel implements ComponentListener {
 	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
 	        Stacker stacker = new Stacker(scrollpane);
 	        jXTable.setName(gridTab.getName());
-	        add(stacker, BorderLayout.CENTER);			
+	        add(stacker, BorderLayout.CENTER);	
+	        
+//	        CustomColumnFactory factory = new CustomColumnFactory();
+	        
+	        LOG.config("CellSelectionEnabled:"+jXTable.getCellSelectionEnabled()); // sollte true sein!?
+			this.listSelectionModel = jXTable.getSelectionModel();
+	        listSelectionModel.addListSelectionListener(event -> {
+	        	currentRow = event.getFirstIndex();
+	            updateStatusBar();
+	        });
 		}
 
-        jXTable.setColumnControlVisible(true);
-        // replace grid lines with striping 
-        jXTable.setShowGrid(false, false);
-        jXTable.addHighlighter(HighlighterFactory.createSimpleStriping());
 
-//        CustomColumnFactory factory = new CustomColumnFactory();
-
-        jXTable.setModel(tableModel);
-        listSelectionModel.addListSelectionListener(event -> {
-        	currentRow = event.getFirstIndex();
-            updateStatusBar();
-        });
         
         return preferredDim;
 	}

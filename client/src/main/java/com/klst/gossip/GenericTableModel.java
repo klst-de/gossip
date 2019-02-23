@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.table.AbstractTableModel;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.MTab;
 import org.compiere.util.DisplayType;
 
 // aka GridTable
@@ -103,6 +101,9 @@ public class GenericTableModel extends AbstractTableModel {
     	boolean isEditable = field.isEditable(false); // checkContext
     	if(isEditable) {
     		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
+    	} else {
+    		LOG.config(""+rowIndex+" "+field + "isNOTEditable no context");
+    		return isEditable; // false
     	}
     	return field.isEditable(true); // checkContext
     }
