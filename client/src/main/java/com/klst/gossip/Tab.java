@@ -21,7 +21,6 @@ import org.compiere.model.GridTab;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
-import org.jdesktop.swingx.JXTable;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -48,9 +47,9 @@ public class Tab extends JPanel implements ComponentListener {
 	int currentRow = -1;
 
 	// ui
-	MulirRowPanel jXTable; // MulirRowPanel extendsJXTable extends JTable implements TableColumnModelExtListener
+	MuliRowPanel mrp; // MuliRowPanel extendsJXTable extends JTable implements TableColumnModelExtListener
 	ListSelectionModel listSelectionModel; // the ListSelectionModel that is used to maintain rowselection state
-	SingleRowPanel singleRowPanel = null; // kapselt VPanel 
+	SingleRowPanel srp = null; // kapselt VPanel 
 	
 	// ctor
 	/* super ctors
@@ -67,13 +66,11 @@ public class Tab extends JPanel implements ComponentListener {
 		this.setName(this.gridTab.getName());
 		
 		// in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
-		// wir wollen unser eigenes Model haben GenericTableModel extends AbstractTableModel
+		// wir wollen unser eigenes Model haben GenericDataModel extends AbstractTableModel
 		// und org.jdesktop.swingx.JXTable nutzen, darin 
 		// - GenericEditor
 		// - NumberEditor
 		// - BooleanEditor
-//		this.jXTable = JXTableGrid.createXTable();
-//		this.listSelectionModel = jXTable.getSelectionModel();
 		
 		if(statusToTrafficlights.isEmpty()) {
 			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
@@ -129,16 +126,16 @@ public class Tab extends JPanel implements ComponentListener {
 	private void setRowSelection(int rowIndex) {
 		// includeSpacing if false, return the true cell bounds -computed by subtracting 
 		//  the intercellspacing from the height and widths ofthe column and row models
-		jXTable.scrollRectToVisible(jXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
-		jXTable.setRowSelectionInterval(rowIndex, rowIndex);
+		mrp.scrollRectToVisible(mrp.getCellRect(rowIndex, 0, true)); // includeSpacing:true
+		mrp.setRowSelectionInterval(rowIndex, rowIndex);
 		currentRow = rowIndex;
 		updateStatusBar();	
 	}
 	
 	public void first() {
 		setRowSelection(0);
-		singleRowPanel.removeAll();
-		singleRowPanel.showSingleRowPanelSize(0);
+		srp.removeAll();
+		srp.showSingleRowPanelSize(0);
 	}
 	
 	public void previous() {
@@ -146,10 +143,10 @@ public class Tab extends JPanel implements ComponentListener {
 		// welches ist die currentRow im MultiRowModus?
 		// - die kleinste selektierte!
 		int currentRow = -1;
-		int[] selected = jXTable.getSelectedRows(); // can be empty
+		int[] selected = mrp.getSelectedRows(); // can be empty
 		if(selected.length==0) {
 			// und nun? wrap around
-			currentRow = jXTable.getRowCount();
+			currentRow = mrp.getRowCount();
 		} else {
 			currentRow = selected[0];
 		}
@@ -163,15 +160,15 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void next() {
-		int[] selected = jXTable.getSelectedRows(); // can be empty
+		int[] selected = mrp.getSelectedRows(); // can be empty
 		int currentRow = selected.length==0 ? -1 : selected[selected.length-1];
 		LOG.config("currentRow:"+currentRow);
 		currentRow++;
-		setRowSelection( currentRow<jXTable.getRowCount() ? currentRow : 0 );
+		setRowSelection( currentRow<mrp.getRowCount() ? currentRow : 0 );
 	}
 
 	public void last() {
-		setRowSelection(jXTable.getRowCount()-1);
+		setRowSelection(mrp.getRowCount()-1);
 	}
 	
 	private int getWindowNo() {
@@ -220,15 +217,14 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-		singleRowPanel = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
-		return singleRowPanel.getSingleRowPanelSize();
+		srp = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
+		return srp.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
 		this.dataModel = new GenericDataModel(this.gridTab, getWindowNo());
 		dataModel.addTableModelListener(event -> {
-//			jXTable.tableChanged(event); muss man nicht propagieren - jXTable ist selbst ein listener
-			LOG.warning("!!! erste Zeile geladen!!! event Rows"+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
+			LOG.warning("event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
 			if(event.getFirstRow()==0 && this.currentRow<0) {
 				first();
 			}
@@ -245,26 +241,26 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		this.jXTable = MulirRowPanel.createXTable(dataModel, gridTab);
+		this.mrp = MuliRowPanel.createXTable(dataModel, gridTab);
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(gridTab.isSingleRow()) {	
-			if(this.singleRowPanel==null) {
+			if(this.srp==null) {
 				add(new JLabel("Platzhalter"), BorderLayout.CENTER); // diesen lazy berechnen
 			} else {
-				add(singleRowPanel, BorderLayout.CENTER);	
+				add(srp, BorderLayout.CENTER);	
 			} 
 		} else {
 			this.setPreferredSize(preferredDim);
-	        JScrollPane scrollpane = new JScrollPane(this.jXTable);
+	        JScrollPane scrollpane = new JScrollPane(this.mrp);
 	        Stacker stacker = new Stacker(scrollpane);
-	        jXTable.setName(gridTab.getName());
+	        mrp.setName(gridTab.getName());
 	        add(stacker, BorderLayout.CENTER);	
 	        
 //	        CustomColumnFactory factory = new CustomColumnFactory();
 	        
-	        LOG.config("CellSelectionEnabled:"+jXTable.getCellSelectionEnabled()); // sollte true sein!?
-			this.listSelectionModel = jXTable.getSelectionModel();
+	        LOG.config("CellSelectionEnabled:"+mrp.getCellSelectionEnabled()); // sollte true sein!?
+			this.listSelectionModel = mrp.getSelectionModel();
 	        listSelectionModel.addListSelectionListener(event -> {
 	        	currentRow = event.getFirstIndex();
 	            updateStatusBar();

@@ -27,20 +27,20 @@ DefaultCellEditor editor = new DefaultCellEditor(......); // abstract or custom 
 editor.setClickCountToStart(2); // for Compound JComponents (JComboBox) is more userfriendly invoke Editor on second click
 table.getColumnModel().getColumn(1).setCellEditor(editor);
  */
-public class MulirRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
+public class MuliRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
 //	implements TableCellEditor 
 
 	private static final long serialVersionUID = 4527635643876059507L;
 	
-	private static final Logger LOG = Logger.getLogger(MulirRowPanel.class.getName());
+	private static final Logger LOG = Logger.getLogger(MuliRowPanel.class.getName());
 
 	private GridTab gridTab = null;
 	
 	// ctor use factory method createXTable()
-	private MulirRowPanel() {
+	private MuliRowPanel() {
 		super();
 	}
-	private MulirRowPanel(TableModel dm, GridTab gridTab) {
+	private MuliRowPanel(TableModel dm, GridTab gridTab) {
 		super(dm);
 		this.gridTab = gridTab;
 		
@@ -54,39 +54,11 @@ public class MulirRowPanel extends JXTable { // JXTable extends JTable implement
         setDefaultRenderer(Object.class, new DefaultTableRenderer());
         // Sets a default cell editor to be used if no editor has been set in a TableColumn.
         setDefaultEditor(Object.class, new GenericEditor()); 
-        
-//        for(int c = 0; c < dataModel.getColumnCount(); c++) {
-//        	Class<?> clazz = dataModel.getColumnClass(c);
-//        	// CellEditor sollten null sein, sie werden gleich gesetzt!
-//        	LOG.config("col "+c + " Class:"+dataModel.getColumnClass(c)
-//    			+ " CellRenderer:"+this.getColumnModel().getColumn(c).getCellRenderer()
-//        		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor());
-//        	if(clazz==Boolean.class) {
-//        		DefaultCellEditor editor = new BooleanEditor();
-//        		editor.setClickCountToStart(1);
-////        		this.getColumnModel().getColumn(c).setCellEditor(editor); // funktioniert so nicht! aber so:     		
-//        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
-//        		
-//            	} else if(clazz==Integer.class) {
-//        		DefaultCellEditor editor = new NumberEditor();
-//        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
-//        		
-////        	} else if(clazz==String.class) {
-////        		// setzen BooleanEditor für diese Spalte
-////        		DefaultCellEditor editor = new DefaultCellEditor(final JTextField textField ??? weches);
-////        		editor.setClickCountToStart(1);
-//////        		this.getColumnModel().getColumn(c).setCellEditor(editor);
-////        		// funktioniert nicht!
-////        		
-////        		// anders:
-////        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(editor));
-//        	}
-//        }
 	}
 	
 	// aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert
-	protected static MulirRowPanel createXTable(TableModel dm, GridTab gridTab) {
-		MulirRowPanel table = new MulirRowPanel(dm, gridTab);
+	protected static MuliRowPanel createXTable(TableModel dm, GridTab gridTab) {
+		MuliRowPanel table = new MuliRowPanel(dm, gridTab);
 		return table;
 	}
 	
@@ -120,30 +92,11 @@ public class MulirRowPanel extends JXTable { // JXTable extends JTable implement
 		String name = this.gridTab==null ? "null" : this.gridTab.getName();
 		LOG.config(name + ", event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
 		super.postprocessModelChange(event);
-		if(event.getFirstRow()>=0 && !isSetColumnEditorsSet && name!=null) {
+		if(dataModel.getRowCount()>0 && !isSetColumnEditorsSet && name!=null) {
 			setColumnEditors();
 		}
 	}
 	
-	public static class GossipNumberEditor extends NumberEditor {
-		public GossipNumberEditor() {
-			super();
-		}
-		
-		public void setVisible(boolean b) {
-			this.editorComponent.setVisible(b);
-		}
-		
-	}
-	public class GossipTableRenderer extends DefaultTableRenderer {
-		public GossipTableRenderer() {
-			super();
-//			this.setBackground(Color.GRAY); // das sieht mit Highlighter nicht gut aus!
-			this.setForeground(Color.LIGHT_GRAY);
-		}
-		
-	}
-
 	private boolean isSetColumnEditorsSet = false;
 	public void setColumnEditors() {
 //		for(int r = 0; r < dataModel.getRowCount(); r++) {
@@ -192,6 +145,31 @@ public class MulirRowPanel extends JXTable { // JXTable extends JTable implement
         }		
 //		}
         isSetColumnEditorsSet = true;
+	}
+
+//	public static class GossipNumberEditor extends NumberEditor {
+//
+//		private static final long serialVersionUID = 8714208867557744019L;
+//
+//		public GossipNumberEditor() {
+//			super();
+//		}
+//		
+//		public void setVisible(boolean b) {
+//			this.editorComponent.setVisible(b);
+//		}
+//		
+//	}
+	public class GossipTableRenderer extends DefaultTableRenderer {
+
+		private static final long serialVersionUID = 3097989281688245341L;
+
+		public GossipTableRenderer() {
+			super();
+//			this.setBackground(Color.GRAY); // das sieht mit Highlighter nicht gut aus!
+			this.setForeground(Color.LIGHT_GRAY);
+		}
+		
 	}
 
 //	------------- implements TableCellEditor:
