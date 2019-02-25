@@ -65,12 +65,14 @@ public class Tab extends JPanel implements ComponentListener {
 		this.addComponentListener(this);
 		this.setName(this.gridTab.getName());
 		
-		// in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
-		// wir wollen unser eigenes Model haben GenericDataModel extends AbstractTableModel
-		// und org.jdesktop.swingx.JXTable nutzen, darin 
-		// - GenericEditor
-		// - NumberEditor
-		// - BooleanEditor
+/* TODO GridTab Bridge
+ in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
+ wir wollen unser eigenes Model haben GenericDataModel extends AbstractTableModel
+ und org.jdesktop.swingx.JXTable nutzen, darin 
+ - GenericEditor
+ - NumberEditor
+ - BooleanEditor
+ */	
 		
 		if(statusToTrafficlights.isEmpty()) {
 			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));

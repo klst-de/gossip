@@ -2,6 +2,7 @@ package com.klst.gossip;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.sql.Timestamp;
 import java.util.EventObject;
 import java.util.logging.Logger;
 
@@ -35,6 +36,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	private static final Logger LOG = Logger.getLogger(MuliRowPanel.class.getName());
 
 	private GridTab gridTab = null;
+	// in JTable gibt es einige member die protected sind zB. dataModel
 	
 	// ctor use factory method createXTable()
 	private MuliRowPanel() {
@@ -92,12 +94,15 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		String name = this.gridTab==null ? "null" : this.gridTab.getName();
 		LOG.config(name + ", event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
 		super.postprocessModelChange(event);
-		if(dataModel.getRowCount()>0 && !isSetColumnEditorsSet && name!=null) {
+		if(dataModel.getRowCount()>0 && !isSetColumnEditors && name!=null) {
 			setColumnEditors();
 		}
 	}
 	
-	private boolean isSetColumnEditorsSet = false;
+	private boolean isSetColumnEditors = false;
+	// jeweils eine Instanz der RO-Renderere:
+	GossipTableRenderer roRenderer = new GossipTableRenderer();
+	
 	public void setColumnEditors() {
 //		for(int r = 0; r < dataModel.getRowCount(); r++) {
 
@@ -108,8 +113,9 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         	LOG.config("col "+c + " Class:"+dataModel.getColumnClass(c)
 				+ " ColumnName:"+dataModel.getColumnName(c)
 //				+ " CellEditable:"+dataModel.isCellEditable(r, c)
-    			+ " CellRenderer:"+this.getColumnModel().getColumn(c).getCellRenderer() + "/" + this.getDefaultRenderer(clazz)
-        		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor() + "/" + this.getDefaultEditor(clazz));
+    			+ " CellRenderer:"+this.getColumnModel().getColumn(c).getCellRenderer() + "/" + this.getDefaultRenderer(clazz).getClass()
+        		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor() + "/" + this.getDefaultEditor(clazz).getClass()
+        		);
         	if(clazz==Boolean.class) {
         		DefaultCellEditor editor = new BooleanEditor();
         		editor.setClickCountToStart(1);
@@ -117,34 +123,37 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
         		
             } else if(clazz==Integer.class) {
-            	NumberEditor editor = new NumberEditor(); //new GossipNumberEditor();
+//            	NumberEditor editor = new NumberEditor();
         		// test
         		if(dataModel.isCellEditable(0, c)) {
-        			// OK
+        			// OK - es greift der DefaultRenderer und der DefaultEditor
         		} else {
 //        			Component component = editor.getTableCellEditorComponent(this, Integer.valueOf(0), true, 0, c);
 //        			component.setVisible(false);
 //        			editor.setVisible(false); // TODO dann ist es ja kein editor, sondern ein Renderer!!!!!!!!!!!!!!!
         			// TODO am renderer soll man erkennen, ob es einen editor gibt!! ==> einen anderen renderer für diese Celle
         			// hat auswirkungen auf Highlighter!!!!
-        			this.getColumnModel().getColumn(c).setCellRenderer(new GossipTableRenderer());
-        		}
-    			
-        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
+        			this.getColumnModel().getColumn(c).setCellRenderer(roRenderer);
+        		}		
+//        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
         		
-//        	} else if(clazz==String.class) {
-//        		// setzen BooleanEditor für diese Spalte
-//        		DefaultCellEditor editor = new DefaultCellEditor(final JTextField textField ??? weches);
-//        		editor.setClickCountToStart(1);
-////        		this.getColumnModel().getColumn(c).setCellEditor(editor);
-//        		// funktioniert nicht!
-//        		
-//        		// anders:
-//        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(editor));
+        	} else if(clazz==Timestamp.class) {
+        		if(dataModel.isCellEditable(0, c)) {
+        			// OK - es greift der DefaultRenderer und der DefaultEditor
+        		} else {
+        			this.getColumnModel().getColumn(c).setCellRenderer(roRenderer);
+        		}
+        		
+        	} else if(clazz==String.class) {
+        		if(dataModel.isCellEditable(0, c)) {
+        			// OK - es greift der DefaultRenderer und der DefaultEditor
+        		} else {
+        			this.getColumnModel().getColumn(c).setCellRenderer(roRenderer);
+        		}
         	}
         }		
 //		}
-        isSetColumnEditorsSet = true;
+        isSetColumnEditors = true;
 	}
 
 //	public static class GossipNumberEditor extends NumberEditor {
@@ -160,6 +169,8 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 //		}
 //		
 //	}
+	
+	// mit diesem Renderer werden Spalten dargestellt die RO sind / keinen Editor haben
 	public class GossipTableRenderer extends DefaultTableRenderer {
 
 		private static final long serialVersionUID = 3097989281688245341L;
