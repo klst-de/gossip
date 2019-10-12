@@ -6,5 +6,9 @@
 	<classpathentry kind="lib" path="/gossip/lib/jgoodies-common-1.8.1.jar" sourcepath="/gossip/lib/jgoodies-common-1.8.1.jar"/>
 	<classpathentry kind="lib" path="/gossip/lib/jgoodies-looks-2.5.3.jar" sourcepath="/gossip/lib/src/jgoodies-looks-2.5.3-sources.jar"/>
 	<classpathentry kind="lib" path="/gossip/lib/swingx-all-1.6.5-1.jar" sourcepath="/gossip/lib/src/swingx-all-1.6.5-1-sources.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/gossip client"/>
+	<classpathentry kind="lib" path="/tools/lib/postgresql.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/base"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/adempiere"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

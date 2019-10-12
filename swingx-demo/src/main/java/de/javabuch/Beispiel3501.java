@@ -6,8 +6,13 @@ Handbuch der Java-Programmierung, 3. Auflage, Addison Wesley, Version 3.0.1
  */
 
 import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.event.KeyEvent;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -15,8 +20,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -26,10 +36,18 @@ import javax.swing.plaf.basic.BasicIconFactory;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
+import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+
+import org.jdesktop.swingx.JXLoginPane;
+import org.jdesktop.swingx.JXLoginPane.Status;
+import org.jdesktop.swingx.auth.JDBCLoginService;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
+import com.klst.icon.AbstractImageTranscoder;
+
+import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 public class Beispiel3501 extends JFrame {
 //	implements ActionListener ist mit Lambda nicht mehr notwendig!
@@ -49,11 +67,200 @@ public class Beispiel3501 extends JFrame {
 	private static final String JavaCup16 = "icons/JavaCup16.png";
 	private static final String imageDelayed = "icons/image-delayed.png"; // Landschaft
 	private static final String imageFailed = "icons/image-failed.png";
+	private static final String imageJTabbedPane = "JTabbedPane.gif";
 
+	WindowClosingAdapter windowClosingAdapter = new WindowClosingAdapter(true);
+	
+	Icon iconJavaCup = new ImageIcon(BasicIconFactory.class.getResource(JavaCup16));
 	Icon iconLandschaft = new ImageIcon(BasicIconFactory.class.getResource(imageDelayed));
+	HidableTabbedPane hidableTabbedPane;
+	JButton buttonToggle;
+	JButton buttonTabPlace;
+	
+	// dafür gossip client notwendig:
+	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+	
+	// File Menu Items : 
+	// wo ist der Reiter bei hidableTabbedPane, der Reiter ist nur sichtbar, wenn mindestens zwei Tabs vorhanden sind
+	// bei einem Tab sieht HidableTabbedPane wie ein JPanel aus
+	JMenuItem miTabTop;
+	JMenuItem miTabLeft;
+	JMenuItem miTabBottom;
+	JMenuItem miTabRight;
+	
+	String crossPlatformLookAndFeelClassName = UIManager.getCrossPlatformLookAndFeelClassName();
+	
+	// Look & Feel Menu Items
+	// crossPlatform: 
+	JRadioButtonMenuItem miNimbusLaF;
+	JRadioButtonMenuItem miSteelLaF;
+	JRadioButtonMenuItem miOceanLaF; // the Java default Metal theme
+	JRadioButtonMenuItem miAquaLaF;
+	JRadioButtonMenuItem miPlastikLaF; // jgoodies
+	// Platform dependent:
+	JRadioButtonMenuItem miMotifLaF;
+	JRadioButtonMenuItem miWindowsLaF;
+	JRadioButtonMenuItem miGimpLaF; // GTK GIMP-Toolkit
 
+	private JMenuBar menuBar = new JMenuBar();
+/* aus: /swingx-demos/swingx-demos-swingxset/src/main/java/org/jdesktop/swingxset/SwingXSet.java
+    protected JMenuBar createMenuBar() {
+    
+        JMenuBar menubar = new JMenuBar();
+        menubar.setName("menubar");
+        
+        // File menu
+        JMenu fileMenu = new JMenu();
+        fileMenu.setName("file");
+        menubar.add(fileMenu);
+        
+        // File -> Quit
+        if (!runningOnMac()) {
+            JMenuItem quitItem = new JMenuItem();
+            quitItem.setName("quit");
+            quitItem.setAction(getAction("quit"));
+            fileMenu.add(quitItem);
+        }
+	...
+ */
+//    private javax.swing.Action getAction(String actionName) {
+//        return getContext().getActionMap().get(actionName);
+//    }
+	private void initMenuBar() {
+		// File : JMenuItem's "Quit",  b,  c, ...
+		JMenu mFile = new JMenu();
+		menuBar.add(mFile);
+		mFile.setName("file");
+		mFile.setText("File");
+        if(!runningOnMac()) {
+            JMenuItem quitItem = new JMenuItem("Quit"); // JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
+            quitItem.setName("quit");
+            quitItem.setActionCommand("quit");
+            quitItem.addActionListener(event -> {
+            	System.exit(0);
+            });
+            mFile.add(quitItem);
+        }
+        
+        mFile.addSeparator(); // -------------------------
+        
+        miTabTop = new JMenuItem("Tab on Top", AIT.getImageIcon(AIT.PREVIOUS, 24));
+        miTabTop.addActionListener(event -> {
+			hidableTabbedPane.setTabPlacement(JTabbedPane.TOP);
+		});
+        mFile.add(miTabTop);
+        
+        miTabLeft = new JMenuItem("Tab on Left", AIT.getImageIcon(AIT.PARENT, 24));
+        miTabLeft.addActionListener(event -> {
+			hidableTabbedPane.setTabPlacement(JTabbedPane.LEFT);
+		});
+        mFile.add(miTabLeft);
+            
+        miTabBottom = new JMenuItem("Tab on Bottom", AIT.getImageIcon(AIT.NEXT, 24));
+        miTabBottom.addActionListener(event -> {
+			hidableTabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
+		});
+        mFile.add(miTabBottom);
+        
+        miTabRight = new JMenuItem("Tab on Right", AIT.getImageIcon(AIT.DETAIL, 24));
+        miTabRight.addActionListener(event -> {
+			hidableTabbedPane.setTabPlacement(JTabbedPane.RIGHT);
+		});
+        mFile.add(miTabRight);
+        
+        // Look & Feel : 
+		JMenu mLuf = new JMenu(); // extends AbstractButton
+		menuBar.add(mLuf);
+		mLuf.setText("Look & Feel");
+		mLuf.setMnemonic(KeyEvent.VK_L); // Alt+L
+		mLuf.setActionCommand("LaF"); // in AbstractButton	    
+        ButtonGroup group = new ButtonGroup();
+        
+        miSteelLaF = new JRadioButtonMenuItem(METAL+": Steel");
+        System.out.println("current L&F is "+UIManager.getLookAndFeel().getName());
+        miSteelLaF.setMnemonic(KeyEvent.VK_S);
+        miSteelLaF.addActionListener(event -> {
+        	updateLaF(crossPlatformLookAndFeelClassName, new DefaultMetalTheme());
+        	miSteelLaF.setSelected(true);
+        });
+        group.add(miSteelLaF);
+        mLuf.add(miSteelLaF);
+        
+        miOceanLaF = new JRadioButtonMenuItem(METAL+": Ocean");
+        miOceanLaF.setSelected(true); // this is default
+        miOceanLaF.setMnemonic(KeyEvent.VK_O);
+        miOceanLaF.addActionListener(event -> {
+        	updateLaF(crossPlatformLookAndFeelClassName, new OceanTheme());
+        	miOceanLaF.setSelected(true);
+        });
+        group.add(miOceanLaF);
+        mLuf.add(miOceanLaF);
+        
+        miAquaLaF = new JRadioButtonMenuItem(METAL+": Aqua");
+        miAquaLaF.setMnemonic(KeyEvent.VK_A);
+        miAquaLaF.addActionListener(event -> {
+        	updateLaF(crossPlatformLookAndFeelClassName, new AquaTheme());
+        	miAquaLaF.setSelected(true);
+        });
+        group.add(miAquaLaF);
+        mLuf.add(miAquaLaF);
+        
+        miPlastikLaF = new JRadioButtonMenuItem("Plastic: SkyBluer");
+        miPlastikLaF.setMnemonic(KeyEvent.VK_P);
+        miPlastikLaF.addActionListener(event -> {
+        	updateLaF(PlasticLookAndFeel.class.getName(), new SkyBluer());
+        	miPlastikLaF.setSelected(true);
+        });
+        group.add(miPlastikLaF);
+        mLuf.add(miPlastikLaF);
+       
+        mLuf.addSeparator(); // -------------------------
+        
+        miMotifLaF = new JRadioButtonMenuItem("Motif");
+        miMotifLaF.setMnemonic(KeyEvent.VK_M);
+        miMotifLaF.addActionListener(event -> {
+        	updateLaF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            miMotifLaF.setSelected(true);
+        });
+        group.add(miMotifLaF);
+        mLuf.add(miMotifLaF);
+
+        miWindowsLaF = new JRadioButtonMenuItem("Windows");
+        miWindowsLaF.setMnemonic(KeyEvent.VK_W);
+        miWindowsLaF.addActionListener(event -> {
+        	miWindowsLaF.setSelected(true);
+        	updateLaF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        });
+        group.add(miWindowsLaF);
+        mLuf.add(miWindowsLaF);
+        
+        miGimpLaF = new JRadioButtonMenuItem("GTK / GIMP-Toolkit");
+        miGimpLaF.setMnemonic(KeyEvent.VK_G);
+        miGimpLaF.addActionListener(event -> {
+        	miGimpLaF.setSelected(true);
+        	updateLaF("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+        });
+        group.add(miGimpLaF);
+        mLuf.add(miGimpLaF);
+        
+        mLuf.addSeparator(); // -------------------------
+        
+        miNimbusLaF = new JRadioButtonMenuItem("Nimbus");
+        miNimbusLaF.setMnemonic(KeyEvent.VK_N);
+        miNimbusLaF.addActionListener(event -> {
+        	miNimbusLaF.setSelected(true);
+        	updateLaF(NimbusLookAndFeel.class.getName());
+        });
+        group.add(miNimbusLaF);
+        mLuf.add(miNimbusLaF);
+	}
+	
 	public Beispiel3501() {
 		super("Beispiel3501 - Kapitel 35 - Swing: Grundlagen, Handbuch der Java-Programmierung");
+		
+		this.setJMenuBar(menuBar);
+		initMenuBar();
+		
 		// Panel zur Namenseingabe
 		JPanel namePanel = new JPanel();
 		// statt ImageIcon("triblue.gif") :
@@ -66,6 +273,40 @@ public class Beispiel3501 extends JFrame {
 		namePanel.setBorder(BorderFactory.createEtchedBorder());
 		getContentPane().add(namePanel, BorderLayout.NORTH);
 		
+//		buttonTabPlace = new JButton("tabPlace",new ImageIcon(BasicIconFactory.class.getResource(imageFailed)));
+		// dafür gossip client notwendig:
+		//AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+//		AIT.getImageIcon(AIT.FIRST, 24); // LARGE_ICON_SIZE
+		buttonTabPlace = new JButton("tabPlace",AIT.getImageIcon(AIT.IGNORE, 24));
+		
+		buttonTabPlace.addActionListener(event -> {
+			if(hidableTabbedPane.getTabPlacement()==JTabbedPane.TOP) {
+				hidableTabbedPane.setTabPlacement(JTabbedPane.LEFT);
+			} else {
+				hidableTabbedPane.setTabPlacement(JTabbedPane.TOP);
+			}
+		});
+		buttonToggle = new JButton("toggle Tabs", new ImageIcon(getClass().getResource(imageJTabbedPane)));
+		buttonToggle.setText(null); // button ohne text: icon only
+		buttonToggle.setMargin(new  Insets(0, 0, 0, 0)); // no insets: Insets(int top, int left, int bottom, int right)
+//		buttonToggle.setMargin(new  Insets(-5, -5, -5, -5)); // no insets: Insets(int top, int left, int bottom, int right)
+		buttonToggle.setBorderPainted(false);
+		JPanel hiddenPanel = new JPanel();
+		hiddenPanel.setLayout(new BorderLayout());
+		hiddenPanel.add(buttonToggle, BorderLayout.NORTH);
+		namePanel.add(hiddenPanel);
+		buttonToggle.setToolTipText("ein- /ausschalten HidableTabbedPane");
+		buttonToggle.addActionListener(event -> {
+			if(hidableTabbedPane.isTabsShown()) {
+				hidableTabbedPane.removeTabAt(1);
+			} else {
+				hidableTabbedPane.addTab("sichtbar gemacht", buttonTabPlace);
+			}
+			this.pack();
+		});
+		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane",namePanel);
+		getContentPane().add(hidableTabbedPane, BorderLayout.NORTH);
+		
 		// Monatsliste
 		JList<String> list = new JList<String>(MONTHS);
 		list.setToolTipText("W�hlen Sie ihren Geburtsmonat aus");
@@ -75,13 +316,14 @@ public class Beispiel3501 extends JFrame {
 		JPanel buttonPanel = new JPanel();
 		
 		// Set cross-platform Java L&F (also called "Metal")
-		String crossPlatformLookAndFeelClassName = UIManager.getCrossPlatformLookAndFeelClassName();
 		// statt Button eine JComboBox für METAL themes
 //		JButton button1 = new JButton(METAL);
 //		button1.addActionListener(event -> updateLaF(crossPlatformLookAndFeelClassName, new DefaultMetalTheme()));
 //		button1.setToolTipText("Metal-Look-and-Feel aktivieren");
 //		buttonPanel.add(button1);
-		
+
+/* die L&F Umschalter jetzt im Menu
+
 		lafCB = this.createLaFComboBox();
 		buttonPanel.add(lafCB);
 		lafCB.addActionListener(event -> {
@@ -118,6 +360,8 @@ public class Beispiel3501 extends JFrame {
 		btnNimbus.addActionListener(event -> updateLaF(NimbusLookAndFeel.class.getName()));
 		btnNimbus.setToolTipText("Nimbus-Look-and-Feel aktivieren");
 		buttonPanel.add(btnNimbus);
+ */
+		createLoginPaneDemo(buttonPanel);
 
 		JButton buttonSynth = new JButton(SYNTH);
 /* klassisch, mit ActionListener:
@@ -155,8 +399,53 @@ Therefore WindowAdapter, which has multiple methods (windowActivated(WindowEvent
 windowClosed(WindowEvent e), windowClosing(WindowEvent e), ...), can't be substituted by a lambda expression.
 
  */
-		addWindowListener(new WindowClosingAdapter(true));
+		addWindowListener(windowClosingAdapter);
 	}
+
+/*
+         final JXLoginPane panel = new JXLoginPane(new LoginService() {
+                      public boolean authenticate(String name, char[] password,
+                                      String server) throws Exception {
+                              // perform authentication and return true on success.
+                              return false;
+                      }});
+      final JFrame frame = JXLoginPane.showLoginFrame(panel);
+
+ */
+    private JButton loginLauncher;
+	private DemoLoginService loginService;
+	private JDBCLoginService jdbcLoginService;
+	private DemoLoginPane loginPane;
+	private void createLoginPaneDemo(Container container) {
+	    loginService = new DemoLoginService();
+	    String driver = "org.postgresql.Driver";
+	    String url = "jdbc:postgresql://localhost:5432/miad001";
+	    jdbcLoginService = new JDBCLoginService(driver, url); // JDBCLoginService(String driver, String url) | JDBCLoginService(String driver, String url, Properties props)
+	    loginPane = new DemoLoginPane(jdbcLoginService);
+        loginLauncher = new JButton("Login");
+        loginLauncher.setName("launcher");
+//        getContentPane().add(loginLauncher, BorderLayout.EAST);
+        container.add(loginLauncher);
+        bind();
+	}
+    private void bind() {
+        loginLauncher.addActionListener(event -> {
+//        		new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                JXLoginPane.showLoginDialog(LoginPaneDemo.this, loginPane);
+//            }
+        	Status status = JXLoginPane.showLoginDialog(this, loginPane);
+        	System.out.println("status:"+status.name());
+        });
+//        Bindings.createAutoBinding(READ,
+//                allowLogin, BeanProperty.create("selected"),
+//                service, BeanProperty.create("validLogin")).bind();
+        // LoginListener hat mehrere methoden, daher nicht mit Lambda
+//        loginService.addLoginListener(event -> {
+//        	
+//        });
+        jdbcLoginService.addLoginListener(loginPane);
+    }
 
 	// A component that combines a button or editable field and a drop-down list. 
 	// Type Parameters:<E> the type of the elements of this combo box
@@ -206,6 +495,10 @@ windowClosed(WindowEvent e), windowClosing(WindowEvent e), ...), can't be substi
 		SwingUtilities.updateComponentTreeUI(this);
 		this.pack();
 	}
+
+    public static boolean runningOnMac() {
+        return System.getProperty("os.name").equals("Mac OS X");
+    } 
 
 	public static void main(String[] args) {
 		Beispiel3501 frame = new Beispiel3501();
