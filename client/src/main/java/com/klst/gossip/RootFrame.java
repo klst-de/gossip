@@ -137,7 +137,10 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 		miBank.addActionListener(event -> {
 			LOG.config("new frame Banken");
 			Properties ctx = Env.getCtx();
-
+			 			 
+			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
 			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
 			ctx.forEach((key,value) -> { // zum Test
 				LOG.info("key:"+key + " : " + value.toString());
@@ -254,7 +257,17 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 		miCountry = new JMenuItem("zeige Länder (Demo)", AIT.getImageIcon(AIT.ONLINE, SMALL_ICON_SIZE));
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
-			WindowFrame frame = makeWindow(122); // AD_Window_ID=122;
+			Properties ctx = Env.getCtx();
+			 
+			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
+			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
+			ctx.forEach((key,value) -> { // zum Test
+				LOG.info("key:"+key + " : " + value.toString());
+			});
+
+			WindowFrame frame = makeWindow(122); // AD_Window_ID=122; "Country Region and City"
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 //			Tab tab = frame.getSelectedTab(); // wie erwartet null
 			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
@@ -403,86 +416,86 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 	public static final int FilePathOrName  = 53670;
 
  */
-	private static VEditor factoryGetEditor(GridTab mTab, GridField mField, boolean tableEditor) {
-		if (mField == null)
-			return null;
-		
-		VEditor editor = null;
-		int displayType = mField.getDisplayType();
-		String columnName = mField.getColumnName();
-		boolean mandatory = mField.isMandatory(false);      //  no context check
-		boolean readOnly = mField.isReadOnly();
-		boolean updateable = mField.isUpdateable();
-		int WindowNo = mField.getWindowNo();
-
-		//  Not a Field
-		if (mField.isHeading())
-			return null;
-
-		//	String (clear/password)
-		if (displayType == DisplayType.String
-			|| displayType == DisplayType.PrinterName
-			|| (tableEditor && (displayType == DisplayType.Text || displayType == DisplayType.TextLong)) )
-		{
-			if (mField.isEncryptedField())
-			{	LOG.warning("TODO VPassword"); return null;
-//				VPassword vs = new VPassword (columnName, mandatory, readOnly, updateable,
-//					mField.getDisplayLength(), mField.getFieldLength(), mField.getVFormat());
-//				vs.setName (columnName);
-//				vs.setField (mField);
-//				editor = vs;
-			}
-			else
-			{	LOG.warning("TODO VString"); return null;
-//				VString vs = new VString (columnName, mandatory, readOnly, updateable,
-//					mField.getDisplayLength(), mField.getFieldLength(), 
-//					mField.getVFormat(), mField.getObscureType());
-//				vs.setName (columnName);
-//				vs.setField (mField);
-//				if (mField.isAutocomplete()) {
-//					ADempiereAutoCompleteDecorator.decorate(vs, mField.getEntries(), false);
-//				}
-//				editor = vs;
-			}
-		}
-
-		//	Lookup
-		else if (DisplayType.isLookup(displayType) || displayType == DisplayType.ID)
-		{
-			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable,
-				mField.getLookup());
-			vl.setName(columnName);
-			vl.setField (mField);
-			editor = vl;
-		}
-
-		//	YesNo
-		else if (displayType == DisplayType.YesNo)
-		{
-			VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable,
-				mField.getHeader(), mField.getDescription(), tableEditor);
-			vc.setName(columnName);
-			vc.setField (mField);
-			editor = vc;
-		}
-
-		//	Date
-		else if (DisplayType.isDate(displayType))
-		{
-			if (displayType == DisplayType.DateTime)
-				readOnly = true;
-			VDate vd = new VDate(columnName, mandatory, readOnly, updateable,
-				displayType, mField.getHeader());
-			vd.setName(columnName);
-			vd.setField (mField);
-			editor = vd;
-		}
-
-		else
-			LOG.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
-		
-		return editor;
-	}
+//	private static VEditor factoryGetEditor(GridTab mTab, GridField mField, boolean tableEditor) {
+//		if (mField == null)
+//			return null;
+//		
+//		VEditor editor = null;
+//		int displayType = mField.getDisplayType();
+//		String columnName = mField.getColumnName();
+//		boolean mandatory = mField.isMandatory(false);      //  no context check
+//		boolean readOnly = mField.isReadOnly();
+//		boolean updateable = mField.isUpdateable();
+//		int WindowNo = mField.getWindowNo();
+//
+//		//  Not a Field
+//		if (mField.isHeading())
+//			return null;
+//
+//		//	String (clear/password)
+//		if (displayType == DisplayType.String
+//			|| displayType == DisplayType.PrinterName
+//			|| (tableEditor && (displayType == DisplayType.Text || displayType == DisplayType.TextLong)) )
+//		{
+//			if (mField.isEncryptedField())
+//			{	LOG.warning("TODO VPassword"); return null;
+////				VPassword vs = new VPassword (columnName, mandatory, readOnly, updateable,
+////					mField.getDisplayLength(), mField.getFieldLength(), mField.getVFormat());
+////				vs.setName (columnName);
+////				vs.setField (mField);
+////				editor = vs;
+//			}
+//			else
+//			{	LOG.warning("TODO VString"); return null;
+////				VString vs = new VString (columnName, mandatory, readOnly, updateable,
+////					mField.getDisplayLength(), mField.getFieldLength(), 
+////					mField.getVFormat(), mField.getObscureType());
+////				vs.setName (columnName);
+////				vs.setField (mField);
+////				if (mField.isAutocomplete()) {
+////					ADempiereAutoCompleteDecorator.decorate(vs, mField.getEntries(), false);
+////				}
+////				editor = vs;
+//			}
+//		}
+//
+//		//	Lookup
+//		else if (DisplayType.isLookup(displayType) || displayType == DisplayType.ID)
+//		{
+//			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable,
+//				mField.getLookup());
+//			vl.setName(columnName);
+//			vl.setField (mField);
+//			editor = vl;
+//		}
+//
+//		//	YesNo
+//		else if (displayType == DisplayType.YesNo)
+//		{
+//			VCheckBox vc = new VCheckBox(columnName, mandatory, readOnly, updateable,
+//				mField.getHeader(), mField.getDescription(), tableEditor);
+//			vc.setName(columnName);
+//			vc.setField (mField);
+//			editor = vc;
+//		}
+//
+//		//	Date
+//		else if (DisplayType.isDate(displayType))
+//		{
+//			if (displayType == DisplayType.DateTime)
+//				readOnly = true;
+//			VDate vd = new VDate(columnName, mandatory, readOnly, updateable,
+//				displayType, mField.getHeader());
+//			vd.setName(columnName);
+//			vd.setField (mField);
+//			editor = vd;
+//		}
+//
+//		else
+//			LOG.log(Level.WARNING, columnName + " - Unknown Type: " + displayType);
+//		
+//		return editor;
+//	}
 //--------------------------- */	
 
 	/*
