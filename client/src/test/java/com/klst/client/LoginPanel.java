@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -268,10 +269,11 @@ public class LoginPanel extends JXPanel {
 			Properties ctx = Env.getCtx();
 
 			Language language = Language.getLoginLanguage();
-			LOG.info("Locale:"+this.getLocale() + " Language:"+language);
+			LOG.info("Locale:"+this.getLocale() + " Language:"+language + " default:"+Locale.getDefault(Locale.Category.DISPLAY));
 			MLanguage lang = MLanguage.get(ctx, this.getLocale().toLanguageTag());
 			LOG.info("lang:"+lang);
 			Env.setContext(ctx, Env.LANGUAGE, this.getLocale().toString());
+//			Env.setContext(ctx, Env.LANGUAGE, language.getLocale().toString()); // aus props
 			Env.setContext(ctx, "#ShowTrl", "N");
 			 
 //			ctx.list(System.out);
