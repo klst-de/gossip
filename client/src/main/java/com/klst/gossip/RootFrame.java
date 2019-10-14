@@ -72,6 +72,7 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 
 	JMenuItem miBank;
 	JMenuItem miCountry;
+	JMenuItem miDocument;
 
 	// Look & Feel Menu Items
 	// crossPlatform: 
@@ -146,8 +147,12 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 				LOG.info("key:"+key + " : " + value.toString());
 			});
 
-			WindowFrame frame = makeWindow(158); // AD_Window_ID=158)
-			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			int window_ID=158; // AD_Window_ID=158 
+			if(WindowFrame.testWindow_ID(window_ID)==null) {
+				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+			} else {
+				WindowFrame frame = makeWindow(window_ID); // AD_Window_ID=158)
+				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			// TEST
 // TODO Tab muss so etwas wie GridController sein
 //			 *  The Grid Controller is the panel for single and multi-row presentation
@@ -247,10 +252,10 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 //			
 //			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(vPanel);
 			
-			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
-			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-			task.execute();
-			
+				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+				task.execute();
+			}			
 		});
 		mFile.add(miBank);
 
@@ -263,20 +268,52 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
 			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
 			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
+			ctx.setProperty("#AD_Language", "en_US"); // TODO Patch >>>>>>>>>>>>> in 3.9.3 gibt es lang de nicht 
 			ctx.forEach((key,value) -> { // zum Test
 				LOG.info("key:"+key + " : " + value.toString());
 			});
-
-			WindowFrame frame = makeWindow(122); // AD_Window_ID=122; "Country Region and City"
-			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-//			Tab tab = frame.getSelectedTab(); // wie erwartet null
-			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
-			frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-			task.execute();
+			
+			int window_ID=122; // AD_Window_ID=122; "Country Region and City"
+			if(WindowFrame.testWindow_ID(window_ID)==null) {
+				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+			} else {
+				WindowFrame frame = makeWindow(window_ID);
+				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+//				Tab tab = frame.getSelectedTab(); // wie erwartet null
+				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+				task.execute();
+			}
 		});
 		mFile.add(miCountry);
 		
-		// TODO guter Test: AD_Window_ID=135 Document Type 
+		miDocument = new JMenuItem("zeige Belege (Demo)", AIT.getImageIcon(AIT.ARCHIVE, SMALL_ICON_SIZE));
+		miDocument.addActionListener(event -> {
+			LOG.config("new frame Belege");
+			Properties ctx = Env.getCtx();
+			 
+			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
+			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
+			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
+//			ctx.setProperty("#AD_Language", "en_US"); // TODO Patch 
+			ctx.forEach((key,value) -> { // zum Test
+				LOG.info("key:"+key + " : " + value.toString());
+			});
+			
+			int window_ID=135; // guter Test: AD_Window_ID=135 Document Type 
+			if(WindowFrame.testWindow_ID(window_ID)==null) {
+				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+			} else {
+				WindowFrame frame = makeWindow(window_ID);
+				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
+				task.execute();
+			}
+		});
+		mFile.add(miDocument);
+		
 		// oder AD_Window_ID=140 Product
 		// oder AD_Window_ID=143 Sales Order
 
