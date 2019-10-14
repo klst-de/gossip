@@ -273,7 +273,7 @@ public class LoginPanel extends JXPanel {
 			MLanguage lang = MLanguage.get(ctx, this.getLocale().toLanguageTag());
 			LOG.info("lang:"+lang);
 			Env.setContext(ctx, Env.LANGUAGE, this.getLocale().toString());
-//			Env.setContext(ctx, Env.LANGUAGE, language.getLocale().toString()); // aus props
+			Env.setContext(ctx, Env.LANGUAGE, language.getLocale().toString()); // aus props
 			Env.setContext(ctx, "#ShowTrl", "N");
 			 
 //			ctx.list(System.out);

@@ -52,7 +52,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	static final int LARGE_ICON_SIZE = 24;
 	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 	
-	private static int mindowCounter = 0; // für windowNo wird pro ctor hochgezählt
+	private static int windowCounter = 0; // für windowNo, wird pro ctor hochgezählt
 	private int windowNo;
 	
 	private int window_ID;
@@ -108,8 +108,8 @@ public class WindowFrame extends JFrame implements WindowListener {
 	}
 	WindowFrame(String title, RootFrame rootFrame, int window_ID) {
 		super(title);
-		mindowCounter++;
-		this.windowNo = mindowCounter-1;
+		windowCounter++;
+		this.windowNo = windowCounter-1;
 		
 		this.rootFrame = rootFrame;
 		this.window_ID = window_ID;
@@ -219,7 +219,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	// can make window?
 	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein. Daher die Prüfung
 	static GridWindow testWindow_ID(int window_ID) {
-		return GridWindow.get(Env.getCtx(), mindowCounter, window_ID); 
+		return GridWindow.get(Env.getCtx(), windowCounter, window_ID); 
 	}
 	private void initGridWindow() {
 		LOG.config(">>>>GridWindow.get ...");
