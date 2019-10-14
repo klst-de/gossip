@@ -216,9 +216,15 @@ public class WindowFrame extends JFrame implements WindowListener {
 		return this.windowNo;
 	}
 	
+	// can make window?
+	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein. Daher die Prüfung
+	static GridWindow testWindow_ID(int window_ID) {
+		return GridWindow.get(Env.getCtx(), mindowCounter, window_ID); 
+	}
 	private void initGridWindow() {
 		LOG.config(">>>>GridWindow.get ...");
 		this.gridWindow = GridWindow.get(ctx, this.windowNo, this.window_ID); 
+		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		LOG.config("<<<<");
 		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
 /* WINDOWTYPEs: aus GridWindowVO		
@@ -227,7 +233,6 @@ public class WindowFrame extends JFrame implements WindowListener {
 		public static final String	WINDOWTYPE_MMAINTAIN = "M";
 TODO Demo für jeden Typ
 */
-		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
 		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
 		for (int i = 0; i < gridWindow.getTabCount(); i++) {
