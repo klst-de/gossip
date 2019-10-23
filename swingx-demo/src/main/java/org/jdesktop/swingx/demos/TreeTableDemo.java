@@ -26,31 +26,25 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 
-import org.jdesktop.application.Action;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
-import org.jdesktop.swingx.demos.tree.TreeDemoIconValues.LazyLoadingIconValue;
-import org.jdesktop.swingx.demos.tree.XTreeDemo;
-import org.jdesktop.swingx.event.AbstractInputEventDispatcher;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
 import org.jdesktop.swingx.renderer.IconValue;
@@ -60,74 +54,73 @@ import org.jdesktop.swingx.table.ColumnFactory;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jdesktop.swingx.util.PaintUtils;
-import org.jdesktop.swingxset.JXDemoFrame;
-import org.jdesktop.swingxset.util.ComponentModels;
-import org.jdesktop.swingxset.util.DemoUtils;
+//import org.jdesktop.swingxset.JXDemoFrame;
+//import org.jdesktop.swingxset.util.DemoUtils;
 
-import com.sun.swingset3.DemoProperties;
+import com.klst.client.TreeDemoIconValues.LazyLoadingIconValue;
 
 /**
  * A demo for the {@code JXTreeTable}.
  *
  * @author Karl George Schaefer
  */
-@DemoProperties(
-    value = "JXTreeTable Demo",
-    category = "Data",
-    description = "Demonstrates JXTreeTable, a tree-based, grid component.",
-    sourceFiles = {
-            "org/jdesktop/swingx/demos/treetable/TreeTableDemo.java",
-            "org/jdesktop/swingx/demos/tree/TreeDemoIconValues.java",
-        "org/jdesktop/swingxset/JXDemoFrame.java",
-        "org/jdesktop/swingx/demos/treetable/resources/TreeTableDemo.properties"
-    }
-)
-@SuppressWarnings("serial")
-public class TreeTableDemo extends JPanel {
+//@DemoProperties(
+//    value = "JXTreeTable Demo",
+//    category = "Data",
+//    description = "Demonstrates JXTreeTable, a tree-based, grid component.",
+//    sourceFiles = {
+//            "org/jdesktop/swingx/demos/treetable/TreeTableDemo.java",
+//            "org/jdesktop/swingx/demos/tree/TreeDemoIconValues.java",
+//        "org/jdesktop/swingxset/JXDemoFrame.java",
+//        "org/jdesktop/swingx/demos/treetable/resources/TreeTableDemo.properties"
+//    }
+//)
+public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends JPanel
     
-    @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(TreeTableDemo.class
-            .getName());
-    
+	private static final long serialVersionUID = 1L;
+	static Logger LOG = Logger.getLogger(TreeTableDemo.class.getName());
+   
     private JXTreeTable treeTable;
     private boolean initialized;
     private JButton refreshButton;
     private JButton expandButton;
     private JButton collapseButton;
-    private AbstractInputEventDispatcher inputEventDispatcher;
+//    private AbstractInputEventDispatcher inputEventDispatcher;
     private AbstractHighlighter mouseOverHighlighter;
     
     public TreeTableDemo() {
         super(new BorderLayout());
         initComponents();
         configureComponents();
-        DemoUtils.injectResources(this);
+//        DemoUtils.injectResources(this);
         bind();
     }
     
 //---------------- public api for Binding/Action control
-    
-
-    @Action
-    public void refreshModel() {
+//    
+//
+//    @Action
+//    public 
+    void refreshModel() {
         treeTable.setTreeTableModel(createTreeModel());
-        expandAll();
+//        expandAll();
+        treeTable.expandAll();
         treeTable.packColumn(treeTable.getHierarchicalColumn(), -1);
     }
-    
-    // <snip> JXTreeTable convenience api
-    // expand/collapse all nodes
-    @Action
-    public void expandAll() {
-        treeTable.expandAll();
-    }
-
-    @Action
-    public void collapseAll() {
-        treeTable.collapseAll();
-    }
-    // </snip>
-    
+//    
+//    // <snip> JXTreeTable convenience api
+//    // expand/collapse all nodes
+//    @Action
+//    public void expandAll() {
+//        treeTable.expandAll();
+//    }
+//
+//    @Action
+//    public void collapseAll() {
+//        treeTable.collapseAll();
+//    }
+//    // </snip>
+//    
 //------------------- config/bind  
     
 
@@ -142,8 +135,8 @@ public class TreeTableDemo extends JPanel {
                     TableColumnExt columnExt) {
                 super.configureTableColumn(model, columnExt);
                 if (columnExt.getModelIndex() < columnNameKeys.length) {
-                    columnExt.setTitle(DemoUtils.getResourceString(TreeTableDemo.class, 
-                            columnNameKeys[columnExt.getModelIndex()]));
+                    //columnExt.setTitle(DemoUtils.getResourceString(TreeTableDemo.class, columnNameKeys[columnExt.getModelIndex()]));
+                    columnExt.setTitle("ModelIndex="+columnExt.getModelIndex());
                 }
             }
             
@@ -223,13 +216,23 @@ public class TreeTableDemo extends JPanel {
         treeTable.setColumnControlVisible(true);
         
         
-        refreshButton.setAction(DemoUtils.getAction(this, "refreshModel"));
-        expandButton.setAction(DemoUtils.getAction(this, "expandAll"));
-        collapseButton.setAction(DemoUtils.getAction(this, "collapseAll"));
-        
+//        refreshButton.setAction(DemoUtils.getAction(this, "refreshModel"));
+//        expandButton.setAction(DemoUtils.getAction(this, "expandAll"));
+//        collapseButton.setAction(DemoUtils.getAction(this, "collapseAll"));
+        refreshButton.addActionListener(event -> {
+        	refreshModel();
+        });
+
+        expandButton.addActionListener(event -> {
+            treeTable.expandAll();
+        });
+        collapseButton.addActionListener(event -> {
+            treeTable.collapseAll();
+        });
+       
         // Demo specific config
-        DemoUtils.setSnippet("JXTreeTable convenience api", expandButton, collapseButton);
-        DemoUtils.setSnippet("JXTreeTable rendering", treeTable);
+//        DemoUtils.setSnippet("JXTreeTable convenience api", expandButton, collapseButton);
+//        DemoUtils.setSnippet("JXTreeTable rendering", treeTable);
     }
 
     
@@ -281,34 +284,37 @@ public class TreeTableDemo extends JPanel {
     // <snip> Input-/FocusEvent notification 
     // install custom dispatcher with demo frame
     private void installInputEventListener() {
-        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
-        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
-        if (inputEventDispatcher == null) {
-            inputEventDispatcher = new AbstractInputEventDispatcher() {
-                // updates Highlighter for mouseEntered/mouseExited
-                // of all components in the frame's container hierarchy
-                @Override
-                protected void processMouseEvent(MouseEvent e) {
-                    if (MouseEvent.MOUSE_ENTERED == e.getID()) {
-                        updateHighlighter(e.getComponent());
-                    } else if (MouseEvent.MOUSE_EXITED == e.getID()) {
-                        updateHighlighter(null);
-                    }
-                }
-                
-            };
-        }
-        window.setInputEventDispatcher(inputEventDispatcher); 
+    	LOG.info("ohne JXDemoFrame");
+    	return;
+//        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
+//        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
+//        if (inputEventDispatcher == null) {
+//            inputEventDispatcher = new AbstractInputEventDispatcher() {
+//                // updates Highlighter for mouseEntered/mouseExited
+//                // of all components in the frame's container hierarchy
+//                @Override
+//                protected void processMouseEvent(MouseEvent e) {
+//                    if (MouseEvent.MOUSE_ENTERED == e.getID()) {
+//                        updateHighlighter(e.getComponent());
+//                    } else if (MouseEvent.MOUSE_EXITED == e.getID()) {
+//                        updateHighlighter(null);
+//                    }
+//                }
+//                
+//            };
+//        }
+//        window.setInputEventDispatcher(inputEventDispatcher); 
         // </snip>
 
     }
 
     private void uninstallInputEventListener() {
-        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
-        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
-        window.setInputEventDispatcher(null);
-        updateHighlighter(null);
-        
+    	LOG.info("ohne JXDemoFrame");
+    	return;
+//        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
+//        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
+//        window.setInputEventDispatcher(null);
+//        updateHighlighter(null);  
     }
 
     private TreeTableModel createTreeModel() {
@@ -340,25 +346,33 @@ public class TreeTableDemo extends JPanel {
 
     }
     
+    private static void createAndShowGUI2() {
+        //Create and set up the window.
+    	JXFrame frame = new JXFrame(TreeTableDemo.class.getName());        
+    	frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
+        JXPanel panel = new TreeTableDemo();
+        frame.getContentPane().add(panel);
+ 
+        //Display the window.
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
     /**
      * main method allows us to run as a standalone demo.
      */
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                JFrame frame = new JFrame(TreeTableDemo.class.getAnnotation(DemoProperties.class).value());
-                
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.getContentPane().add(new TreeTableDemo());
-                frame.setPreferredSize(new Dimension(800, 600));
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-            }
-        });
-    }
+	public static void main(String[] args) {
+		LOG.info("start");
 
-
+		// Schedule a job for the event-dispatching thread:
+		// creating and showing this application's GUI.
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				createAndShowGUI2();
+			}
+		});
+	}
+	
 }
 
