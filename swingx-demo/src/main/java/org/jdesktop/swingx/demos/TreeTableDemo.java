@@ -26,6 +26,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -74,7 +75,7 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
     private JXButton refreshButton;
     private JXButton expandButton;
     private JXButton collapseButton;
-//    private AbstractInputEventDispatcher inputEventDispatcher;
+    private AbstractInputEventDispatcher inputEventDispatcher;
     private AbstractHighlighter mouseOverHighlighter;
     
     public TreeTableDemo() {
@@ -198,6 +199,9 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
         // </snip>
         
         mouseOverHighlighter = new ColorHighlighter(HighlightPredicate.NEVER, PaintUtils.setSaturation(Color.MAGENTA, 0.3f), null);
+        // der MAGENTA ColorHighlighter färbt die Zeile der treeTable,
+        // über der sich die Mause gerade befindet.
+        // Das wird in (JXDemoFrame) window.setInputEventDispatcher(inputEventDispatcher) registriert -- erfordert einige Infrastruktur aus Demo 
         treeTable.addHighlighter(mouseOverHighlighter);
         
         treeTable.setColumnControlVisible(true);
@@ -267,41 +271,42 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
     // <snip> Input-/FocusEvent notification 
     // install custom dispatcher with demo frame
     private void installInputEventListener() {
-    	LOG.info("ohne JXDemoFrame");
-    	return;
-//        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
-//        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
-//        if (inputEventDispatcher == null) {
-//            inputEventDispatcher = new AbstractInputEventDispatcher() {
-//                // updates Highlighter for mouseEntered/mouseExited
-//                // of all components in the frame's container hierarchy
-//                @Override
-//                protected void processMouseEvent(MouseEvent e) {
-//                    if (MouseEvent.MOUSE_ENTERED == e.getID()) {
-//                        updateHighlighter(e.getComponent());
-//                    } else if (MouseEvent.MOUSE_EXITED == e.getID()) {
-//                        updateHighlighter(null);
-//                    }
-//                }
-//                
-//            };
-//        }
-//        window.setInputEventDispatcher(inputEventDispatcher); 
+//    	LOG.info("ohne JXDemoFrame");
+//    	return;
+        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
+        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
+        if (inputEventDispatcher == null) {
+            inputEventDispatcher = new AbstractInputEventDispatcher() {
+                // updates Highlighter for mouseEntered/mouseExited
+                // of all components in the frame's container hierarchy
+                @Override
+                protected void processMouseEvent(MouseEvent e) {
+                    if (MouseEvent.MOUSE_ENTERED == e.getID()) {
+                        updateHighlighter(e.getComponent());
+                    } else if (MouseEvent.MOUSE_EXITED == e.getID()) {
+                        updateHighlighter(null);
+                    }
+                }
+                
+            };
+        }
+        window.setInputEventDispatcher(inputEventDispatcher); 
         // </snip>
 
     }
 
     private void uninstallInputEventListener() {
-    	LOG.info("ohne JXDemoFrame");
-    	return;
-//        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
-//        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
-//        window.setInputEventDispatcher(null);
-//        updateHighlighter(null);  
+//    	LOG.info("ohne JXDemoFrame");
+//    	return;
+        if (!(SwingUtilities.getWindowAncestor(this) instanceof JXDemoFrame)) return;
+        JXDemoFrame window = (JXDemoFrame) SwingUtilities.getWindowAncestor(this);
+        window.setInputEventDispatcher(null);
+        updateHighlighter(null);  
     }
 
     private TreeTableModel createTreeModel() {
        Window window = SwingUtilities.getWindowAncestor(this);
+       LOG.info("WindowAncestor class="+window.getClass()); // Aus den Komponenten wird TreeTableModel gebildet 
        return ComponentModels.getTreeTableModel(window != null ? window : this);
     }
 
@@ -357,7 +362,7 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
     
     private static void createAndShowGUI2() {
         //Create and set up the window.
-    	JXFrame frame = new JXFrame(TreeTableDemo.class.getName());        
+    	JXFrame frame = new JXDemoFrame(); //("Title: "+TreeTableDemo.class.getName());        
     	frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
         JXPanel panel = new TreeTableDemo();
         frame.getContentPane().add(panel);
