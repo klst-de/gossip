@@ -1,75 +1,34 @@
-/*
- * Created on 18.04.2008
- *
- */
 package org.jdesktop.swingx.demos;
-
-/*
- * Copyright 2007-2008 Sun Microsystems, Inc.  All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- *   - Neither the name of Sun Microsystems nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Window;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import org.jdesktop.application.Action;
+import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
-import org.jdesktop.swingx.demos.tree.TreeDemoIconValues.FilteredIconValue;
-import org.jdesktop.swingx.demos.tree.TreeDemoIconValues.LazyLoadingIconValue;
+import org.jdesktop.swingx.demos.TreeDemoIconValues.FilteredIconValue;
+import org.jdesktop.swingx.demos.TreeDemoIconValues.LazyLoadingIconValue;
 import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
 import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
-import org.jdesktop.swingxset.util.ComponentModels;
-import org.jdesktop.swingxset.util.DemoUtils;
 
-import com.sun.swingset3.DemoProperties;
+//import com.sun.swingset3.DemoProperties;
 
 /**
  * JXTree Demo
@@ -78,53 +37,88 @@ import com.sun.swingset3.DemoProperties;
  *
  *@author Jeanette Winzenburg, Berlin
  */
-@DemoProperties(
-        value = "JXTree Demo",
-        category = "Data",
-        description = "Demonstrates JXTree, an enhanced tree component",
-        sourceFiles = {
-                "org/jdesktop/swingx/demos/tree/XTreeDemo.java",
-                "org/jdesktop/swingx/demos/tree/TreeDemoIconValues.java"
-                }
-)
-public class XTreeDemo extends JPanel {
-    @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(XTreeDemo.class
-            .getName());
-    private JXTree tree;
-    private JButton refreshButton;
-    private JButton expandButton;
-    private JButton collapseButton;
-    /**
-     * TreeDemo Constructor
-     */
-    public XTreeDemo() {
+
+/* Beispiel aus doc
+ JXTree tree = new JXTree(new FileSystemModel());
+ // use system file icons and name to render
+ tree.setCellRenderer(new DefaultTreeRenderer(IconValues.FILE_ICON, StringValues.FILE_NAME));
+ // highlight condition: file modified after a date     
+ HighlightPredicate predicate = new HighlightPredicate() {
+    public boolean isHighlighted(Component renderer, ComponentAdapter adapter) {
+       File file = getUserObject(adapter.getValue());
+       return file != null ? lastWeek < file.lastModified : false;
+    }
+ };
+ // highlight with foreground color 
+ tree.addHighlighter(new ColorHighlighter(predicate, null, Color.RED);      
+ */
+public class XTreeDemo extends JXPanel { // original XTreeDemo extends JPanel
+	// ... extended JPanel that provides additional features. 
+
+	private static final long serialVersionUID = 1L;
+	static Logger LOG = Logger.getLogger(XTreeDemo.class.getName());
+
+	public XTreeDemo() {
         super(new BorderLayout());
         initComponents();
         configureComponents();
-        DemoUtils.injectResources(this);
+//        DemoUtils.injectResources(this);
+        // == Application.getInstance().getContext().getResourceMap(comp.getClass()).injectComponents(comp);
+//        Application.getInstance().getContext().getResourceMap(this.getClass()).injectComponents(this);
         bind();
+		
+	}
+
+    private void bind() {
+        // example model is component hierarchy of demo application
+        // bind in addNotify
+        tree.setModel(null);
     }
 
-//---------------- public api for Binding/Action control
-    
+    private JXTree tree;
+    private JXButton refreshButton;
+    private JXButton expandButton;
+    private JXButton collapseButton;
 
-    @Action
-    public void refreshModel() {
-        tree.setModel(createTreeModel());
-    }
-    // <snip> JXTree convenience api
-    // expand/collapse all nodes
-    @Action
-    public void expandAll() {
-        tree.expandAll();
-    }
+	private void initComponents() {
+		tree = new JXTree();
+		tree.setName("componentTree");
+		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		add(new JScrollPane(tree), BorderLayout.CENTER);
 
-    @Action
-    public void collapseAll() {
-        tree.collapseAll();
+		JComponent control = new JXPanel();
+		refreshButton = new JXButton("Refresh");
+		refreshButton.setName("refreshButton");
+
+		expandButton = new JXButton("Expand All Nodes");
+		expandButton.setName("expandButton");
+
+		collapseButton = new JXButton("Collapse All Nodes");
+		collapseButton.setName("collapseButton");
+
+        control.add(refreshButton);
+		control.add(expandButton);
+		control.add(collapseButton);
+		add(control, BorderLayout.SOUTH);
+	}
+
+    private static void createAndShowGUI2() {
+        //Create and set up the window.
+    	JXFrame frame = new JXFrame(XTreeDemo.class.getName()); // original: new JFrame(XTreeDemo.class.getAnnotation(DemoProperties.class).value());
+    	// JXFrame enhanced JFrame with Additional Features:
+    	// Root pane:
+    	// Idle: 
+    	// Wait (busy) glass pane:
+    	
+        frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
+        JXPanel panel = new XTreeDemo();
+        frame.getContentPane().add(panel);
+ 
+        //Display the window.
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
-    // </snip>
 
 //---------------- binding/configure
     
@@ -160,12 +154,13 @@ public class XTreeDemo extends JPanel {
                     // anonymous class
                     simpleClassName = value.getClass().getSuperclass().getSimpleName();
                 }
+                LOG.info("liefert "+simpleClassName +".png");
                 return simpleClassName + ".png";
             }
         };
         // <snip> JXTree rendering
         // IconValue provides node icon 
-        IconValue iv = new LazyLoadingIconValue(getClass(), keyValue, "fallback.png");
+        IconValue iv = new LazyLoadingIconValue(getClass(), keyValue, "fallback.png"); // LazyLoadingIconValue in TreeDemoIconValues versteckt!
         // create and set a tree renderer using the custom Icon-/StringValue
         tree.setCellRenderer(new DefaultTreeRenderer(iv, sv));
         // </snip>
@@ -177,21 +172,51 @@ public class XTreeDemo extends JPanel {
         tree.addHighlighter(createRolloverIconHighlighter(iv));
         // </snip>
         
-        refreshButton.setAction(DemoUtils.getAction(this, "refreshModel"));
-        expandButton.setAction(DemoUtils.getAction(this, "expandAll"));
-        collapseButton.setAction(DemoUtils.getAction(this, "collapseAll"));
-        
-        // Demo specific config
-        DemoUtils.setSnippet("JXTree convenience api", expandButton, collapseButton);
-        DemoUtils.setSnippet("JXTree rendering", tree);
+//        refreshButton.setAction(DemoUtils.getAction(this, "refreshModel"));
+        // DemoUtils.getAction == Application.getInstance().getContext().getActionMap(actionProvider).get(key);
+//        refreshButton.setAction(
+//        		Application.getInstance().getContext().getActionMap(this).get("refreshModel") // Application aus swingx\lib\bsaf-1.9.2.jar
+//        );
+        // besser:
+        refreshButton.addActionListener(event -> {
+        	tree.setModel(createTreeModel());
+        });
+//        expandButton.setAction(DemoUtils.getAction(this, "expandAll"));
+        expandButton.addActionListener(event -> {
+        	tree.expandAll();
+        });
+//        collapseButton.setAction(DemoUtils.getAction(this, "collapseAll"));
+        collapseButton.addActionListener(event -> {
+        	tree.collapseAll();
+        });
+//        
+//        // Demo specific config
+//        DemoUtils.setSnippet("JXTree convenience api", expandButton, collapseButton);
+//        DemoUtils.setSnippet("JXTree rendering", tree);
     }
+
+    /**
+     * Overridden to create and install the component tree model.
+     */
+    @Override // javax.swing.JComponent.addNotify
+    public void addNotify() {
+        super.addNotify();
+        if (tree.getModel() == null) {
+            tree.setModel(createTreeModel());
+        }
+    }
+
+    private TreeTableModel createTreeModel() {
+        Window window = SwingUtilities.getWindowAncestor(this);
+        return ComponentModels.getTreeTableModel(window != null ? window : this);
+     }
 
     // <snip> JXTree rollover
     // custom implementation of Highlighter which highlights 
     // by changing the node icon on rollover
     private Highlighter createRolloverIconHighlighter(IconValue delegate) {
         // the icon look-up is left to an IconValue
-        final IconValue iv = new FilteredIconValue(delegate);
+        final IconValue iv = new FilteredIconValue(delegate); // FilteredIconValue versteckt in TreeDemoIconValues
         AbstractHighlighter hl = new AbstractHighlighter(HighlightPredicate.ROLLOVER_ROW) {
 
             /**
@@ -227,69 +252,24 @@ public class XTreeDemo extends JPanel {
         return hl;
     }
 
-    
-    private void bind() {
-        // example model is component hierarchy of demo application
-        // bind in addNotify
-        tree.setModel(null);
-    }
+	public static void main(String[] args) {
+		LOG.info("start");
+//	        JFrame frame = new JFrame(XTreeDemo.class.getAnnotation(DemoProperties.class).value());
+//
+//	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//	        frame.getContentPane().add(new XTreeDemo());
+//	        frame.setPreferredSize(new Dimension(800, 600));
+//	        frame.pack();
+//	        frame.setLocationRelativeTo(null);
+//	        frame.setVisible(true);
 
-    /**
-     * Overridden to create and install the component tree model.
-     */
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (tree.getModel() == null) {
-            tree.setModel(createTreeModel());
-        }
-    }
-
-    private TreeTableModel createTreeModel() {
-       Window window = SwingUtilities.getWindowAncestor(this);
-       return ComponentModels.getTreeTableModel(window != null ? window : this);
-    }
-
-//-------------- init ui
-    /**
-     * 
-     */
-    private void initComponents() {
-        tree = new JXTree();
-        tree.setName("componentTree");
-        tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        add(new JScrollPane(tree), BorderLayout.CENTER);
-        
-        JComponent control = new JXPanel();
-        refreshButton = new JButton();
-        refreshButton.setName("refreshButton");
-
-        expandButton = new JButton();
-        expandButton.setName("expandButton");
-        
-        collapseButton = new JButton();
-        collapseButton.setName("collapseButton");
-        
-//        control.add(refreshButton);
-        control.add(expandButton);
-        control.add(collapseButton);
-        add(control, BorderLayout.SOUTH);
-    }
-
-    /**
-     * main method allows us to run as a standalone demo.
-     */
-    public static void main(String[] args) {
-        JFrame frame = new JFrame(XTreeDemo.class.getAnnotation(DemoProperties.class).value());
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(new XTreeDemo());
-        frame.setPreferredSize(new Dimension(800, 600));
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
+		// Schedule a job for the event-dispatching thread:
+		// creating and showing this application's GUI.
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				createAndShowGUI2();
+			}
+		});
+	}
 
 }
-
-
