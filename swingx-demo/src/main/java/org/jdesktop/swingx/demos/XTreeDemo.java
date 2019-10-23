@@ -62,11 +62,7 @@ public class XTreeDemo extends JXPanel { // original XTreeDemo extends JPanel
         super(new BorderLayout());
         initComponents();
         configureComponents();
-//        DemoUtils.injectResources(this);
-        // == Application.getInstance().getContext().getResourceMap(comp.getClass()).injectComponents(comp);
-//        Application.getInstance().getContext().getResourceMap(this.getClass()).injectComponents(this);
-        bind();
-		
+        bind();	
 	}
 
     private void bind() {
@@ -172,27 +168,16 @@ public class XTreeDemo extends JXPanel { // original XTreeDemo extends JPanel
         tree.addHighlighter(createRolloverIconHighlighter(iv));
         // </snip>
         
-//        refreshButton.setAction(DemoUtils.getAction(this, "refreshModel"));
-        // DemoUtils.getAction == Application.getInstance().getContext().getActionMap(actionProvider).get(key);
-//        refreshButton.setAction(
-//        		Application.getInstance().getContext().getActionMap(this).get("refreshModel") // Application aus swingx\lib\bsaf-1.9.2.jar
-//        );
-        // besser:
         refreshButton.addActionListener(event -> {
         	tree.setModel(createTreeModel());
         });
-//        expandButton.setAction(DemoUtils.getAction(this, "expandAll"));
+
         expandButton.addActionListener(event -> {
         	tree.expandAll();
         });
-//        collapseButton.setAction(DemoUtils.getAction(this, "collapseAll"));
         collapseButton.addActionListener(event -> {
         	tree.collapseAll();
         });
-//        
-//        // Demo specific config
-//        DemoUtils.setSnippet("JXTree convenience api", expandButton, collapseButton);
-//        DemoUtils.setSnippet("JXTree rendering", tree);
     }
 
     /**
@@ -254,14 +239,6 @@ public class XTreeDemo extends JXPanel { // original XTreeDemo extends JPanel
 
 	public static void main(String[] args) {
 		LOG.info("start");
-//	        JFrame frame = new JFrame(XTreeDemo.class.getAnnotation(DemoProperties.class).value());
-//
-//	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//	        frame.getContentPane().add(new XTreeDemo());
-//	        frame.setPreferredSize(new Dimension(800, 600));
-//	        frame.pack();
-//	        frame.setLocationRelativeTo(null);
-//	        frame.setVisible(true);
 
 		// Schedule a job for the event-dispatching thread:
 		// creating and showing this application's GUI.
