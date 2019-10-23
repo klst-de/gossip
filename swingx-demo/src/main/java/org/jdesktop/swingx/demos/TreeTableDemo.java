@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -38,6 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 
+import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTreeTable;
@@ -64,17 +64,6 @@ import com.klst.client.TreeDemoIconValues.LazyLoadingIconValue;
  *
  * @author Karl George Schaefer
  */
-//@DemoProperties(
-//    value = "JXTreeTable Demo",
-//    category = "Data",
-//    description = "Demonstrates JXTreeTable, a tree-based, grid component.",
-//    sourceFiles = {
-//            "org/jdesktop/swingx/demos/treetable/TreeTableDemo.java",
-//            "org/jdesktop/swingx/demos/tree/TreeDemoIconValues.java",
-//        "org/jdesktop/swingxset/JXDemoFrame.java",
-//        "org/jdesktop/swingx/demos/treetable/resources/TreeTableDemo.properties"
-//    }
-//)
 public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends JPanel
     
 	private static final long serialVersionUID = 1L;
@@ -82,9 +71,9 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
    
     private JXTreeTable treeTable;
     private boolean initialized;
-    private JButton refreshButton;
-    private JButton expandButton;
-    private JButton collapseButton;
+    private JXButton refreshButton;
+    private JXButton expandButton;
+    private JXButton collapseButton;
 //    private AbstractInputEventDispatcher inputEventDispatcher;
     private AbstractHighlighter mouseOverHighlighter;
     
@@ -92,7 +81,6 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
         super(new BorderLayout());
         initComponents();
         configureComponents();
-//        DemoUtils.injectResources(this);
         bind();
     }
     
@@ -209,8 +197,7 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
         treeTable.setDefaultRenderer(Dimension.class, treeTable.getDefaultRenderer(Point.class));
         // </snip>
         
-        mouseOverHighlighter = new ColorHighlighter(HighlightPredicate.NEVER, 
-                PaintUtils.setSaturation(Color.MAGENTA, 0.3f), null);
+        mouseOverHighlighter = new ColorHighlighter(HighlightPredicate.NEVER, PaintUtils.setSaturation(Color.MAGENTA, 0.3f), null);
         treeTable.addHighlighter(mouseOverHighlighter);
         
         treeTable.setColumnControlVisible(true);
@@ -229,10 +216,6 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
         collapseButton.addActionListener(event -> {
             treeTable.collapseAll();
         });
-       
-        // Demo specific config
-//        DemoUtils.setSnippet("JXTreeTable convenience api", expandButton, collapseButton);
-//        DemoUtils.setSnippet("JXTreeTable rendering", treeTable);
     }
 
     
@@ -323,6 +306,7 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
     }
 
     //----------------- init
+
     
     private void initComponents() {
         treeTable = new JXTreeTable();
@@ -330,16 +314,41 @@ public class TreeTableDemo extends JXPanel { // original TreeTableDemo extends J
         add(new JScrollPane(treeTable));
 
         JComponent control = new JXPanel();
-        refreshButton = new JButton();
-        refreshButton.setName("refreshButton");
+/* unterschied JXButton zu JButton:
+  JXButton b = new JXButton("Execute");
+  AbstractPainter fgPainter = (AbstractPainter)b.getForegroundPainter();
+  StackBlurFilter filter = new StackBlurFilter();
+  fgPainter.setFilters(filter);
+  
+       Painter<Component> p = new Painter<Component>() {
+         public void paint(Graphics2D g, Component c, int width, int height) {
+             g.setColor(c.getBackground());
+             //and so forth
+         }
+     }
 
-        expandButton = new JButton();
+ */
+//        Painter<Component> p = new Painter<Component>() {
+//            public void paint(Graphics2D g, Component c, int width, int height) {
+//                g.setColor(c.getBackground());
+//                //and so forth
+//            }
+//        };
+
+        refreshButton = new JXButton("Refresh");
+        refreshButton.setName("refreshButton");
+//        refreshButton.setForegroundPainter(p);
+//        AbstractPainter fgPainter = (AbstractPainter)refreshButton.getForegroundPainter();
+//        StackBlurFilter filter = new StackBlurFilter();
+//        fgPainter.setFilters(filter);
+
+        expandButton = new JXButton("Expand All Nodes");
         expandButton.setName("expandTreeTableButton");
         
-        collapseButton = new JButton();
+        collapseButton = new JXButton("Collapse All Nodes");
         collapseButton.setName("collapseTreeTableButton");
         
-//        control.add(refreshButton);
+        control.add(refreshButton);
         control.add(expandButton);
         control.add(collapseButton);
         add(control, BorderLayout.SOUTH);
