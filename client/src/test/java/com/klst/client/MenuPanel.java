@@ -5,17 +5,17 @@ import java.awt.Component;
 import java.awt.Window;
 import java.util.logging.Logger;
 
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableModel;
 
 //import org.compiere.model.MTree;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
-import org.jdesktop.swingx.JXTree;
+import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -25,6 +25,8 @@ import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
+import org.jdesktop.swingx.table.ColumnFactory;
+import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.klst.client.TreeDemoIconValues.FilteredIconValue;
@@ -45,7 +47,7 @@ public class MenuPanel extends JXPanel {
         bind();	
 	}
 
-    private JXTree tree;
+    private JXTreeTable tree;
     private JXButton refreshButton;
     private JXButton expandButton;
     private JXButton collapseButton;
@@ -57,7 +59,7 @@ public class MenuPanel extends JXPanel {
     public void addNotify() {
         super.addNotify();
         if (tree.getModel() == null) {
-            tree.setModel(createTreeModel());
+            tree.setTreeTableModel(createTreeModel());
         }
     }
 
@@ -100,83 +102,15 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
  */
     	TreeTableModel treeTableModel = new MenuTreeTableModel(rootNode);
     	return treeTableModel;
-//        return new AbstractTreeTableModel(root) {
-//
-//            public int getColumnCount() {
-//                return 4;
-//            }
-//
-//            public Object getValueAt(Object node, int column) {
-//                Component c = (Component) node;
-//                Object o = null;
-//                
-//                switch (column) {
-//                case 0:
-//                    o = c;
-//                    break;
-//                case 1:
-//                    o = c.getName();
-//                    break;
-//                case 2:
-//                    if (c.isShowing()) {
-//                        o = c.getLocationOnScreen();
-//                    }
-//                    break;
-//                case 3:
-//                    o = c.getSize();
-//                    break;
-//                default:
-//                    //does nothing
-//                    break;
-//                }
-//                
-//                return o;
-//            }
-//
-//            
-//            @Override
-//            public Class<?> getColumnClass(int column) {
-//                switch (column) {
-//                case 0:
-//                    return Component.class;
-//                case 1:
-//                    return String.class;
-//                case 2:
-//                    return Point.class;
-//                case 3:
-//                    return Dimension.class;
-//                }    
-//                return super.getColumnClass(column);
-//            }
-//
-//            public Object getChild(Object parent, int index) {
-//                return ((Container) parent).getComponent(index);
-//            }
-//
-//            public int getChildCount(Object parent) {
-//                return parent instanceof Container ? ((Container) parent).getComponentCount() : 0;
-//            }
-//
-//            public int getIndexOfChild(Object parent, Object child) {
-//                Component[] children = ((Container) parent).getComponents();
-//                
-//                for (int i = 0, len = children.length; i < len; i++) {
-//                    if (child == children[i]) {
-//                        return i;
-//                    }
-//                }
-//                
-//                return -1;
-//            }
-//            
-//        };
     }
 
 	private void initComponents() {
-		tree = new JXTree();
+		tree = new JXTreeTable();
 		tree.setName("componentTree");
-		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-		add(new JScrollPane(tree), BorderLayout.CENTER);
+//		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+//		add(new JScrollPane(tree), BorderLayout.CENTER);
+        tree.setName("componentTreeTable");
+        add(new JScrollPane(tree));
 
 		JComponent control = new JXPanel();
 		refreshButton = new JXButton("Refresh");
@@ -201,7 +135,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             
             @Override
             public String getString(Object value) {
-                if (value instanceof Component) {
+                if(value instanceof Component) {
                     Component component = (Component) value;
                     String simpleName = component.getClass().getSimpleName();
                     if (simpleName.length() == 0){
@@ -209,6 +143,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
                         simpleName = component.getClass().getSuperclass().getSimpleName();
                     }
                     return simpleName + "(" + component.getName() + ")";
+                } else if(value instanceof MTreeNode) {
+                	return StringValues.TO_STRING.getString(((MTreeNode) value).getName());
                 } else {
                 	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
                 }
@@ -223,6 +159,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             @Override
             public String getString(Object value) {
                 if (value == null) return "";
+            	if(value instanceof MTreeNode) {
+            		MTreeNode node = (MTreeNode)value;
+            		LOG.info(">>>>>>>>>ICON "+node.getImageIndicator() + node.getImageIndex());
+            		return node.getImageIndicator() + node.getImageIndex();
+            	}
                 String simpleClassName = value.getClass().getSimpleName();
                 if (simpleClassName.length() == 0){
                     // anonymous class
@@ -241,9 +182,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 
  */
         // create and set a tree renderer using the custom Icon-/StringValue
-        tree.setCellRenderer(new DefaultTreeRenderer(iv, sv));
+        tree.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
         // </snip>
-        tree.setRowHeight(-1);
+//        tree.setRowHeight(-1);
         
         // <snip> JXTree rollover
         // enable and register a highlighter
@@ -252,7 +193,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // </snip>
         
         refreshButton.addActionListener(event -> {
-        	tree.setModel(createTreeModel());
+        	tree.setTreeTableModel(createTreeModel());
         });
 
         expandButton.addActionListener(event -> {
@@ -265,7 +206,26 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     }
     
     private void bind() {
-        tree.setModel(null);
+//        tree.setModel(null); // remove - that is an outdated approach?
+        
+        // <snip>JXTreeTable column customization
+        // configure and install a custom columnFactory, arguably data related ;-)
+        ColumnFactory factory = new ColumnFactory() {
+            String[] columnNameKeys = { "componentType", "componentName" //, "componentLocation", "componentSize" 
+            		};
+
+            @Override
+            public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
+                super.configureTableColumn(model, columnExt);
+                if (columnExt.getModelIndex() < columnNameKeys.length) {
+                    //columnExt.setTitle(DemoUtils.getResourceString(TreeTableDemo.class, columnNameKeys[columnExt.getModelIndex()]));
+                    columnExt.setTitle("ModelIndex="+columnExt.getModelIndex());
+                }
+            }
+            
+        };
+        tree.setColumnFactory(factory);
+        // </snip>
     }
 
     // <snip> JXTree rollover

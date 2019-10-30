@@ -12,20 +12,24 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
  *
  *  Ersetzt org.compiere.model.MTreeNode , das von javax.swing.tree.DefaultMutableTreeNode ableitet
  *                                         und MutableTreeNode implementiert : ... implements Cloneable, MutableTreeNode, Serializable
+ *                                         
+ *  Ich leite ab von jdesktop AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
  */
 public class MTreeNode extends AbstractMutableTreeTableNode {
-//public class MTreeNode extends DefaultMutableTreeNode {
 
 	private static final Logger LOG = Logger.getLogger(MTreeNode.class.getName());
 	
 	@Override
 	public Object getValueAt(int column) {
+		if(column==1) {
+			return Integer.valueOf(m_node_ID);
+		}
 		return m_name;
 	}
 
 	@Override
 	public int getColumnCount() {
-		return 1;
+		return 2;
 	}
 
 //	@Override // wg. LOG
@@ -33,6 +37,7 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 //		LOG.config("add child "+child + " to "+this);
 //		super.add(child);
 //	}
+	
 	/**
 	 *  Construct Model TreeNode
 	 *  @param node_ID	node
@@ -48,7 +53,7 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 	public MTreeNode (int node_ID, int seqNo, String name, String description,
 		int parent_ID, boolean isSummary, String imageIndicator, boolean onBar, Color color)
 	{
-		super(name + " img:"+imageIndicator);
+		super();
 		LOG.config( "MTreeNode Node_ID=" + node_ID + ", seqNo=" + seqNo + ", Parent_ID=" + parent_ID + " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
@@ -61,7 +66,7 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 		setImageIndicator(imageIndicator);
 		m_onBar = onBar;
 		m_color = color;
-		setUserObject(name + " img:"+imageIndicator); // wie im super ctor
+		setUserObject(this); //(name + " img:"+imageIndicator); // statt im super ctor
 	}   //  MTreeNode
 
 	/** Node ID         */
@@ -101,6 +106,14 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 
 	public int getParent_ID() {
 		return m_parent_ID;
+	}
+	
+	public String getImageIndicator() {
+		return m_imageIndicator;
+	}
+
+	public int getImageIndex() {
+		return m_imageIndex;
 	}
 
 	/**
