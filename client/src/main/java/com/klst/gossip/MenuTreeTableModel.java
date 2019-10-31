@@ -33,6 +33,19 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 		return root.getColumnCount();
 	}
 
+    @Override
+	public Class<?> getColumnClass(int column) {
+		return MTreeNode.columnClass[column];
+	}
+	
+	/*
+	 * per default, in super, sind ColumnName A, B, C, ... 
+	 */
+    @Override
+    public String getColumnName(int column) {
+    	return MTreeNode.columnName[column];
+    }
+
 	@Override
 	public void setValueAt(Object value, Object node, int column) {
 		LOG.config("at node "+node + " value '"+value+"+ column:"+column); // nur zum loggen
@@ -54,14 +67,12 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
       case 1:
           o = Integer.valueOf(c.getNode_ID());
           break;
-//      case 2:
-//          if (c.isShowing()) {
-//              o = c.getLocationOnScreen();
-//          }
-//          break;
-//      case 3:
-//          o = c.getSize();
-//          break;
+      case 2:
+          o = c.getImageIndicator();
+          break;
+      case 3:
+          o = c.getImageIcon();
+          break;
       default:
           //does nothing
           break;
@@ -102,10 +113,6 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 	}
 
 	// ----------------
-	public Class<?> getColumnClass(int column) {
-		return String.class;
-	}
-	
 	public boolean isLeaf(Object node) {
 		return super.isLeaf(node);	
 	}

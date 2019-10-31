@@ -37,7 +37,7 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 
 	@Override
 	public int getColumnCount() {	
-		return 4; // == columnName.length oder kleiner
+		return 3; // == columnName.length oder kleiner
 	}
 
 //	@Override // wg. LOG
@@ -49,15 +49,15 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 	public static final String[] columnName = 
 		{ "Name"
 		, "Node_Id"
-		, "Icon"
 		, "II" // II == m_imageIndicator
+		, "Icon"
 		};
 	
 	public static final Class<?>[] columnClass = 
 		{ String.class
 		, Integer.class
-		, ImageIcon.class
 		, String.class
+		, ImageIcon.class
 		};
 
 	/**
@@ -178,25 +178,28 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 	static final int SMALL_ICON_SIZE = 16;
 	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 	public ImageIcon getImageIcon() {
-	      switch (m_imageIndex) {
+		return getImageIcon(AIT, m_imageIndex, SMALL_ICON_SIZE);
+	}
+	public static ImageIcon getImageIcon(AbstractImageTranscoder AIT, int index, int iconSize) {
+	      switch (index) {
 	      case TYPE_WINDOW:
-	    	  return AIT.getImageIcon(AIT.MENU_WINDOW, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.MENU_WINDOW, iconSize);
 	      case TYPE_REPORT:
-	    	  return AIT.getImageIcon(AIT.REPORT, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.REPORT, iconSize);
 	      case TYPE_PROCESS:
-	    	  return AIT.getImageIcon(AIT.PROCESS, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.PROCESS, iconSize);
 	      case TYPE_WORKFLOW:
-	    	  return AIT.getImageIcon(AIT.WORKFLOW, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.WORKFLOW, iconSize);
 	      case TYPE_WORKBENCH:
-	    	  return AIT.getImageIcon(AIT.END, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.END, iconSize);
 	      case TYPE_SETVARIABLE:
-	    	  return AIT.getImageIcon(AIT.REPORT, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.REPORT, iconSize);
 	      case TYPE_USERCHOICE:
-	    	  return AIT.getImageIcon(AIT.PROCESS, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.PROCESS, iconSize);
 	      case TYPE_DOCACTION:
-	    	  return AIT.getImageIcon(AIT.WORKFLOW, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.WORKFLOW, iconSize);
 	      default:
-	    	  return AIT.getImageIcon(AIT.PAYMENT, SMALL_ICON_SIZE);
+	    	  return AIT.getImageIcon(AIT.FOLDER, iconSize);
 	      }
 	}
 	

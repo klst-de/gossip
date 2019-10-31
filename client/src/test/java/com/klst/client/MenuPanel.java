@@ -3,6 +3,8 @@ package com.klst.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Window;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -11,7 +13,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 
-//import org.compiere.model.MTree;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
@@ -30,8 +31,8 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.klst.client.TreeDemoIconValues.FilteredIconValue;
-import com.klst.client.TreeDemoIconValues.LazyLoadingIconValue;
 import com.klst.gossip.MenuTreeTableModel;
+import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
@@ -135,15 +136,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             
             @Override
             public String getString(Object value) {
-                if(value instanceof Component) {
-                    Component component = (Component) value;
-                    String simpleName = component.getClass().getSimpleName();
-                    if (simpleName.length() == 0){
-                        // anonymous class
-                        simpleName = component.getClass().getSuperclass().getSimpleName();
-                    }
-                    return simpleName + "(" + component.getName() + ")";
-                } else if(value instanceof MTreeNode) {
+                if(value instanceof MTreeNode) {
                 	return StringValues.TO_STRING.getString(((MTreeNode) value).getName());
                 } else {
                 	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
@@ -161,7 +154,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
                 if (value == null) return "";
             	if(value instanceof MTreeNode) {
             		MTreeNode node = (MTreeNode)value;
-            		LOG.info(">>>>>>>>>ICON "+node.getImageIndicator() + node.getImageIndex());
+//            		LOG.info(">>>>>>>>>ICON "+node.getImageIndicator() + node.getImageIndex());
             		return node.getImageIndicator(); //node.getImageIcon();
             	}
                 String simpleClassName = value.getClass().getSimpleName();
@@ -169,13 +162,13 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
                     // anonymous class
                     simpleClassName = value.getClass().getSuperclass().getSimpleName();
                 }
-                LOG.info(">>>>>>>>>>>>>>>>>>>liefert "+simpleClassName +".png");
                 return simpleClassName + ".png";
             }
         };
         // <snip> JXTree rendering
         // IconValue provides node icon 
-        IconValue iv = new LazyLoadingIconValue(getClass(), keyValue, "fallback.png"); // LazyLoadingIconValue in TreeDemoIconValues versteckt!
+        IconValue iv = new LazyLoadingIconValue(keyValue);
+//        IconValue iv = new LazyLoadingIconValue(getClass(), keyValue, "fallback.png"); // LazyLoadingIconValue in TreeDemoIconValues versteckt!
 /*
 		IconValue iv = new LazyLoadingIconValue(XTreeDemo.class, keyValue, "fallback.png");
 
@@ -272,4 +265,34 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         return hl;
     }
 
+    public static class LazyLoadingIconValue implements IconValue {
+
+		private static final long serialVersionUID = 8601036402183751110L;
+
+		static final int SMALL_ICON_SIZE = 16;
+		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+
+        public LazyLoadingIconValue(StringValue sv) {
+        	stringValue = sv;
+        	iconCache = new HashMap<Object, Icon>(); 
+         }
+
+        private Map<Object, Icon> iconCache;
+        private StringValue stringValue;
+        
+		@Override
+		public Icon getIcon(Object value) {
+			String imageIndicator = stringValue.getString(value);
+			Icon icon = iconCache.get(imageIndicator);
+            if(icon==null) {
+            	LOG.config("loadIcon for "+imageIndicator+" value:"+value); // z.B value:53108/0 1002 - Human Resource & Payroll
+                // loadIcon 
+    			int imageIndex = MTreeNode.getImageIndex(imageIndicator);
+                icon = MTreeNode.getImageIcon(AIT, imageIndex, SMALL_ICON_SIZE);
+                iconCache.put(imageIndicator, icon);
+            }
+            return icon;
+		}
+    	
+    }
 }
