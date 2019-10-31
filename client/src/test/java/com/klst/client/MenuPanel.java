@@ -162,7 +162,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             	if(value instanceof MTreeNode) {
             		MTreeNode node = (MTreeNode)value;
             		LOG.info(">>>>>>>>>ICON "+node.getImageIndicator() + node.getImageIndex());
-            		return node.getImageIndicator() + node.getImageIndex();
+            		return node.getImageIndicator(); //node.getImageIcon();
             	}
                 String simpleClassName = value.getClass().getSimpleName();
                 if (simpleClassName.length() == 0){
@@ -182,9 +182,13 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 
  */
         // create and set a tree renderer using the custom Icon-/StringValue
+        // welche Renderer gibt es sonst noch? Wie kann ich meine icons als iv definieren?
         tree.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
+//        tree.setTreeCellRenderer(new DefaultTreeRenderer());
         // </snip>
 //        tree.setRowHeight(-1);
+        
+        tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler rechts bei den Tabellenüberschriften
         
         // <snip> JXTree rollover
         // enable and register a highlighter
@@ -212,14 +216,13 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // configure and install a custom columnFactory, arguably data related ;-)
         ColumnFactory factory = new ColumnFactory() {
             String[] columnNameKeys = { "componentType", "componentName" //, "componentLocation", "componentSize" 
-            		};
+            		}; // wofür ist das?
 
             @Override
             public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
                 super.configureTableColumn(model, columnExt);
                 if (columnExt.getModelIndex() < columnNameKeys.length) {
-                    //columnExt.setTitle(DemoUtils.getResourceString(TreeTableDemo.class, columnNameKeys[columnExt.getModelIndex()]));
-                    columnExt.setTitle("ModelIndex="+columnExt.getModelIndex());
+                    columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
                 }
             }
             
