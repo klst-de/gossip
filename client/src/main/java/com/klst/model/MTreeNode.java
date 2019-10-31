@@ -3,9 +3,13 @@ package com.klst.model;
 import java.awt.Color;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
+
 import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
+
+import com.klst.icon.AbstractImageTranscoder;
 
 /*
  *  Mutable Tree Node (not a PO).
@@ -18,18 +22,22 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 public class MTreeNode extends AbstractMutableTreeTableNode {
 
 	private static final Logger LOG = Logger.getLogger(MTreeNode.class.getName());
-	
+
+	/* wg. impements interface org.jdesktop.swingx.treetable.TreeTableNode extends TreeNode
+	 * man muss es implementieren, aber genutzt wird methode MenuTreeTableModel.getValueAt
+	 */
 	@Override
 	public Object getValueAt(int column) {
-		if(column==1) {
-			return Integer.valueOf(m_node_ID);
-		}
-		return m_name;
+		return null;
+//		if(column==1) {
+//			return Integer.valueOf(m_node_ID);
+//		}
+//		return m_name;
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 2;
+	public int getColumnCount() {	
+		return 4; // == columnName.length oder kleiner
 	}
 
 //	@Override // wg. LOG
@@ -38,6 +46,20 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 //		super.add(child);
 //	}
 	
+	public static final String[] columnName = 
+		{ "Name"
+		, "Node_Id"
+		, "Icon"
+		, "II" // II == m_imageIndicator
+		};
+	
+	public static final Class<?>[] columnClass = 
+		{ String.class
+		, Integer.class
+		, ImageIcon.class
+		, String.class
+		};
+
 	/**
 	 *  Construct Model TreeNode
 	 *  @param node_ID	node
@@ -128,78 +150,91 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 	 *  Set Summary (allow children)
 	 *  @param isSummary summary node
 	 */
-	public void setSummary (boolean isSummary)
-	{
+	public void setSummary(boolean isSummary) {
 		m_isSummary = isSummary;
 		super.setAllowsChildren(isSummary);
-	}   //  setSummary
+	}
 
 	/**
 	 *  Set Image Indicator and Index
 	 *  @param imageIndicator image indicator (W/X/R/P/F/T/B) MWFNode.ACTION_
 	 */
-	public void setImageIndicator (String imageIndicator)
-	{
-		if (imageIndicator != null)
-		{
+	public void setImageIndicator(String imageIndicator) {
+		if (imageIndicator != null) {
 			m_imageIndicator = imageIndicator;
 			m_imageIndex = getImageIndex(m_imageIndicator);
 		}
-	}   //  setImageIndicator
+	}
 
-	/**	Window - 1			*/
-	public static int		TYPE_WINDOW = 1;
-	/**	Report - 2			*/
-	public static int		TYPE_REPORT = 2;
-	/**	Process - 3			*/
-	public static int		TYPE_PROCESS = 3;
-	/**	Workflow - 4		*/
-	public static int		TYPE_WORKFLOW = 4;
-	/**	Workbench - 5		*/
-	public static int		TYPE_WORKBENCH = 5;
-	/**	Variable - 6		*/
-	public static int		TYPE_SETVARIABLE = 6;
-	/**	Choice - 7			*/
-	public static int		TYPE_USERCHOICE = 7;
-	/**	Action - 8			*/
-	public static int		TYPE_DOCACTION = 8;
+	public static final int TYPE_WINDOW = 1;
+	public static final int TYPE_REPORT = 2;
+	public static final int TYPE_PROCESS = 3;
+	public static final int TYPE_WORKFLOW = 4;
+	public static final int TYPE_WORKBENCH = 5;
+	public static final int TYPE_SETVARIABLE = 6;
+	public static final int TYPE_USERCHOICE = 7;
+	public static final int TYPE_DOCACTION = 8;
 
+	static final int SMALL_ICON_SIZE = 16;
+	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+	public ImageIcon getImageIcon() {
+	      switch (m_imageIndex) {
+	      case TYPE_WINDOW:
+	    	  return AIT.getImageIcon(AIT.MENU_WINDOW, SMALL_ICON_SIZE);
+	      case TYPE_REPORT:
+	    	  return AIT.getImageIcon(AIT.REPORT, SMALL_ICON_SIZE);
+	      case TYPE_PROCESS:
+	    	  return AIT.getImageIcon(AIT.PROCESS, SMALL_ICON_SIZE);
+	      case TYPE_WORKFLOW:
+	    	  return AIT.getImageIcon(AIT.WORKFLOW, SMALL_ICON_SIZE);
+	      case TYPE_WORKBENCH:
+	    	  return AIT.getImageIcon(AIT.END, SMALL_ICON_SIZE);
+	      case TYPE_SETVARIABLE:
+	    	  return AIT.getImageIcon(AIT.REPORT, SMALL_ICON_SIZE);
+	      case TYPE_USERCHOICE:
+	    	  return AIT.getImageIcon(AIT.PROCESS, SMALL_ICON_SIZE);
+	      case TYPE_DOCACTION:
+	    	  return AIT.getImageIcon(AIT.WORKFLOW, SMALL_ICON_SIZE);
+	      default:
+	    	  return AIT.getImageIcon(AIT.PAYMENT, SMALL_ICON_SIZE);
+	      }
+	}
+	
 	/**************************************************************************
 	 *  Get Image Indicator/Index
 	 *  @param imageIndicator image indicator (W/X/R/P/F/T/B) MWFNode.ACTION_
 	 *  @return index of image
 	 */
-	public static int getImageIndex (String imageIndicator)
-	{
+	public static int getImageIndex (String imageIndicator) {
 		int imageIndex = 0;
 		if (imageIndicator == null)
 			;
-		else if (imageIndicator.equals(MWFNode.ACTION_UserWindow)		//	Window 
-			|| imageIndicator.equals(MWFNode.ACTION_UserForm))
+		else if (imageIndicator.equals(MWFNode.ACTION_UserWindow)		// W	Window 
+			|| imageIndicator.equals(MWFNode.ACTION_UserForm))          // X
 			imageIndex = TYPE_WINDOW;
-		else if (imageIndicator.equals(MWFNode.ACTION_AppsReport))		//	Report
+		else if (imageIndicator.equals(MWFNode.ACTION_AppsReport))		// R	Report
 			imageIndex = TYPE_REPORT;
-		else if (imageIndicator.equals(MWFNode.ACTION_AppsProcess)		//	Process
-			|| imageIndicator.equals(MWFNode.ACTION_AppsTask))
+		else if (imageIndicator.equals(MWFNode.ACTION_AppsProcess)		// P	Process
+			|| imageIndicator.equals(MWFNode.ACTION_AppsTask))          // T
 			imageIndex = TYPE_PROCESS;
-		else if (imageIndicator.equals(MWFNode.ACTION_SubWorkflow))		//	WorkFlow
+		else if (imageIndicator.equals(MWFNode.ACTION_SubWorkflow))		// F	WorkFlow
 			imageIndex = TYPE_WORKFLOW;
 		/*
 		else if (imageIndicator.equals(MWFNode.ACTION_UserWorkbench))	//	Workbench
 			imageIndex = TYPE_WORKBENCH;
 		*/
-		else if (imageIndicator.equals(MWFNode.ACTION_SetVariable))		//	Set Variable
+		else if (imageIndicator.equals(MWFNode.ACTION_SetVariable))		// V	Set Variable
 			imageIndex = TYPE_SETVARIABLE;
-		else if (imageIndicator.equals(MWFNode.ACTION_UserChoice))		//	User Choice
+		else if (imageIndicator.equals(MWFNode.ACTION_UserChoice))		// C	User Choice
 			imageIndex = TYPE_USERCHOICE;
-		else if (imageIndicator.equals(MWFNode.ACTION_DocumentAction))	//	Document Action
+		else if (imageIndicator.equals(MWFNode.ACTION_DocumentAction))	// D	Document Action
 			imageIndex = TYPE_DOCACTION;
-		else if (imageIndicator.equals(MWFNode.ACTION_WaitSleep))		//	Sleep
+		else if (imageIndicator.equals(MWFNode.ACTION_WaitSleep))		// Z	Sleep
 			;
-		else if (imageIndicator.equals(MWFNode.ACTION_SmartBrowse))		//	Smart Browser
+		else if (imageIndicator.equals(MWFNode.ACTION_SmartBrowse))		// S	Smart Browser
 			imageIndex = TYPE_DOCACTION;
 		return imageIndex;
-	}   //  getImageIndex
+	}
 
 	/*************************************************************************/
 
@@ -235,57 +270,7 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 				//LOG.config("<>"+nd.getNode_ID() +"=?="+ID + " #"+c);
 			}
 		}
-//		// ist in DefaultMutableTreeNode : private final class PreorderEnumeration implements Enumeration<TreeNode>
-//		// wie finde ich es via AbstractMutableTreeTableNode ? gar nicht! dann kopiere ich es
-//		Enumeration<MTreeNode> en = preorderEnumeration();
-//		int i=0;
-//		while (en.hasMoreElements()) {
-//			MTreeNode nd = en.nextElement();
-//			if (ID == nd.getNode_ID()) {
-//				m_lastID = ID;
-//				m_lastNode = nd;
-//				return nd;
-//			} else {
-//				LOG.config("<>"+nd.getNode_ID() +"=?="+ID + " preorderEnumeration #"+i);
-//			}
-//			i++;
-//		}
-//		LOG.config("preorderEnumeration #"+i);
 		return null;
 	}
-
-//    public Enumeration<MTreeNode> preorderEnumeration() {
-//        return new PreorderEnumeration(this);
-//    }
-//    // aus javax.swing.tree.DefaultMutableTreeNode.PreorderEnumeration;
-//   private final class PreorderEnumeration implements Enumeration<MTreeNode> {
-//        private final Stack<Enumeration<MTreeNode>> stack = new Stack<Enumeration<MTreeNode>>();
-//
-//        public PreorderEnumeration(MTreeNode rootNode) {
-//            super();
-//            Vector<MTreeNode> v = new Vector<MTreeNode>(1);
-//            v.addElement(rootNode);     // PENDING: don't really need a vector
-//            stack.push(v.elements());
-//        }
-//
-//        public boolean hasMoreElements() {
-//            return (!stack.empty() && stack.peek().hasMoreElements());
-//        }
-//
-//        public MTreeNode nextElement() {
-//            Enumeration<MTreeNode> enumer = stack.peek();
-//            MTreeNode    node = enumer.nextElement();
-//            Enumeration children = node.children();
-//
-//            if (!enumer.hasMoreElements()) {
-//                stack.pop();
-//            }
-//            if (children.hasMoreElements()) {
-//                stack.push(children);
-//            }
-//            return node;
-//        }
-//
-//    }  // End of class PreorderEnumeration
 
 }

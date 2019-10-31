@@ -18,18 +18,22 @@ import org.compiere.model.MRole;
 import org.compiere.model.MTable;
 //import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
-import org.compiere.model.X_AD_Tree;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+/*
+ * ich will für die Darstellung von Bäumen ein neueres jdesktop.swingx nutzen und 
+ * kann die Member rootNode, loadNodes, ... aus super nicht überschreiben, da sie private sind.
+ * Also überschreibe ich die ganze Klasse.
+ */
 public class MTree extends org.compiere.model.MTree {
 
 	private static final long serialVersionUID = -4802325261417990860L;
 	private static final Logger LOG = Logger.getLogger(MTree.class.getName());
 	
-	// alle Member in super private
+	// alle Member in super private - Um zu überschreiben, muss ich neu definieren
 	boolean isTreeEditable = false;
 	
 /** Buffer while loading tree 
@@ -37,18 +41,18 @@ public class MTree extends org.compiere.model.MTree {
  
  */
 	private ArrayList<MTreeNode> treeNodes = new ArrayList<>();
-//
-//	/** Prepared Statement for Node Details */
-	private RowSet 		nodeRowSet;
-//	/** Root Node                   */
-	private MTreeNode           rootNode = null; // in super MTreeNode extends javax.swing.tree.DefaultMutableTreeNode, ich will
-	// org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode nutzen
-	// das ist nur zum Testen da, ich muss daher von AbstractMutableTreeTableNode direkt ableiten
+
+	private RowSet nodeRowSet; // used in getNodeDetails
+
+	MTreeNode rootNode = null; // in super MTreeNode extends javax.swing.tree.DefaultMutableTreeNode, ich will
+	// org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode nutzen.
+	// DefaultMutableTreeTableNode ist nur zum Testen da, "Thisimplementation is designed mainly for testing. It is NOT recommended to usethis implementation.",
+	// ich muss daher von AbstractMutableTreeTableNode direkt ableiten
 
 	private HashMap<Integer, ArrayList<Integer>> nodeIdMap;
 
 	// ctor muss nicht public sein
-	public MTree(Properties ctx, int AD_Tree_ID, String trxName) {
+	MTree(Properties ctx, int AD_Tree_ID, String trxName) {
 		super(ctx, AD_Tree_ID, trxName);
 		LOG.config("AD_Tree_ID=" + AD_Tree_ID + " trxName:"+trxName + " \nctx:"+ctx);
 		if (AD_Tree_ID == 0) {
@@ -59,13 +63,14 @@ public class MTree extends org.compiere.model.MTree {
 
 	// ctor used in MenuPanel
 	public MTree(Properties ctx, int treeId, boolean editable, boolean allNodes, String whereClause, String trxName) {
-		this (ctx, treeId, trxName);
+		this(ctx, treeId, trxName);
 		isTreeEditable = editable;
 		int userId;
 		if (allNodes)
 			userId = -1;
 		else
 			userId = Env.getContextAsInt(ctx, "AD_User_ID");
+		
 		LOG.info("AD_Tree_ID=" + treeId
 				+ ", AD_User_ID=" + userId 
 				+ ", Editable=" + editable);
@@ -73,7 +78,6 @@ public class MTree extends org.compiere.model.MTree {
 		//	Yamel Senih [ 9223372036854775807 ]
 		//	Add support to where clause
 		loadNodes(userId, whereClause);
-
 	}
 
 	public MTreeNode getRootNode() {
