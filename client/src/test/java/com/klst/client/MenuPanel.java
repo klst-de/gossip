@@ -2,16 +2,19 @@ package com.klst.client;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableModel;
 
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
@@ -21,16 +24,16 @@ import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
+import org.jdesktop.swingx.icon.PainterIcon;
+import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
 import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
-import org.jdesktop.swingx.table.ColumnFactory;
-import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
-import com.klst.client.TreeDemoIconValues.FilteredIconValue;
+import com.jhlabs.image.InvertFilter;
 import com.klst.gossip.MenuTreeTableModel;
 import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
@@ -45,7 +48,8 @@ public class MenuPanel extends JXPanel {
         super(new BorderLayout());
         initComponents();
         configureComponents();
-        bind();	
+//        bind();	
+        tree.setTreeTableModel(createTreeModel());
 	}
 
     private JXTreeTable tree;
@@ -56,13 +60,14 @@ public class MenuPanel extends JXPanel {
     /**
      * Overridden to create and install the component tree model.
      */
-    @Override // javax.swing.JComponent.addNotify
-    public void addNotify() {
-        super.addNotify();
-        if (tree.getModel() == null) {
-            tree.setTreeTableModel(createTreeModel());
-        }
-    }
+    // ist für das TreeTableDemo notwendig
+//    @Override // javax.swing.JComponent.addNotify
+//    public void addNotify() {
+//        super.addNotify();
+//        if (tree.getModel() == null) {
+//            tree.setTreeTableModel(createTreeModel());
+//        }
+//    }
 
 /*
                                              | AD_Tree_ID = per SQL: (default 10)
@@ -91,7 +96,14 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     	boolean allNodes = false;
     	String whereClause = null, trxName = null;
     	LOG.info("AD_Tree_ID = per SQL: (default 10) ="+treeId);
-    	MTree vTree = new MTree(Env.getCtx(), treeId, editable, allNodes, whereClause, trxName);
+    	
+    	Properties ctx = Env.getCtx(); // props wg. https://github.com/klst-de/gossip/issues/2 :
+		ctx.setProperty("#AD_Client_ID", "11");
+		ctx.setProperty("#AD_Org_ID", "11");
+		ctx.setProperty("#AD_User_ID", "100");
+		ctx.setProperty("#AD_Role_ID", "102");
+
+    	MTree vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu() + " root=" // + vTree.getRoot() 
     			+ " rootNode=" + vTree.getRootNode());
 //    	MTreeNode (extends DefaultMutableTreeNode) root = -- ich will von AbstractMutableTreeTableNode ableiten, dh
@@ -202,27 +214,28 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         });
     }
     
-    private void bind() {
-//        tree.setModel(null); // remove - that is an outdated approach?
-        
-        // <snip>JXTreeTable column customization
-        // configure and install a custom columnFactory, arguably data related ;-)
-        ColumnFactory factory = new ColumnFactory() {
-            String[] columnNameKeys = { "componentType", "componentName" //, "componentLocation", "componentSize" 
-            		}; // wofür ist das?
-
-            @Override
-            public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
-                super.configureTableColumn(model, columnExt);
-                if (columnExt.getModelIndex() < columnNameKeys.length) {
-                    columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
-                }
-            }
-            
-        };
-        tree.setColumnFactory(factory);
-        // </snip>
-    }
+//    private void bind() {
+////        tree.setModel(null); // remove - that is an outdated approach?
+//        
+//        // <snip>JXTreeTable column customization
+//        // configure and install a custom columnFactory, arguably data related ;-)
+//        ColumnFactory factory = new ColumnFactory() {
+////            String[] columnNameKeys = { "componentType", "componentName" //, "componentLocation", "componentSize" 
+////            		}; // wofür ist das?
+//
+//            @Override // org.jdesktop.swingx.table.ColumnFactory
+//            public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
+//                super.configureTableColumn(model, columnExt);
+////                if (columnExt.getModelIndex() < columnNameKeys.length) {
+////                    columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
+////                }
+//                columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
+//            }
+//            
+//        };
+//        tree.setColumnFactory(factory);
+//        // </snip>
+//    }
 
     // <snip> JXTree rollover
     // custom implementation of Highlighter which highlights 
@@ -237,9 +250,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
              * 
              * Implemented to highlight by setting the node icon.
              */
-            @Override
-            protected Component doHighlight(Component component,
-                    ComponentAdapter adapter) {
+            @Override // muss implementiert werden
+            protected Component doHighlight(Component component, ComponentAdapter adapter) {
+            	LOG.config("component:"+component + " ComponentAdapter:"+adapter);
                 Icon icon = iv.getIcon(adapter.getValue());
                 if (icon != null) {
                     ((WrappingIconPanel) component).setIcon(icon);
@@ -256,8 +269,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
              * 
              */
             @Override
-            protected boolean canHighlight(Component component,
-                    ComponentAdapter adapter) {
+            protected boolean canHighlight(Component component, ComponentAdapter adapter) {
                 return component instanceof WrappingIconPanel;
             }
             
@@ -265,11 +277,13 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         return hl;
     }
 
+    // --------------------
+	static final int SMALL_ICON_SIZE = 16;
+    
     public static class LazyLoadingIconValue implements IconValue {
 
 		private static final long serialVersionUID = 8601036402183751110L;
 
-		static final int SMALL_ICON_SIZE = 16;
 		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
         public LazyLoadingIconValue(StringValue sv) {
@@ -294,5 +308,36 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             return icon;
 		}
     	
+    }
+    
+    public static class FilteredIconValue implements IconValue {
+
+		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+    	private Icon icon = manipulatedIcon(MTreeNode.getImageIcon(AIT, 5, SMALL_ICON_SIZE));
+		
+    	public FilteredIconValue(IconValue delegate) {
+    		this.delegate = delegate;
+    	}
+    	
+    	private IconValue delegate;
+//        private Map<Object, Icon> iconCache; // zu jedem Icon(object) gibt es ein (const)manipulated version.
+    	
+		@Override
+		public Icon getIcon(Object value) {
+			// immer konstant:
+			return icon;
+		}
+
+        // wraps the given icon into an ImagePainter with a filter effect
+        private Icon manipulatedIcon(Icon icon) {
+            PainterIcon painterIcon = new PainterIcon(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+            BufferedImage image = (BufferedImage) ((ImageIcon) icon).getImage();
+            ImagePainter delegate = new ImagePainter(image);
+            delegate.setFilters(new InvertFilter()); // com.jhlabs.image.InvertFilter.InvertFilter() 
+            // ==> JH Labs is the alias of Jerry Huxtable .. image processing stuff. @see http://www.jhlabs.com/
+            painterIcon.setPainter(delegate);
+            return painterIcon;
+        }
+
     }
 }
