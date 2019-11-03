@@ -6,11 +6,9 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 
 import org.compiere.wf.MWFNode;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
-import com.klst.gossip.treetable.NodeModel;
 import com.klst.icon.AbstractImageTranscoder;
 
 /*
@@ -22,7 +20,7 @@ import com.klst.icon.AbstractImageTranscoder;
  *  Ich leite ab von jdesktop                                     AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
  *                            DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode
  */
-public class MTreeNode extends DefaultMutableTreeTableNode implements NodeModel {
+public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeModel {
 
 	private static final Logger LOG = Logger.getLogger(MTreeNode.class.getName());
 
@@ -31,23 +29,23 @@ public class MTreeNode extends DefaultMutableTreeTableNode implements NodeModel 
 		return 3; // == columnName.length oder kleiner, default ist 1 in super
 	}
 
-	// ---- ab hier wg. implements NodeModel
-	@Override
+	// ---- ab hier wg. implements NodeModel mit @Override, ohne @Override, damit es in MenuTreeModel aufrufbar wird
+//	@Override
 	public Class<?> getColumnClass(int column) {
 		return columnClass[column];
 	}
 
-	@Override
+//	@Override
 	public String getColumnName(int column) {
 		return columnName[column];
 	}
 
-	@Override
-	public int getHierarchicalColumn() {
-		return 0;
-	}
-
-	@Override
+//	@Override
+//	public int getHierarchicalColumn() {
+//		return 0;
+//	}
+//
+//	@Override
 	public Object getValueAt(Object node, int column) {
 		MTreeNode c = (MTreeNode) node;
 		Object o = null;
@@ -72,15 +70,15 @@ public class MTreeNode extends DefaultMutableTreeTableNode implements NodeModel 
 		return o;
 	}
 
-	@Override
-	public boolean isCellEditable(Object node, int column) {
-		return false;
-	}
-
-	@Override
-	public void setValueAt(Object value, Object node, int column) {
-		// noop - not editable	
-	}
+//	@Override
+//	public boolean isCellEditable(Object node, int column) {
+//		return false;
+//	}
+//
+//	@Override
+//	public void setValueAt(Object value, Object node, int column) {
+//		// noop - not editable	
+//	}
 
 	public static final String[] columnName = 
 		{ "Name"
