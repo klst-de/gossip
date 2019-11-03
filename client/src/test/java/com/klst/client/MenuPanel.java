@@ -3,7 +3,6 @@ package com.klst.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +13,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
@@ -34,7 +34,8 @@ import org.jdesktop.swingx.renderer.WrappingIconPanel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
-import com.klst.gossip.MenuTreeTableModel;
+import com.klst.gossip.MenuTreeModel;
+import com.klst.gossip.treetable.TreeTableModelAdapter;
 import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
@@ -46,16 +47,49 @@ public class MenuPanel extends JXPanel {
 
 	public MenuPanel() {
         super(new BorderLayout());
+        createModel(); // treeModel + treeTableModel
         initComponents();
         configureComponents();
-//        bind();	
-        tree.setTreeTableModel(createTreeModel());
+        
 	}
+	
+    private TreeModel treeModel;
+    private TreeTableModel treeTableModel;
 
     private JXTreeTable tree;
     private JXButton refreshButton;
     private JXButton expandButton;
     private JXButton collapseButton;
+
+    private void initComponents() {  	
+		tree = new JXTreeTable(treeTableModel);
+		
+		LOG.config("tree SelectionMode="+tree.getSelectionMode()); //  javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : 2
+		tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION); // : 1
+		
+		//tree.setOverwriteRendererIcons(true);
+		
+//		tree.setName("componentTree");
+//		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+//		add(new JScrollPane(tree), BorderLayout.CENTER);
+        tree.setName("componentTreeTable");
+        add(new JScrollPane(tree), BorderLayout.CENTER);
+
+		JComponent control = new JXPanel();
+		refreshButton = new JXButton("Refresh");
+		refreshButton.setName("refreshButton");
+
+		expandButton = new JXButton("Expand All Nodes");
+		expandButton.setName("expandButton");
+
+		collapseButton = new JXButton("Collapse All Nodes");
+		collapseButton.setName("collapseButton");
+
+        control.add(refreshButton);
+		control.add(expandButton);
+		control.add(collapseButton);
+		add(control, BorderLayout.SOUTH);
+	}
 
     /**
      * Overridden to create and install the component tree model.
@@ -84,13 +118,7 @@ LEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID AND tn.Node_ID=tb.
 WHERE tn.AD_Tree_ID=10 AND tn.IsActive='Y' 
 ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
  */
-    private TreeTableModel createTreeModel() {
-        Window window = SwingUtilities.getWindowAncestor(this);
-        //return ComponentModels.getTreeTableModel(window != null ? window : this); // org.jdesktop.swingxset.util.ComponentModels
-        return getTreeTableModel(window != null ? window : this);
-     }
-    // interim
-    static TreeTableModel getTreeTableModel(Component root) {
+    private void createModel() {
     	int treeId = 10;
     	boolean editable = false;
     	boolean allNodes = false;
@@ -106,42 +134,17 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     	MTree vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu() + " root=" // + vTree.getRoot() 
     			+ " rootNode=" + vTree.getRootNode());
-//    	MTreeNode (extends DefaultMutableTreeNode) root = -- ich will von AbstractMutableTreeTableNode ableiten, dh
-//    			vTree.getRoot(); // kann ich gar nicht nutzen, muss daher MTree subclassen 
     	MTreeNode rootNode = vTree.getRootNode();
-/*
-		log.config("root=" + root);
-		treeModel = new AdempiereTreeModel(root, asksAllowsChildren=true); ====> AdempiereTreeModel extends DefaultTreeModel
- */
-    	TreeTableModel treeTableModel = new MenuTreeTableModel(rootNode);
-    	return treeTableModel;
+//    	treeModel = new MenuTreeTableModel(rootNode); // TreeModel genügt!!!
+    	treeModel = new MenuTreeModel(rootNode); 
+    	
+    	treeTableModel = new TreeTableModelAdapter(treeModel, rootNode); // (TreeModel treeModel, NodeModel nodeModel)
     }
-
-	private void initComponents() {
-		tree = new JXTreeTable();
-		tree.setName("componentTree");
-//		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-//		add(new JScrollPane(tree), BorderLayout.CENTER);
-        tree.setName("componentTreeTable");
-        add(new JScrollPane(tree));
-
-		JComponent control = new JXPanel();
-		refreshButton = new JXButton("Refresh");
-		refreshButton.setName("refreshButton");
-
-		expandButton = new JXButton("Expand All Nodes");
-		expandButton.setName("expandButton");
-
-		collapseButton = new JXButton("Collapse All Nodes");
-		collapseButton.setName("collapseButton");
-
-        control.add(refreshButton);
-		control.add(expandButton);
-		control.add(collapseButton);
-		add(control, BorderLayout.SOUTH);
-	}
-
+    
     private void configureComponents() {
+
+//    	createModel();
+    	
         // <snip> JXTree rendering
         // StringValue provides node text: concat several 
         StringValue sv = new StringValue() {
@@ -149,7 +152,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             @Override
             public String getString(Object value) {
                 if(value instanceof MTreeNode) {
-                	return StringValues.TO_STRING.getString(((MTreeNode) value).getName());
+                	MTreeNode node = (MTreeNode)value;
+//                	node.getName();
+//                	node.toString();
+                	// dieser Name wird neben dem Icon angezeigt
+                	return StringValues.TO_STRING.getString(node.getName());
                 } else {
                 	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
                 }
@@ -180,29 +187,30 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // <snip> JXTree rendering
         // IconValue provides node icon 
         IconValue iv = new LazyLoadingIconValue(keyValue);
-//        IconValue iv = new LazyLoadingIconValue(getClass(), keyValue, "fallback.png"); // LazyLoadingIconValue in TreeDemoIconValues versteckt!
-/*
-		IconValue iv = new LazyLoadingIconValue(XTreeDemo.class, keyValue, "fallback.png");
-
-
- */
         // create and set a tree renderer using the custom Icon-/StringValue
         // welche Renderer gibt es sonst noch? Wie kann ich meine icons als iv definieren?
         tree.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
-//        tree.setTreeCellRenderer(new DefaultTreeRenderer());
+//        tree.setCellRenderer(new DefaultTreeRenderer(iv, sv));
         // </snip>
 //        tree.setRowHeight(-1);
         
-        tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler rechts bei den Tabellenüberschriften
+        tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
         
+        //tree.setToolTipText("String ToolTipText text");
+        	
         // <snip> JXTree rollover
         // enable and register a highlighter
         tree.setRolloverEnabled(true);
         tree.addHighlighter(createRolloverIconHighlighter(iv));
         // </snip>
-        
+        	
         refreshButton.addActionListener(event -> {
-        	tree.setTreeTableModel(createTreeModel());
+        	LOG.config("event "+event);
+//    		this.getParent().repaint();
+//    		setVisible(true);
+
+//        	tree.setTreeTableModel(createTreeModel());
+//        	tree.setModel(createTreeModel());
         });
 
         expandButton.addActionListener(event -> {
@@ -212,45 +220,28 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         collapseButton.addActionListener(event -> {
         	tree.collapseAll();
         });
+        
+        LOG.config("isRootVisible:"+tree.isRootVisible());
+        tree.setRootVisible(true); // default is false
+        tree.sizeColumnsToFit(0); // Breite der menu spalte anpassen
     }
     
-//    private void bind() {
-////        tree.setModel(null); // remove - that is an outdated approach?
-//        
-//        // <snip>JXTreeTable column customization
-//        // configure and install a custom columnFactory, arguably data related ;-)
-//        ColumnFactory factory = new ColumnFactory() {
-////            String[] columnNameKeys = { "componentType", "componentName" //, "componentLocation", "componentSize" 
-////            		}; // wofür ist das?
-//
-//            @Override // org.jdesktop.swingx.table.ColumnFactory
-//            public void configureTableColumn(TableModel model, TableColumnExt columnExt) {
-//                super.configureTableColumn(model, columnExt);
-////                if (columnExt.getModelIndex() < columnNameKeys.length) {
-////                    columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
-////                }
-//                columnExt.setTitle(model.getColumnName(columnExt.getModelIndex()));
-//            }
-//            
-//        };
-//        tree.setColumnFactory(factory);
-//        // </snip>
-//    }
-
     // <snip> JXTree rollover
     // custom implementation of Highlighter which highlights 
     // by changing the node icon on rollover
     private Highlighter createRolloverIconHighlighter(IconValue delegate) {
         // the icon look-up is left to an IconValue
         final IconValue iv = new FilteredIconValue(delegate); // FilteredIconValue versteckt in TreeDemoIconValues
-        AbstractHighlighter hl = new AbstractHighlighter(HighlightPredicate.ROLLOVER_ROW) {
-
+        AbstractHighlighter hl = new AbstractHighlighter(HighlightPredicate.ROLLOVER_CELL) {
+        	// geht weder mit ROLLOVER_ROW noch mit ROLLOVER_CELL
             /**
              * {@inheritDoc} <p>
              * 
              * Implemented to highlight by setting the node icon.
              */
             @Override // muss implementiert werden
+            // JXTree tree : funktioniert es
+            // JXTreetable tree : nicht
             protected Component doHighlight(Component component, ComponentAdapter adapter) {
             	LOG.config("component:"+component + " ComponentAdapter:"+adapter);
                 Icon icon = iv.getIcon(adapter.getValue());
