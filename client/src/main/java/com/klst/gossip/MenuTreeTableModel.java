@@ -20,64 +20,36 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 
 	private static final Logger LOG = Logger.getLogger(MenuTreeTableModel.class.getName());
 	
+	MTreeNode root;
+	
 	public MenuTreeTableModel(MTreeNode root) {
 		super(root);
-		LOG.config("ctor for "+root + ". Root has "+this.getChildCount(this.getRoot()) + " children, #Columns:"+root.getColumnCount());
-//		root.getColumnCount();
-//		assert(this.getRoot()==root);
+		this.root = root;
 	}
 	
-	@Override
-	public int getColumnCount() {
-		MTreeNode root = (MTreeNode) getRoot();
-		return root.getColumnCount();
-	}
-
     @Override
-	public Class<?> getColumnClass(int column) {
-		return MTreeNode.columnClass[column];
-	}
-	
+    public Class<?> getColumnClass(int column) {
+        return root.getColumnClass(column);
+    }
+
 	/*
 	 * per default, in super, sind ColumnName A, B, C, ... 
 	 */
     @Override
     public String getColumnName(int column) {
-    	return MTreeNode.columnName[column];
+    	return root.getColumnName(column);
     }
 
+    // wg. extends AbstractTreeTableModel:
 	@Override
-	public void setValueAt(Object value, Object node, int column) {
-		LOG.config("at node "+node + " value '"+value+"+ column:"+column); // nur zum loggen
-		// super does nothing
+	public int getColumnCount() {
+		return root.getColumnCount();
 	}
-	
+
 	@Override
 	public Object getValueAt(Object node, int column) {
 		MTreeNode c = (MTreeNode) node;
-		Object o = null;
-		
-//		// derzeit nur eine Spalte, der Name, @see getColumnCount()
-//		o = c.getName();
-		
-      switch (column) {
-      case 0:
-    	  o = c.getName();
-          break;
-      case 1:
-          o = Integer.valueOf(c.getNode_ID());
-          break;
-      case 2:
-          o = c.getImageIndicator();
-          break;
-      case 3:
-          o = c.getImageIcon();
-          break;
-      default:
-          //does nothing
-          break;
-      }
-		return o;
+		return c.getValueAt(c, column);
 	}
 
 	@Override
@@ -111,9 +83,5 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 		}
 		return -1;
 	}
-
-	// ----------------
-	public boolean isLeaf(Object node) {
-		return super.isLeaf(node);	
-	}
+	
 }

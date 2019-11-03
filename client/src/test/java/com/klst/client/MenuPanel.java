@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.util.Env;
@@ -34,8 +34,7 @@ import org.jdesktop.swingx.renderer.WrappingIconPanel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
-import com.klst.gossip.MenuTreeModel;
-import com.klst.gossip.treetable.TreeTableModelAdapter;
+import com.klst.gossip.MenuTreeTableModel;
 import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
@@ -51,9 +50,15 @@ public class MenuPanel extends JXPanel {
         initComponents();
         configureComponents();
         
+        // nur Test:
+        ActionMap am = tree.getActionMap();
+        Object[] actionMapKeys = am.allKeys();
+        for(int i=0; i<actionMapKeys.length; i++) {
+        	LOG.config("key "+i + " : "+ actionMapKeys[i]);
+        }
 	}
 	
-    private TreeModel treeModel;
+//    private TreeModel treeModel;
     private TreeTableModel treeTableModel;
 
     private JXTreeTable tree;
@@ -62,7 +67,9 @@ public class MenuPanel extends JXPanel {
     private JXButton collapseButton;
 
     private void initComponents() {  	
-		tree = new JXTreeTable(treeTableModel);
+//		tree = new JXTreeTable(treeTableModel); // gleichwertig zu
+		tree = new JXTreeTable();
+		tree.setTreeTableModel(treeTableModel);
 		
 		LOG.config("tree SelectionMode="+tree.getSelectionMode()); //  javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : 2
 		tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION); // : 1
@@ -135,16 +142,15 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu() + " root=" // + vTree.getRoot() 
     			+ " rootNode=" + vTree.getRootNode());
     	MTreeNode rootNode = vTree.getRootNode();
-//    	treeModel = new MenuTreeTableModel(rootNode); // TreeModel genügt!!!
-    	treeModel = new MenuTreeModel(rootNode); 
+//    	treeModel = new MenuTreeModel(rootNode); 
     	
-    	treeTableModel = new TreeTableModelAdapter(treeModel, rootNode); // (TreeModel treeModel, NodeModel nodeModel)
+    	// JXTreeTable.TreeTableModelAdapter ist protected
+//    	treeTableModel = new JXTreeTable.TreeTableModelAdapter(treeModel, rootNode); // (TreeModel treeModel, NodeModel nodeModel)
+    	treeTableModel = new MenuTreeTableModel(rootNode);
     }
     
     private void configureComponents() {
 
-//    	createModel();
-    	
         // <snip> JXTree rendering
         // StringValue provides node text: concat several 
         StringValue sv = new StringValue() {
