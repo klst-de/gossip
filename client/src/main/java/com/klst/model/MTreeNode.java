@@ -7,8 +7,10 @@ import javax.swing.ImageIcon;
 
 import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
+import com.klst.gossip.treetable.NodeModel;
 import com.klst.icon.AbstractImageTranscoder;
 
 /*
@@ -17,35 +19,69 @@ import com.klst.icon.AbstractImageTranscoder;
  *  Ersetzt org.compiere.model.MTreeNode , das von javax.swing.tree.DefaultMutableTreeNode ableitet
  *                                         und MutableTreeNode implementiert : ... implements Cloneable, MutableTreeNode, Serializable
  *                                         
- *  Ich leite ab von jdesktop AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
+ *  Ich leite ab von jdesktop                                     AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
+ *                            DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode
  */
-public class MTreeNode extends AbstractMutableTreeTableNode {
+public class MTreeNode extends DefaultMutableTreeTableNode implements NodeModel {
 
 	private static final Logger LOG = Logger.getLogger(MTreeNode.class.getName());
 
-	/* wg. impements interface org.jdesktop.swingx.treetable.TreeTableNode extends TreeNode
-	 * man muss es implementieren, aber genutzt wird methode MenuTreeTableModel.getValueAt
-	 */
-	@Override
-	public Object getValueAt(int column) {
-		return null;
-//		if(column==1) {
-//			return Integer.valueOf(m_node_ID);
-//		}
-//		return m_name;
-	}
-
 	@Override
 	public int getColumnCount() {	
-		return 3; // == columnName.length oder kleiner
+		return 3; // == columnName.length oder kleiner, default ist 1 in super
 	}
 
-//	@Override // wg. LOG
-//	public void add(MutableTreeTableNode child) {
-//		LOG.config("add child "+child + " to "+this);
-//		super.add(child);
-//	}
-	
+	// ---- ab hier wg. implements NodeModel
+	@Override
+	public Class<?> getColumnClass(int column) {
+		return columnClass[column];
+	}
+
+	@Override
+	public String getColumnName(int column) {
+		return columnName[column];
+	}
+
+	@Override
+	public int getHierarchicalColumn() {
+		return 0;
+	}
+
+	@Override
+	public Object getValueAt(Object node, int column) {
+		MTreeNode c = (MTreeNode) node;
+		Object o = null;
+		
+		switch (column) {
+		case 0:
+			o = c.getName();
+			break;
+		case 1:
+			o = Integer.valueOf(c.getNode_ID());
+			break;
+		case 2:
+			o = c.getImageIndicator();
+			break;
+		case 3:
+			o = c.getImageIcon();
+			break;
+		default:
+			// does nothing
+			break;
+		}
+		return o;
+	}
+
+	@Override
+	public boolean isCellEditable(Object node, int column) {
+		return false;
+	}
+
+	@Override
+	public void setValueAt(Object value, Object node, int column) {
+		// noop - not editable	
+	}
+
 	public static final String[] columnName = 
 		{ "Name"
 		, "Node_Id"
@@ -91,28 +127,18 @@ public class MTreeNode extends AbstractMutableTreeTableNode {
 		setUserObject(this); //(name + " img:"+imageIndicator); // statt im super ctor
 	}   //  MTreeNode
 
-	/** Node ID         */
 	private int     	m_node_ID;
-	/**	SeqNo			*/
 	private int     	m_seqNo;
-	/** Name			*/
 	private String  	m_name;
-	/** Description		*/
 	private String  	m_description;
-	/**	Parent ID		*/
 	private int     	m_parent_ID;
-	/**	Summaty			*/
 	private boolean 	m_isSummary;
-	/** Image Indicator				*/
-	private String      m_imageIndicator;
-	/** Index to Icon               */
-	private int 		m_imageIndex = 0;
-	/**	On Bar			*/
+	private String      m_imageIndicator; // image indicator (W/X/R/P/F/T/B) MWFNode.ACTION_
+	private int 		m_imageIndex = 0; // Index to Icon
 	private boolean 	m_onBar;
-	/**	Color			*/
 	private Color 		m_color;
-	private int			m_menu_ID;
-	private boolean		m_iscollapsible;
+//	private int			m_menu_ID;
+//	private boolean		m_iscollapsible;
 
 	public String toString() {
 		return m_node_ID + "/" + m_parent_ID + " " + m_seqNo + " - " + m_name;
