@@ -1,13 +1,13 @@
 package com.klst.model;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 
+import org.compiere.model.X_AD_Menu;
 import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
@@ -20,8 +20,8 @@ import com.klst.icon.AbstractImageTranscoder;
  *  Ersetzt org.compiere.model.MTreeNode , das von javax.swing.tree.DefaultMutableTreeNode ableitet
  *                                         und MutableTreeNode implementiert : ... implements Cloneable, MutableTreeNode, Serializable
  *                                         
- *  Ich leite ab von jdesktop                                     AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
- *                            DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode
+ *  Ich leite ab von jdesktop DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
+ *
  */
 public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeModel {
 
@@ -147,7 +147,8 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 //	private boolean		m_iscollapsible;
 
 	public String toString() {
-		return "["+m_node_ID + "/" + m_parent_ID + " " + m_seqNo + " - " + m_name +"]"; 
+		return "["+m_node_ID + "/" + m_parent_ID // + "/" + m_onBar + "/" + m_color 
+				+ " " +m_imageIndicator + m_seqNo + " - " + m_name +"]"; 
 	}
 
 	public int getNode_ID() {
@@ -168,6 +169,21 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	
 	public String getImageIndicator() {
 		return m_imageIndicator;
+	}
+
+/* zur INFO aus X_AD_Menu :
+	public static final int ACTION_AD_Reference_ID=104;
+	public static final String ACTION_Form        = "X";
+	public static final String ACTION_Process     = "P";
+	public static final String ACTION_Report      = "R";
+	public static final String ACTION_SmartBrowse = "S";
+	public static final String ACTION_Task        = "T";
+	public static final String ACTION_Window      = "W";
+	public static final String ACTION_WorkFlow    = "F";
+	public static final String ACTION_Workbench   = "B";
+ */
+	public boolean isWindow() {
+		return X_AD_Menu.ACTION_Window.equals(m_imageIndicator);
 	}
 
 	public int getImageIndex() {
@@ -196,8 +212,8 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	}
 
 	/**
-	 *  Set Image Indicator and Index
-	 *  @param imageIndicator image indicator (W/X/R/P/F/T/B) MWFNode.ACTION_
+	 *  Set Image Indicator and Index          W X R P F T B S X_AD_Menu.ACTION_XXX
+	 *  @param imageIndicator image indicator (W/X/R/P/F/T/B)  MWFNode.ACTION_
 	 */
 	public void setImageIndicator(String imageIndicator) {
 		if (imageIndicator != null) {
@@ -299,6 +315,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		}
 		return ca;
 	}
+	
 	MutableTreeTableNode findChildBefore(MTreeNode c) {
 		MTreeNode cb = null;
 		for (MutableTreeTableNode child : children) {
@@ -311,27 +328,22 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		}
 		return cb;
 	}
+	
 	/* die Reihenfolge der childs wird bestimmt durch m_seqNo m_node_ID;
 	 * allerdings kann es zwei childs mit gleicher seq geben, dann bestimmt m_node_ID die Reihenfolge
-	 * 
 	 */
 	public void add(MutableTreeTableNode child) {
 		if(child instanceof MTreeNode) {
-			MutableTreeTableNode cb = findChildAfter((MTreeNode)child);
-			if(cb==null) {
+			MutableTreeTableNode ca = findChildAfter((MTreeNode)child);
+			if(ca==null) {
 				super.add(child);
 			} else {
-				super.insert(child, 1+this.getIndex(cb));
+				super.insert(child, 1+this.getIndex(ca));
 			}
 		} else {
 			super.add(child);
 		}
 	}
-
-	/**	Last found ID				*/
-	private int                 m_lastID = -1;
-	/** Last found Node				*/
-	private MTreeNode           m_lastNode = null;
 
 	/**
 	 *	Return the Node with ID in list of children

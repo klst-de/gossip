@@ -179,45 +179,18 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				}
 			});
 			LOG.config("nach clearing buffer treeNodeMap.Size="+treeNodeMap.size());
-//			for (int i = 0; i < treeNodes.size(); i++)
-//			{
-//				MTreeNode node = (MTreeNode) treeNodes.get(i);
-//				MTreeNode parent = rootNode.findNode(node.getParent_ID());
-//				if (parent != null && parent.getAllowsChildren())
-//				{
-//					parent.add(node);
-//					int sizeBeforeCheckBuffer = treeNodes.size();
-//					checkBuffer(node);
-//					if (sizeBeforeCheckBuffer == treeNodes.size())
-//						treeNodes.remove(i);
-//					i = -1;		//	start again with i=0
-//				} else {
-//					LOG.warning("clearing buffer "+( parent==null ? "no parent" : parent.getAllowsChildren() ) + " node:"+node);
-//				}
-//			}
 		}
 
 		//	Nodes w/o parent
 		if (treeNodes.size() != 0)
 		{ // TODO 
 			LOG.severe (""+treeNodes.size()+" nodes w/o parent - NO!!!!!!! adding to root - " + treeNodes);
-//			for (int i = 0; i < treeNodes.size(); i++)
-//			{
-//				MTreeNode node = (MTreeNode) treeNodes.get(i);
-//				rootNode.add(node);
-//				int sizeBeforeCheckBuffer = treeNodes.size();
-//				checkBuffer(node);
-//				if (sizeBeforeCheckBuffer == treeNodes.size())
-//					treeNodes.remove(i);
-//				i = -1;
-//			}
-//			if (treeNodes.size() != 0)
-//				LOG.severe ("Still nodes in Buffer - " + treeNodes);
 		}	//	nodes w/o parents
 
 		//  clean up
-		if (!isTreeEditable && rootNode.getChildCount() > 0)
-			trimTree();
+		if (!isTreeEditable && rootNode.getChildCount() > 0) {
+			//trimTree();
+		}
 //		diagPrintTree();
 		if (CLogMgt.isLevelFinest() || rootNode.getChildCount() == 0)
 			LOG.fine("ChildCount=" + rootNode.getChildCount());
@@ -432,15 +405,13 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			// parent ist möglicherweise gar nicht parent von child !!
 			if(parent.getAllowsChildren()) {
 				parent.add(child);
-//				checkBuffer(child);
-				if(treeNodeMap.get(child.getNode_ID()) != null) {
-					LOG.config("könnte kandidat für parant sein : "+child);
-				}
 				LOG.config("added "+child + " to "+parent + " - treeNodeMap.Size="+treeNodeMap.size() + " == treeNodes.Size="+treeNodes.size());
+				// durch das Einfügen kann findNode andere Ergenisse liefern
 				treeNodes.forEach(c -> {
-					MTreeNode k = c.findNode(child.getParent_ID());
-					if(k!=null) {
-						LOG.config("ist parant füt : "+k);
+					MTreeNode p = rootNode.findNode(c.getParent_ID());
+					if(p!=null) {
+						// TODO clearing buffer schon hier
+						LOG.fine(" nach ADD findet sich parent "+p+" für "+c);
 					}
 				});
 			} else {
@@ -448,41 +419,6 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			}
 		}		
 	}
-
-	/**
-	 *  Check the buffer for nodes which have newNode as Parents
-	 *  @param newNode new node
-	 */
-	private void checkBufferX (MTreeNode newNode)
-	{ 
-		if(treeNodes.isEmpty()) return;
-		
-		//	Ability to add nodes
-		if (!newNode.isSummary() || !newNode.getAllowsChildren())
-			return;
-		//
-		for (int i = 0; i < treeNodes.size(); i++)
-		{
-			MTreeNode node = (MTreeNode) treeNodes.get(i);
-			if (node.getParent_ID() == newNode.getNode_ID())
-			{ // da die IDs der Knoten gleich sind, ist ein add unsinnig!!! 
-				try
-				{
-					newNode.add(node); // void org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode.add(MutableTreeTableNode child)
-					//                    void javax.swing.tree.DefaultMutableTreeNode.add(MutableTreeNode newChild)
-					// Removes <code>newChild</code> from its parent and makes it a child of this node by adding it to the end of this node's child array.
-					//node.removeFromParent(); // damit wird Data/157 zum Leaf und Utility/195 kein child von Data ??????
-				}
-				catch (Exception e)
-				{
-					LOG.severe("Adding " + node.getNode_ID()+"/"+ node.getName() 
-						+ " to " + newNode.getNode_ID()+"/"+newNode.getName() + ": " + e.getMessage());
-				}
-				treeNodes.remove(i);
-				i--;
-			}
-		}
-	}   //  checkBuffer
 
 	/**
 	 *  Get Menu Node Details.

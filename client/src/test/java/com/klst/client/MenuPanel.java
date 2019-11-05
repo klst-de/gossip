@@ -23,6 +23,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.compiere.model.MMenu;
+import org.compiere.model.MTree_NodeMM;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
@@ -68,7 +70,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
 	
 //    private TreeModel treeModel;
     private TreeTableModel treeTableModel;
-
+    private MTree vTree;
     private JXTreeTable tree;
     private JXButton refreshButton;
     private JXButton expandButton;
@@ -135,8 +137,9 @@ LEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID AND tn.Node_ID=tb.
 WHERE tn.AD_Tree_ID=10 AND tn.IsActive='Y' 
 ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
  */
+    private static final int DEFAULT_TREE_ID = 10;
     private void createModel() {
-    	int treeId = 10;
+    	int treeId = DEFAULT_TREE_ID;
     	boolean editable = false;
     	boolean allNodes = false;
     	String whereClause = null, trxName = null;
@@ -148,7 +151,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		ctx.setProperty("#AD_User_ID", "100");
 		ctx.setProperty("#AD_Role_ID", "102");
 
-    	MTree vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
+    	vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu() + " root=" // + vTree.getRoot() 
     			+ " rootNode=" + vTree.getRootNode());
     	MTreeNode rootNode = vTree.getRootNode();
@@ -375,7 +378,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					int selRow = tree.getRowForPath(treePath);
 					LOG.config("es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
 					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
-					node.getName();node.getNode_ID();node.getImageIndicator();
+					if(node.isWindow()) {
+						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
+						MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
+						LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID()); // Bank 158
+					}
 //					firePropertyChange(NODE_SELECTION, null, node);
 				}
 			};
