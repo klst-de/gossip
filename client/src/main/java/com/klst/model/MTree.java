@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,6 +41,7 @@ public class MTree extends org.compiere.model.MTree {
  
  
  */
+	private Map<Integer, MTreeNode> treeNodeMap = new HashMap<Integer, MTreeNode>();
 	private ArrayList<MTreeNode> treeNodes = new ArrayList<>();
 
 	private RowSet nodeRowSet; // used in getNodeDetails
@@ -167,39 +169,50 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		//  Done with loading - add remainder from buffer
 		if (treeNodes.size() != 0)
 		{
-			LOG.config("clearing buffer - Adding to: " + rootNode);
-			for (int i = 0; i < treeNodes.size(); i++)
-			{
-				MTreeNode node = (MTreeNode) treeNodes.get(i);
-				MTreeNode parent = rootNode.findNode(node.getParent_ID());
-				if (parent != null && parent.getAllowsChildren())
-				{
-					parent.add(node);
-					int sizeBeforeCheckBuffer = treeNodes.size();
-					checkBuffer(node);
-					if (sizeBeforeCheckBuffer == treeNodes.size())
-						treeNodes.remove(i);
-					i = -1;		//	start again with i=0
+			LOG.config("clearing buffer (expected size=45) size="+treeNodes.size()+"- Adding to: " + rootNode);
+			treeNodes.forEach(c -> {
+				MTreeNode p = rootNode.findNode(c.getParent_ID());
+				if(p!=null) {
+					LOG.config(p + " ist parant für "+c);
+					p.add(c);
+					treeNodeMap.remove(c.getNode_ID());
 				}
-			}
+			});
+			LOG.config("nach clearing buffer treeNodeMap.Size="+treeNodeMap.size());
+//			for (int i = 0; i < treeNodes.size(); i++)
+//			{
+//				MTreeNode node = (MTreeNode) treeNodes.get(i);
+//				MTreeNode parent = rootNode.findNode(node.getParent_ID());
+//				if (parent != null && parent.getAllowsChildren())
+//				{
+//					parent.add(node);
+//					int sizeBeforeCheckBuffer = treeNodes.size();
+//					checkBuffer(node);
+//					if (sizeBeforeCheckBuffer == treeNodes.size())
+//						treeNodes.remove(i);
+//					i = -1;		//	start again with i=0
+//				} else {
+//					LOG.warning("clearing buffer "+( parent==null ? "no parent" : parent.getAllowsChildren() ) + " node:"+node);
+//				}
+//			}
 		}
 
 		//	Nodes w/o parent
 		if (treeNodes.size() != 0)
 		{ // TODO 
-			LOG.severe (""+treeNodes.size()+" nodes w/o parent - adding to root - " + treeNodes);
-			for (int i = 0; i < treeNodes.size(); i++)
-			{
-				MTreeNode node = (MTreeNode) treeNodes.get(i);
-				rootNode.add(node);
-				int sizeBeforeCheckBuffer = treeNodes.size();
-				checkBuffer(node);
-				if (sizeBeforeCheckBuffer == treeNodes.size())
-					treeNodes.remove(i);
-				i = -1;
-			}
-			if (treeNodes.size() != 0)
-				LOG.severe ("Still nodes in Buffer - " + treeNodes);
+			LOG.severe (""+treeNodes.size()+" nodes w/o parent - NO!!!!!!! adding to root - " + treeNodes);
+//			for (int i = 0; i < treeNodes.size(); i++)
+//			{
+//				MTreeNode node = (MTreeNode) treeNodes.get(i);
+//				rootNode.add(node);
+//				int sizeBeforeCheckBuffer = treeNodes.size();
+//				checkBuffer(node);
+//				if (sizeBeforeCheckBuffer == treeNodes.size())
+//					treeNodes.remove(i);
+//				i = -1;
+//			}
+//			if (treeNodes.size() != 0)
+//				LOG.severe ("Still nodes in Buffer - " + treeNodes);
 		}	//	nodes w/o parents
 
 		//  clean up
@@ -411,33 +424,39 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		if (rootNode != null)
 			parent = rootNode.findNode(parentId);
 
-		if(parent==null) {
+		if(parent==null) { // in Liste eintragen, da im Baum parant nicht gefunden!
 			LOG.warning("parent with id "+parentId+" not in tree! Adding ("+child+") to treeNodes #:"+treeNodes.size());
 			treeNodes.add(child);
+			treeNodeMap.put(child.getNode_ID(), child);
 		} else {
+			// parent ist möglicherweise gar nicht parent von child !!
 			if(parent.getAllowsChildren()) {
 				parent.add(child);
-				checkBuffer(child);
-			}
-		}
-		
-//		// Parent found
-//		if (parent != null && parent.getAllowsChildren()) {
-//			parent.add(child);
-//			// see if we can add nodes from buffer
-//			if (treeNodes.size() > 0)
 //				checkBuffer(child);
-//		} else { // in Liste eintragen, da im Baum parant nicht gefunden!
-//			treeNodes.add(child);
-//		}
+				if(treeNodeMap.get(child.getNode_ID()) != null) {
+					LOG.config("könnte kandidat für parant sein : "+child);
+				}
+				LOG.config("added "+child + " to "+parent + " - treeNodeMap.Size="+treeNodeMap.size() + " == treeNodes.Size="+treeNodes.size());
+				treeNodes.forEach(c -> {
+					MTreeNode k = c.findNode(child.getParent_ID());
+					if(k!=null) {
+						LOG.config("ist parant füt : "+k);
+					}
+				});
+			} else {
+				LOG.warning("?????????????? parent does not allow Children "+parentId);
+			}
+		}		
 	}
 
 	/**
 	 *  Check the buffer for nodes which have newNode as Parents
 	 *  @param newNode new node
 	 */
-	private void checkBuffer (MTreeNode newNode)
-	{
+	private void checkBufferX (MTreeNode newNode)
+	{ 
+		if(treeNodes.isEmpty()) return;
+		
 		//	Ability to add nodes
 		if (!newNode.isSummary() || !newNode.getAllowsChildren())
 			return;
@@ -449,7 +468,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			{ // da die IDs der Knoten gleich sind, ist ein add unsinnig!!! 
 				try
 				{
-					newNode.add(node);
+					newNode.add(node); // void org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode.add(MutableTreeTableNode child)
+					//                    void javax.swing.tree.DefaultMutableTreeNode.add(MutableTreeNode newChild)
+					// Removes <code>newChild</code> from its parent and makes it a child of this node by adding it to the end of this node's child array.
+					//node.removeFromParent(); // damit wird Data/157 zum Leaf und Utility/195 kein child von Data ??????
 				}
 				catch (Exception e)
 				{
@@ -493,7 +515,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				int index = 2;				
 				String name = nodeRowSet.getString(index++);
 				String description = nodeRowSet.getString(index++);
-				boolean isSummary = "Y".equals(nodeRowSet.getString(index++));
+				String sSummary = nodeRowSet.getString(index++);
+				boolean isSummary = "Y".equals(sSummary);
 				String actionColor = nodeRowSet.getString(index++);
 				//	Menu only
 				if ((getTreeType().equals(TREETYPE_Menu)) && !isSummary) {
@@ -507,7 +530,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					//
 					MRole role = MRole.getDefault(getCtx(), false);
 					Boolean access = null;
-					if (X_AD_Menu.ACTION_Window.equals(actionColor))
+					if (X_AD_Menu.ACTION_Window.equals(actionColor)) // W
 						access = role.getWindowAccess(AD_Window_ID);
 					else if (X_AD_Menu.ACTION_Process.equals(actionColor) 
 						|| X_AD_Menu.ACTION_Report.equals(actionColor))
@@ -526,12 +549,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					//
 					if (access != null		//	rw or ro for Role 
 						|| isTreeEditable)		//	Menu Window can see all
-					{
-						retValue = new MTreeNode (node_ID, seqNo,
-							name, description, parent_ID, isSummary,
-							actionColor, onBar, null);	//	menu has no color
+					{ LOG.config("========================= 532 actionColor="+actionColor);
+						retValue = new MTreeNode (node_ID, seqNo, name, description, parent_ID, isSummary, actionColor, onBar, null);	//	menu has no color
 					}
-				} else if(getTreeType().equals(TREETYPE_CustomTree)) {
+				} else if(getTreeType().equals(TREETYPE_CustomTree)) { LOG.config("========================= 537");
 					retValue = new MTreeNode (node_ID, seqNo,
 							name, description, parent_ID, isSummary,
 							actionColor, onBar, null);	//	menu has no color
@@ -552,10 +573,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 						String value = nodeRowSet.getString(index++);
 						name = value + " - " + name;
 					}// @Trifon-end
-					//
-					retValue = new MTreeNode (node_ID, seqNo,
-						name, description, parent_ID, isSummary,
-						null, onBar, color);			//	no action
+					LOG.config("========================= 558 TreeType:"+getTreeType() + " sSummary:"+sSummary);
+					retValue = new MTreeNode (node_ID, seqNo, name, description, parent_ID, isSummary, null, onBar, color); //	no action
 				}
 			}
 		}

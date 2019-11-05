@@ -1,13 +1,16 @@
 package com.klst.model;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 
 import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import com.klst.icon.AbstractImageTranscoder;
 
@@ -26,7 +29,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 
 	@Override
 	public int getColumnCount() {	
-		return 3; // == columnName.length oder kleiner, default ist 1 in super
+		return 4; // == columnName.length oder kleiner, default ist 1 in super
 	}
 
 	// ---- ab hier wg. implements NodeModel mit @Override, ohne @Override, damit es in MenuTreeModel aufrufbar wird
@@ -61,6 +64,9 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 			o = c.getImageIndicator();
 			break;
 		case 3:
+			o = Integer.valueOf(c.getSeqNo());
+			break;
+		case 4:
 			o = c.getImageIcon();
 			break;
 		default:
@@ -84,6 +90,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		{ "Name"
 		, "Node_Id"
 		, "II" // II == m_imageIndicator
+		, "Seq"
 		, "Icon"
 		};
 	
@@ -91,6 +98,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		{ String.class
 		, Integer.class
 		, String.class
+		, Integer.class
 		, ImageIcon.class
 		};
 
@@ -110,7 +118,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		int parent_ID, boolean isSummary, String imageIndicator, boolean onBar, Color color)
 	{
 		super();
-		LOG.config( "MTreeNode Node_ID=" + node_ID + ", seqNo=" + seqNo + ", Parent_ID=" + parent_ID + " - " + name);
+		LOG.config( "MTreeNode Node_ID="+node_ID + ", seqNo="+seqNo + ", Parent_ID="+parent_ID + ", isSummary="+isSummary + ", imageIndicator="+imageIndicator+ " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
 		m_name = name;
@@ -139,11 +147,15 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 //	private boolean		m_iscollapsible;
 
 	public String toString() {
-		return m_node_ID + "/" + m_parent_ID + " " + m_seqNo + " - " + m_name;
+		return "["+m_node_ID + "/" + m_parent_ID + " " + m_seqNo + " - " + m_name +"]"; 
 	}
 
 	public int getNode_ID() {
 		return m_node_ID;
+	}
+
+	public int getSeqNo() {
+		return m_seqNo;
 	}
 
 	public String getName() {
@@ -170,6 +182,10 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		return m_isSummary;
 	}
 
+	public boolean getAllowsChildren() {
+		return super.getAllowsChildren();
+	}
+	
 	/**************************************************************************
 	 *  Set Summary (allow children)
 	 *  @param isSummary summary node
@@ -265,6 +281,53 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 
 	/*************************************************************************/
 
+	@Override
+    protected List<MutableTreeTableNode> createChildrenList() {
+        return new LinkedList<MutableTreeTableNode>(); // statt new ArrayList<MutableTreeTableNode>();
+    }
+
+	MutableTreeTableNode findChildAfter(MTreeNode c) {
+		MTreeNode ca = null;
+		for (MutableTreeTableNode child : children) {
+			MTreeNode nd = (MTreeNode)child;
+			if(nd.getSeqNo()>c.getSeqNo()) {
+				// gefunden ca soll nach c angezeigt werden
+				return nd;
+			} else {
+				ca = nd;
+			}
+		}
+		return ca;
+	}
+	MutableTreeTableNode findChildBefore(MTreeNode c) {
+		MTreeNode cb = null;
+		for (MutableTreeTableNode child : children) {
+			MTreeNode nd = (MTreeNode)child;
+			if(nd.getSeqNo()<c.getSeqNo()) {
+				cb = nd;
+			} else {
+				// gefunden cb soll vor c angezeigt werden
+			}
+		}
+		return cb;
+	}
+	/* die Reihenfolge der childs wird bestimmt durch m_seqNo m_node_ID;
+	 * allerdings kann es zwei childs mit gleicher seq geben, dann bestimmt m_node_ID die Reihenfolge
+	 * 
+	 */
+	public void add(MutableTreeTableNode child) {
+		if(child instanceof MTreeNode) {
+			MutableTreeTableNode cb = findChildAfter((MTreeNode)child);
+			if(cb==null) {
+				super.add(child);
+			} else {
+				super.insert(child, 1+this.getIndex(cb));
+			}
+		} else {
+			super.add(child);
+		}
+	}
+
 	/**	Last found ID				*/
 	private int                 m_lastID = -1;
 	/** Last found Node				*/
@@ -276,25 +339,17 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	 *  @return VTreeNode with ID or null
 	 */
 	public MTreeNode findNode(int ID) {
-		if (m_node_ID == ID)
-			return this;
-		//
-		if (ID == m_lastID && m_lastNode != null)
-			return m_lastNode;
-		
-		if(getChildCount()==0) return null;
-		
-		this.getChildCount();
-		
-		for(int c=0; c<getChildCount(); c++) {
-			TreeTableNode n = this.getChildAt(c);
-			MTreeNode nd = (MTreeNode)n;
-			if (ID == nd.getNode_ID()) {
-				m_lastID = ID;
-				m_lastNode = nd;
-				return nd;
+		if (m_node_ID == ID) return this;
+		for (MutableTreeTableNode child : children) {
+			MTreeNode nd = (MTreeNode)child;
+			if(nd.getParent_ID()==ID) {
+				return nd; // gefunden
 			} else {
-				//LOG.config("<>"+nd.getNode_ID() +"=?="+ID + " #"+c);
+				// weitersuchen
+				// rekursiv:
+				//LOG.config("rekursiv weitersuchen in "+nd);
+				MTreeNode gefunden = nd.findNode(ID);
+				if(gefunden!=null) return gefunden;
 			}
 		}
 		return null;

@@ -3,6 +3,10 @@ package com.klst.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +18,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.util.Env;
@@ -39,10 +46,11 @@ import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
-public class MenuPanel extends JXPanel {
+public class MenuPanel extends JXPanel implements ActionListener {
 
 	private static final long serialVersionUID = 3820339775333768359L;
 	static Logger LOG = Logger.getLogger(MenuPanel.class.getName());
+	static final String COMPONENT_NAME = "componentTreeTable";
 
 	public MenuPanel() {
         super(new BorderLayout());
@@ -65,6 +73,8 @@ public class MenuPanel extends JXPanel {
     private JXButton refreshButton;
     private JXButton expandButton;
     private JXButton collapseButton;
+    
+    private MouseListener mouseListener = new VTreePanel_mouseAdapter(this);
 
     private void initComponents() {  	
 //		tree = new JXTreeTable(treeTableModel); // gleichwertig zu
@@ -79,7 +89,7 @@ public class MenuPanel extends JXPanel {
 //		tree.setName("componentTree");
 //		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 //		add(new JScrollPane(tree), BorderLayout.CENTER);
-        tree.setName("componentTreeTable");
+        tree.setName(COMPONENT_NAME);
         add(new JScrollPane(tree), BorderLayout.CENTER);
 
 		JComponent control = new JXPanel();
@@ -229,7 +239,14 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         
         LOG.config("isRootVisible:"+tree.isRootVisible());
         tree.setRootVisible(true); // default is false
-        tree.sizeColumnsToFit(0); // Breite der menu spalte anpassen
+//        tree.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN); tut nicht
+        tree.sizeColumnsToFit(0); // Breite der menu spalten anpassen
+        tree.sizeColumnsToFit(2); // tut nicht
+        
+//        tree.addTreeSelectionListener(this); // swingx-unused
+        // treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
+//        tree.addPropertyChangeListener(listener);
+        tree.addMouseListener(mouseListener);
     }
     
     // <snip> JXTree rollover
@@ -337,4 +354,55 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         }
 
     }
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		LOG.config("ActionCommand:"+e.getActionCommand() + " " + e.toString());	
+	}
+	
+	void mouseClicked(MouseEvent e) {
+		LOG.config("MouseEvent:" //+e.getSource()
+		+ " Button:"+e.getButton() + " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
+		// 1 java.awt.event.MouseEvent[MOUSE_CLICKED,(116,25),absolute(877,397),button=1,modifiers=Button1,clickCount=1] on componentTreeTable [16]
+		//MouseEvent.BUTTON1 == LIMA
+		//MouseEvent.BUTTON3 == REMA
+		e.getX(); e.getY();
+		if (e.getSource() instanceof JXTreeTable) {
+			if(((JXTreeTable)e.getSource()).getName()==COMPONENT_NAME) {
+				LOG.config("es ist "+COMPONENT_NAME); // tree
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount()>0) {
+					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+					int selRow = tree.getRowForPath(treePath);
+					LOG.config("es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
+					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
+					node.getName();node.getNode_ID();node.getImageIndicator();
+//					firePropertyChange(NODE_SELECTION, null, node);
+				}
+			};
+		}
+	}
+	
+	// abstract class MouseAdapter implements MouseListener, MouseWheelListener, MouseMotionListener
+	class VTreePanel_mouseAdapter extends java.awt.event.MouseAdapter {
+		
+		MenuPanel m_adaptee;
+
+		VTreePanel_mouseAdapter(MenuPanel adaptee) {
+			m_adaptee = adaptee;
+		}
+
+		public void mouseClicked(MouseEvent e) {
+			m_adaptee.mouseClicked(e);
+		}
+
+	    public void mouseReleased(MouseEvent e) {
+	    	
+	    }
+	    
+	    public void mouseEntered(MouseEvent e) {
+	    	
+	    }
+
+	}
+
 }
