@@ -155,6 +155,15 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mFile.add(quitItem);
             
+            JMenuItem logoutItem = new JMenuItem("Logout", AIT.getImageIcon(AIT.LOGOUT, SMALL_ICON_SIZE));
+            logoutItem.setName("logout");
+            logoutItem.setActionCommand("logout");
+            logoutItem.addActionListener(event -> {
+            	LOG.config("logout");
+            	rootFrame.login();
+            });
+            mFile.add(logoutItem);
+            
             JMenuItem cancelItem = new JMenuItem("Cancel", AIT.getImageIcon(AIT.CANCEL, SMALL_ICON_SIZE));
             cancelItem.setName("cancel");
             cancelItem.setActionCommand("cancel");

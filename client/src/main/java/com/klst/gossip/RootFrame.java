@@ -24,7 +24,6 @@ import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.compiere.Adempiere;
-import org.compiere.model.MTree;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -122,18 +121,41 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// button & msg controlPanel
 		JPanel controlPanel = (JPanel)getContentPane().getComponent(0);
 		
+		menuPanel = new MenuPanel(this);
 		loginPanel = new LoginPanel();
-		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane",loginPanel);
+		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
 		controlPanel.add(hidableTabbedPane, BorderLayout.NORTH);
-		
-		// JPanel jPanel = new JPanel(new BorderLayout());
-		// JXPanel panel = new XTreeDemo();
-		menuPanel = new MenuPanel();
-		hidableTabbedPane.addTab("menu", menuPanel);
+//		hidableTabbedPane.addTab("login", loginPanel);
 
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+	}
+
+	void login() {
+		LOG.info(""+loginPanel);
+		hidableTabbedPane.addTab("login", loginPanel);
+		pack();
+		loginPanel.setVisible(true);
+	}
+	
+	public void openNewFrame(int window_ID) { // TODO public raus
+		LOG.config("new frame aka Window with window_ID="+window_ID);
+		Properties ctx = Env.getCtx();
+		ctx.forEach((key,value) -> { // zum Test
+			LOG.info("key:"+key + " : " + value.toString());
+		});
+		
+		if(WindowFrame.testWindow_ID(window_ID)==null) {
+			LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+		} else {
+			WindowFrame frame = makeWindow(window_ID);
+			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+			frame.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
+			task.execute();
+		}
+		
 	}
 
 	private void initMenuBar() {

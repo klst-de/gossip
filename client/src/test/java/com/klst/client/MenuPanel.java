@@ -17,6 +17,7 @@ import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -44,6 +45,7 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
 import com.klst.gossip.MenuTreeTableModel;
+import com.klst.gossip.RootFrame;
 import com.klst.icon.AbstractImageTranscoder;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
@@ -54,8 +56,9 @@ public class MenuPanel extends JXPanel implements ActionListener {
 	static Logger LOG = Logger.getLogger(MenuPanel.class.getName());
 	static final String COMPONENT_NAME = "componentTreeTable";
 
-	public MenuPanel() {
+	public MenuPanel(RootFrame rootFrame) {
         super(new BorderLayout());
+        this.rootFrame = rootFrame;
         createModel(); // treeModel + treeTableModel
         initComponents();
         configureComponents();
@@ -68,6 +71,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
         }
 	}
 	
+	RootFrame rootFrame;
 //    private TreeModel treeModel;
     private TreeTableModel treeTableModel;
     private MTree vTree;
@@ -381,7 +385,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					if(node.isWindow()) {
 						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
 						MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
-						LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID()); // Bank 158
+						JComponent jc = this.getRootPane();
+						JRootPane rp = this.getRootPane(); // JComponent
+						LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID() + " RootPane/JComponent:"+rp.getContentPane()); // Bank 158
+						rootFrame.openNewFrame(mm.getAD_Window_ID());
 					}
 //					firePropertyChange(NODE_SELECTION, null, node);
 				}
