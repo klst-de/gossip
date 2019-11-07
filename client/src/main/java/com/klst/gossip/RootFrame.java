@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
@@ -24,24 +23,20 @@ import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
-import org.compiere.grid.ed.VCheckBox;
-import org.compiere.grid.ed.VDate;
-import org.compiere.grid.ed.VEditor;
-import org.compiere.grid.ed.VLookup;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
+import org.compiere.Adempiere;
+import org.compiere.model.MTree;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
-import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.client.LoginPanel;
+import com.klst.client.MenuPanel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
-public class RootFrame extends WindowFrame {  // Window extends JFrame
+public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	
 	private static final long serialVersionUID = -400920856924947621L;
 
@@ -89,9 +84,32 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 
 	HidableTabbedPane hidableTabbedPane; // hierin loginPanel und die (hidden) Demopanels
 	LoginPanel loginPanel;
-	
+	MenuPanel menuPanel;
+
+/* Gegenüberstellung start gossip vs AD-client
+
+   (base) org.compiere.Adempiere.main ist jeweils die start methode mit programm argument
+   gossip: "com.klst.gossip.RootFrame"       | AD-client: <nix> - dauault ist className = "org.compiere.apps.AMenu"
+                        main:625:  startClass.newInstance();
+                                             |
+                                             | log.info("CodeBase=" + Adempiere.getCodeBase());	// Get JNLP CodeBase aka Java Web Start
+                                             | ... splash ...
+                                             | initSystem mit new ALogin(...
+                                             | private VTreePanel ... treePanel = new VTreePanel (m_WindowNo, true, false)
+wie org.jdesktop.swingx.demos.tree.XTreeDemo | (client) org.compiere.grid.tree.VTreePanel extends CPanel implements ActionListener
+              bzw TreeTableDemo              |
+                                             | AD_Tree_ID = per SQL: (default 10)
+SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
+  FROM AD_ClientInfo ci 
+  INNER JOIN AD_Role r ON (ci.AD_Client_ID=r.AD_Client_ID) 
+ WHERE AD_Role_ID=? -- 102
+                                             | treePanel.initTree(AD_Tree_ID);
+                                             | MTree vTree = new MTree (Env.getCtx(), treeId, editable, allNodes=false, whereClause, trxName=null);
+
+ */
 	public RootFrame() {
 		super(TITLE);
+		LOG.info("Java Web Start/JNLP CodeBase=" + Adempiere.getCodeBase());		
 		LOG.config(TITLE + ", Component#:"+getContentPane().getComponentCount());
 		this.rootFrame = this;
 		
@@ -107,6 +125,11 @@ public class RootFrame extends WindowFrame {  // Window extends JFrame
 		loginPanel = new LoginPanel();
 		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane",loginPanel);
 		controlPanel.add(hidableTabbedPane, BorderLayout.NORTH);
+		
+		// JPanel jPanel = new JPanel(new BorderLayout());
+		// JXPanel panel = new XTreeDemo();
+		menuPanel = new MenuPanel();
+		hidableTabbedPane.addTab("menu", menuPanel);
 
 		pack();
 		setLocationRelativeTo(null);
