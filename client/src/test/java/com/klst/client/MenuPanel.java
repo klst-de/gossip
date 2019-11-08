@@ -13,19 +13,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.model.MMenu;
-import org.compiere.model.MTree_NodeMM;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
@@ -41,6 +40,7 @@ import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
+import org.jdesktop.swingx.table.ColumnControlButton;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
@@ -217,6 +217,20 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // </snip>
 //        tree.setRowHeight(-1);
         
+        tree.setColumnControl(new ColumnControlButton(tree) { // das Icon austauschen
+        	@Override
+            protected void updateActionUI() {
+                if (getAction() == null) return;
+                AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+                Icon icon = AIT.getImageIcon(AIT.MENU, SMALL_ICON_SIZE);
+//                if ((icon == null) || (icon instanceof UIResource)) {
+//                    icon = UIManager.getIcon(COLUMN_CONTROL_BUTTON_ICON_KEY);
+//                    getAction().putValue(Action.SMALL_ICON, icon);
+//                }
+                getAction().putValue(Action.SMALL_ICON, icon);
+            }
+        	
+        }); 
         tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
         // org.jdesktop.swingx.icon.ColumnControlIcon implementiert das Icon
         
