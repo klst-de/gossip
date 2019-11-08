@@ -111,7 +111,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
         control.add(refreshButton);
 		control.add(expandButton);
 		control.add(collapseButton);
-		add(control, BorderLayout.SOUTH);
+		add(control, BorderLayout.PAGE_END);
 	}
 
     /**
@@ -218,6 +218,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 //        tree.setRowHeight(-1);
         
         tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
+        // org.jdesktop.swingx.icon.ColumnControlIcon implementiert das Icon
         
         //tree.setToolTipText("String ToolTipText text");
         	
@@ -228,12 +229,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // </snip>
         	
         refreshButton.addActionListener(event -> {
-        	LOG.config("event "+event);
-//    		this.getParent().repaint();
-//    		setVisible(true);
-
-//        	tree.setTreeTableModel(createTreeModel());
-//        	tree.setModel(createTreeModel());
+        	LOG.config("event "+event); // TODO initial size merken
+        	tree.collapseAll();
+        	tree.expandRow(0);
         });
 
         expandButton.addActionListener(event -> {

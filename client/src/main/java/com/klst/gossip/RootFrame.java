@@ -121,10 +121,10 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// button & msg controlPanel
 		JPanel controlPanel = (JPanel)getContentPane().getComponent(0);
 		
-		menuPanel = new MenuPanel(this);
+		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
 		loginPanel = new LoginPanel();
 		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
-		controlPanel.add(hidableTabbedPane, BorderLayout.NORTH);
+		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
 //		hidableTabbedPane.addTab("login", loginPanel);
 
 		pack();
