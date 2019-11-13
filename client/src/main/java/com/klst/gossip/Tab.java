@@ -49,7 +49,7 @@ public class Tab extends JPanel implements ComponentListener {
 	// ui
 	MuliRowPanel mrp; // MuliRowPanel extendsJXTable extends JTable implements TableColumnModelExtListener
 	ListSelectionModel listSelectionModel; // the ListSelectionModel that is used to maintain rowselection state
-	SingleRowPanel srp = null; // kapselt VPanel 
+	SingleRowPanel srp = null; // SingleRowPanel extends JPanel , kapselt VPanel 
 	
 	// ctor
 	/* super ctors
@@ -57,11 +57,15 @@ public class Tab extends JPanel implements ComponentListener {
 	 *     public JPanel(LayoutManager layout) 
 	 *     public JPanel(boolean isDoubleBuffered) 
 	 */
-	public Tab(GridTab gridTab, WindowFrame frame) {
+	public Tab(WindowFrame frame, int tabIndex) {
 		super(new BorderLayout());
-		LOG.config("gridTab "+gridTab + ", WindowFrame frame:"+frame);
+		LOG.config("tabIndex:"+tabIndex + ", WindowFrame frame:"+frame);
 		this.frame = frame;
-		this.gridTab = gridTab;
+		if(frame.gridWindow.isTabInitialized(tabIndex)==false) {
+			LOG.config("gridTab "+tabIndex+" not initialized. Do it now ...");
+			frame.gridWindow.initTab(tabIndex);
+		}
+		this.gridTab = frame.gridWindow.getTab(tabIndex);
 		this.addComponentListener(this);
 		this.setName(this.gridTab.getName());
 		
@@ -79,6 +83,7 @@ public class Tab extends JPanel implements ComponentListener {
 			statusToTrafficlights.put(StateValue.STARTED, frame.AIT.getImageIcon(frame.AIT.YLI, WindowFrame.SMALL_ICON_SIZE));
 			statusToTrafficlights.put(StateValue.DONE   , frame.AIT.getImageIcon(frame.AIT.GLI, WindowFrame.SMALL_ICON_SIZE));
 		}
+		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}
 
 	public void setLoadState(StateValue state) {
@@ -89,6 +94,7 @@ public class Tab extends JPanel implements ComponentListener {
 			frame.setVisible(true);		
 			updateStatusBar();
 		} else if(state.equals(StateValue.DONE)) {
+			frame.setVisible(true);	
 			updateStatusBar();
 		}
 	}
@@ -199,11 +205,11 @@ public class Tab extends JPanel implements ComponentListener {
 //        return this.loader;
 //	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
-		GridTab gridTab = getGridTabs().get(0); // first Tab
-		Tab tab = getTabs().get(0); 
-		Dimension preferredDim = tab.initModelAndTable(null); // null == calculate preferredDim 
+//		GridTab gridTab = getGridTabs().get(0); // first Tab
+//		Tab tab = getTabs().get(0); 
+		Dimension preferredDim = initModelAndTable(null); // null == calculate preferredDim 
 		LOG.config(this.getName()+" preferredDim:"+preferredDim);
-        frame.tabPane = new HidableTabbedPane(gridTab.getName(), tab);
+        frame.tabPane = new HidableTabbedPane(gridTab.getName(), this);
         for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
         	GridTab gt = getGridTabs().get(i);
         	Tab t = getTabs().get(i); 
@@ -215,7 +221,7 @@ public class Tab extends JPanel implements ComponentListener {
         frame.pack();
 //		setLocationRelativeTo(null);; // im caller! oben links würde es sonst angezeigt
         
-        return tab.initDataLoader();
+        return initDataLoader();
 	}
 
 	private Dimension getSingleRowPanelSize() {
