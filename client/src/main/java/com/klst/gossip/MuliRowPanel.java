@@ -19,6 +19,8 @@ import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+import org.jdesktop.swingx.renderer.CheckBoxProvider;
+import org.jdesktop.swingx.renderer.ComponentProvider;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 
 // https://stackoverflow.com/questions/18186495/using-tablecelleditor-and-tablecellrenderer-at-the-same-time
@@ -64,8 +66,11 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		return table;
 	}
 	
-	@Override
-	protected JTableHeader createDefaultTableHeader() {
+	@Override // aus JXTable
+	protected JTableHeader createDefaultTableHeader() { // TODO den Header besser: namen, column rentere und editoren dorthin!!!!
+		LOG.warning(this.dataModel.getClass().toString());
+		GenericDataModel dm = (GenericDataModel)dataModel;
+		GridFields columnModel = dm.getColumns(); // Header sind besser aber TODO die Breiten werden nicht richtig gerendert
 		return new JXTableHeader(columnModel) {
 			private static final long serialVersionUID = -4124370542563896297L;
 
@@ -87,12 +92,12 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	// - postprocessModelChange(e); 
 	protected void preprocessModelChange(TableModelEvent event) {
 		String name = this.gridTab==null ? "null" : this.gridTab.getName();
-		LOG.config(name + ", event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
+		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
 		super.preprocessModelChange(event);
 	}
 	protected void postprocessModelChange(TableModelEvent event) {
 		String name = this.gridTab==null ? "null" : this.gridTab.getName();
-		LOG.config(name + ", event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
+		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
 		super.postprocessModelChange(event);
 		if(dataModel.getRowCount()>0 && !isSetColumnEditors && name!=null) {
 			setColumnEditors();
@@ -102,6 +107,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	private boolean isSetColumnEditors = false;
 	// jeweils eine Instanz der RO-Renderere:
 	GossipTableRenderer roRenderer = new GossipTableRenderer();
+	GossipBooleanEditor booleanEditor = new GossipBooleanEditor();
 	
 	public void setColumnEditors() {
 //		for(int r = 0; r < dataModel.getRowCount(); r++) {
@@ -117,10 +123,21 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor() + "/" + this.getDefaultEditor(clazz).getClass()
         		);
         	if(clazz==Boolean.class) {
-        		DefaultCellEditor editor = new BooleanEditor();
-        		editor.setClickCountToStart(1);
-//        		this.getColumnModel().getColumn(c).setCellEditor(editor); // funktioniert so nicht! aber so:     		
-        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
+//        		DefaultCellEditor editor = new BooleanEditor();
+//        		editor.setClickCountToStart(1);
+////        		this.getColumnModel().getColumn(c).setCellEditor(editor); // funktioniert so nicht! aber so:     		
+//        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
+        		
+        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, booleanEditor)); // default überschreiben 
+        		if(dataModel.isCellEditable(0, c)) {
+        		} else {
+        			//booleanEditor.getComponent()
+        			CheckBoxProvider checkBoxProvider = new CheckBoxProvider();
+        			// Versuch:
+        			//checkBoxProvider.setBorderPainted(!checkBoxProvider.isBorderPainted());
+        			// TODO ??? dem renderer ist nicht anzusehen, ob er einen Editor hat 
+        			this.getColumnModel().getColumn(c).setCellRenderer(new GossipTableRenderer(checkBoxProvider));
+        		}
         		
             } else if(clazz==Integer.class) {
 //            	NumberEditor editor = new NumberEditor();
@@ -156,6 +173,29 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         isSetColumnEditors = true;
 	}
 
+	public static class GossipBooleanEditor extends BooleanEditor {
+
+		private static final long serialVersionUID = 781583106895352002L;
+		
+		public GossipBooleanEditor() {
+			super();
+			this.setClickCountToStart(1); // number of clicks needed to start editing
+		}
+		
+		@Override
+		public boolean shouldSelectCell(EventObject anEvent) {
+			LOG.config("user might want to be able to change checkboxes without altering the selection.");
+			return true;
+		}
+////		@Override
+//		public boolean shouldSelectCell(EventObject anEvent) {
+//			this.getTableCellEditorComponent(table, value, isSelected, row, column)
+//			Component component = this.getTableCellEditorComponent(table, value, isSelected, row, column);
+////			component.setEnabled(b);
+//			return component;
+//		}
+	}
+	
 //	public static class GossipNumberEditor extends NumberEditor {
 //
 //		private static final long serialVersionUID = 8714208867557744019L;
@@ -176,7 +216,16 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		private static final long serialVersionUID = 3097989281688245341L;
 
 		public GossipTableRenderer() {
-			super();
+			this((ComponentProvider<?>) null);
+//			super();
+////			this.setBackground(Color.GRAY); // das sieht mit Highlighter nicht gut aus!
+//			this.setForeground(Color.LIGHT_GRAY);
+////			this.componentController.getRendererComponent(context???)
+		}
+		
+		// praram CheckBoxProvider()
+		GossipTableRenderer(ComponentProvider<?> componentProvider) {
+			super(componentProvider);
 //			this.setBackground(Color.GRAY); // das sieht mit Highlighter nicht gut aus!
 			this.setForeground(Color.LIGHT_GRAY);
 		}

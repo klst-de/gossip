@@ -38,33 +38,39 @@ public class SingleRowPanel extends JPanel {
 	}
 	
 	public Dimension getSingleRowPanelSize() {
-		GridField[] fields = tableModel.getColumns();
-		for(int f=0; f<fields.length; f++) {
-			GridField field = fields[f];
+		GridFields fields = tableModel.getColumns();
+		for(int f=0; f<fields.getColumnCount(true); f++) {
+//			GridField field = fields[f];
+			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
+			LOG.config("field# "+f +"/"+fields.getColumnCount()+"=?="+fields.getColumnCount(true));
 			if(field.isDisplayed()) {
 				VEditor editor = getEditor(field); // factory TODO
 //				field.addPropertyChangeListener(editor); ????????????????
 				vPanel.addFieldBufferedXXX(editor, field);
 			} else {
-				LOG.warning("NOT Displayed"+field);
+				LOG.warning("NOT Displayed field# "+f);
 			}
 		}
-		add(vPanel);	
-		return getPreferredSize();
+		add(vPanel);
+		Dimension dim = getPreferredSize();
+		LOG.config("interim return "+dim);
+		return dim;
 	}
 	
 	public void showSingleRowPanelSize(int rowIndex) {
-		GridField[] fields = tableModel.getColumns();
-		for(int f=0; f<fields.length; f++) {
-			GridField field = fields[f];
+		GridFields fields = tableModel.getColumns();
+//		GridField[] fields = tableModel.getColumns();
+		for(int f=0; f<fields.getColumnCount(true); f++) {
+//			GridField field = fields[f];
+			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
 			if(field.isDisplayed()) {
 				Object o = this.tableModel.getValueAt(rowIndex, f);
-				if(o!=null) LOG.info(this.tableModel.getValueAt(rowIndex, f).toString());
+				if(o!=null) LOG.info("fieldno:"+f + " value:"+this.tableModel.getValueAt(rowIndex, f).toString());
 				VEditor editor = getEditor(field); // factory TODO
 //				field.addPropertyChangeListener(editor); ????????????????
 				vPanel.addFieldBufferedXXX(editor, field);
 			} else {
-				LOG.warning("NOT Displayed"+field);
+				LOG.warning("NOT Displayed field# "+f);
 			}
 		}
 		add(vPanel);	
@@ -107,7 +113,7 @@ public class SingleRowPanel extends JPanel {
 	public static final int FilePathOrName  = 53670;
 
  */
-	private VEditor getEditor(GridField mField) { // TODO mField in field umbenennen
+	private VEditor getEditor(GridFieldBridge mField) { // TODO mField in field umbenennen
 		LOG.config(mField.toString());
 		if (mField == null)
 			return null; // gut ist das nicht
@@ -135,7 +141,8 @@ public class SingleRowPanel extends JPanel {
 		//	Lookup (displayType == List || displayType == Table || displayType == TableDir || displayType == Search)
 		if (DisplayType.isLookup(displayType) || displayType == DisplayType.ID)
 		{
-			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, mField.getLookup());
+//			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, mField.getLookup());
+			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, null);
 			vl.setName(columnName);
 			vl.setField (mField);
 			editor = vl;
@@ -154,7 +161,7 @@ public class SingleRowPanel extends JPanel {
 		{
 			if (displayType == DisplayType.DateTime)
 				readOnly = true;
-			VDate vd = new VDate(columnName, mandatory, readOnly, updateable, displayType, mField.getHeader());
+			VDate vd = new VDate(columnName, mandatory, readOnly, updateable, displayType, (String)mField.getHeaderValue());
 			vd.setName(columnName);
 			vd.setField (mField);
 			editor = vd;
@@ -162,8 +169,8 @@ public class SingleRowPanel extends JPanel {
 
 		else {
 			LOG.warning(columnName + " - Unknown Type: " + displayType + " ersatzweise VLookup!!!");
-			Lookup getLookup = mField.getLookup();
-			LOG.warning("ignoriert: " + getLookup + " ersatzweise null");
+//			Lookup getLookup = mField.getLookup();
+//			LOG.warning("ignoriert: " + getLookup + " ersatzweise null");
 			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, null);
 			vl.setName(columnName);
 			vl.setField (mField);
