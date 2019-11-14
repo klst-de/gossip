@@ -47,6 +47,7 @@ import com.jhlabs.image.InvertFilter;
 import com.klst.gossip.MenuTreeTableModel;
 import com.klst.gossip.RootFrame;
 import com.klst.icon.AbstractImageTranscoder;
+import com.klst.icon.TableColumnControlButton;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
@@ -217,22 +218,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // </snip>
 //        tree.setRowHeight(-1);
         
-        tree.setColumnControl(new ColumnControlButton(tree) { // das Icon austauschen
-        	@Override
-            protected void updateActionUI() {
-                if (getAction() == null) return;
-                AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
-                Icon icon = AIT.getImageIcon(AIT.MENU, SMALL_ICON_SIZE);
-//                if ((icon == null) || (icon instanceof UIResource)) {
-//                    icon = UIManager.getIcon(COLUMN_CONTROL_BUTTON_ICON_KEY);
-//                    getAction().putValue(Action.SMALL_ICON, icon);
-//                }
-                getAction().putValue(Action.SMALL_ICON, icon);
-            }
-        	
-        }); 
-        tree.setColumnControlVisible(true); // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
-        // org.jdesktop.swingx.icon.ColumnControlIcon implementiert das Icon
+        // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
+        // das Icon austauschen
+        tree.setColumnControl(new TableColumnControlButton(tree));
+        tree.setColumnControlVisible(true);
         
         //tree.setToolTipText("String ToolTipText text");
         	
