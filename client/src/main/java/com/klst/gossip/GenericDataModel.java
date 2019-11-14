@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 
@@ -24,16 +23,21 @@ public class GenericDataModel extends AbstractTableModel {
 
     private int windowNo;
     private GridTab gridTab;
-	private GridField[] fields = null;
+	//private GridFieldBridge[] fields = null; // oder noch besser:
+	private GridFields fields;
 	private int rowsToLoad = -1; // der Loader liefert es
 	
 	// ctor
 	public GenericDataModel(GridTab gridTab, int windowNo) {
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
-		this.fields = this.gridTab.getFields();
+		this.fields = new GridFields(this.gridTab.getFields());
 	}
 
+	public String toString() {
+		return getClass().getName() +" windowNo "+windowNo + " gridTab:["+gridTab+"]";		
+	}
+	
     /*
      * (non-Javadoc)
      * @see javax.swing.table.TableModel#getRowCount()
@@ -49,7 +53,7 @@ public class GenericDataModel extends AbstractTableModel {
 	 */
 	@Override
 	public int getColumnCount() {
-		return fields.length;
+		return fields.getColumnCount(true); // includeHidden
 	}
 
 	/*
@@ -69,15 +73,16 @@ public class GenericDataModel extends AbstractTableModel {
 	
 	// wird gerufen wenn celle angeckickt
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-    	GridField field = this.fields[columnIndex];
-    	boolean isEditable = field.isEditable(false); // checkContext
-    	if(isEditable) {
+    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
+    	boolean isEditable = field.isEditable();
+//    	GridField field = this.fields[columnIndex];
+//    	boolean isEditable = field.isEditable(false); // checkContext
+    	if(field.isEditable()) {
     		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
     	} else {
     		LOG.config(""+rowIndex+" "+field + "isNOTEditable no context");
-    		return isEditable; // false
     	}
-    	return field.isEditable(true); // checkContext
+    	return isEditable;
     }
 
     // TODO das muss in Tab impementiert werden!
@@ -100,8 +105,9 @@ public class GenericDataModel extends AbstractTableModel {
      * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
      */
     @Override
-    public Class<?> getColumnClass(int column) {
-    	GridField field = this.fields[column];
+    public Class<?> getColumnClass(int columnIndex) {
+    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
+//    	GridField field = this.fields[column];
     	int displayType = field.getDisplayType();
     	if(logDisplayType.containsKey(field)) {
     		// schon geloggt
@@ -115,12 +121,14 @@ public class GenericDataModel extends AbstractTableModel {
     	// TODO 
     }
     // wg. LOG
-    private Map<GridField, Integer> logDisplayType = new Hashtable<GridField, Integer>();
+    private Map<GridFieldBridge, Integer> logDisplayType = new Hashtable<GridFieldBridge, Integer>();
     // <<<
 
     @Override
-    public String getColumnName(int column) {
-    	return fields[column].getColumnName();
+    public String getColumnName(int columnIndex) {
+    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
+    	LOG.config("column:"+columnIndex + " ColumnName/Identifier:"+field.getIdentifier() + " Header:"+field.getHeaderValue());
+    	return field.getColumnName();
     }
 
 
@@ -150,7 +158,7 @@ public class GenericDataModel extends AbstractTableModel {
 		return this.windowNo;
 	}
 	
-    public GridField[] getColumns() {
+    public GridFields getColumns() { // ===> this.columnModel
     	return this.fields;
     }
     

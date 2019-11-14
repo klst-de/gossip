@@ -6,14 +6,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.GridField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
@@ -43,7 +44,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 	private int rowsToFind = -1; // Ergebnis von select count(*)
 	private ResultSet resultSet;
 	private List<Object[]> dbResultRows;
-	private GridField[] fields = null;
+	private GridFields fields = null; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
 	private String trxName;
 	
 	/*
@@ -68,12 +69,17 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 		fields = dataModel.getColumns();
 		//	Create SELECT Part
 		StringBuffer select = new StringBuffer("SELECT ");
-		for (int i = 0; i < fields.length; i++)
-		{
-			if(i > 0) select.append(",");
-			GridField field = fields[i];
-			select.append(field.getColumnSQL(true));	//	ColumnName or Virtual Column // boolean withAS
+		for(int f=0; f<fields.getColumnCount(true); f++) {
+			if(f > 0) select.append(",");
+			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
+			select.append(field.getColumnSQL()); // withAS
 		}
+//		for (int i = 0; i < fields.length; i++)
+//		{
+//			if(i > 0) select.append(",");
+//			GridField field = fields[i];
+//			select.append(field.getColumnSQL(true));	//	ColumnName or Virtual Column // boolean withAS
+//		}
 		select.append(" FROM ").append(dataModel.getDbTableName());
 		sql = select.toString();
 		LOG.config(sql + ";\n rowsToFind:"+rowsToFind + "; trxName:"+trxName);
@@ -124,6 +130,43 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
     	return null;
     }
     
+    private static Map<Integer,String> DISPLAYTYPE = new HashMap<Integer,String>(); // erleichtert das Testen
+    static {
+    	DISPLAYTYPE.put(25, "Account");
+    	DISPLAYTYPE.put(12, "Amount");
+    	DISPLAYTYPE.put(33, "Assignment");
+    	DISPLAYTYPE.put(23, "Binary");
+    	DISPLAYTYPE.put(28, "Button	");
+    	DISPLAYTYPE.put(53370, "Chart");
+    	DISPLAYTYPE.put(27, "Color");
+    	DISPLAYTYPE.put(37, "CostPrice");
+    	DISPLAYTYPE.put(15, "Date");
+    	DISPLAYTYPE.put(16, "DateTime");
+    	DISPLAYTYPE.put(39, "FileName");
+    	DISPLAYTYPE.put(38, "FilePath");
+    	DISPLAYTYPE.put(53670, "FilePathOrName");
+    	DISPLAYTYPE.put(13, "ID");
+    	DISPLAYTYPE.put(32, "Image");
+    	DISPLAYTYPE.put(11, "Integer");
+    	DISPLAYTYPE.put(17, "List");
+    	DISPLAYTYPE.put(21, "Location");
+    	DISPLAYTYPE.put(31, "Locator");
+    	DISPLAYTYPE.put(34, "Memo");
+    	DISPLAYTYPE.put(22, "Number");
+    	DISPLAYTYPE.put(35, "PAttribute");
+    	DISPLAYTYPE.put(42, "PrinterName");
+    	DISPLAYTYPE.put(29, "Quantity");
+    	DISPLAYTYPE.put(26, "RowID");
+    	DISPLAYTYPE.put(30, "Search");
+    	DISPLAYTYPE.put(10, "String");
+    	DISPLAYTYPE.put(18, "Table");
+    	DISPLAYTYPE.put(19, "TableDir");
+    	DISPLAYTYPE.put(14, "Text");
+    	DISPLAYTYPE.put(36, "TextLong");
+    	DISPLAYTYPE.put(24, "Time");
+    	DISPLAYTYPE.put(40, "URL");
+    	DISPLAYTYPE.put(20, "YesNo");      
+    }
 	private Object[] readData(ResultSet rs, int row) throws SQLException {
 		int size = dataModel.getColumnCount();
 		Object[] fieldData = new Object[size]; // renamed from rowData
@@ -140,15 +183,19 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> {
 			for (int f = 0; f < size; f++)
 			{
 				// field metadata
-				GridField field = this.fields[f];
+				//GridField field = this.fields[f];
+				GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
 				columnName = field.getColumnName();
 				displayType = field.getDisplayType(); // aka AD_Reference_ID 
 				if(row==0) {
-					LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " columnName="+columnName 
-					+ " DisplayType="+displayType + " Field_ID="+field.getAD_Field_ID() 
-					+ " Reference="+field.getAD_Reference_Value_ID() + " DefaultValue="+field.getDefaultValue() 
-					+ " Tab_ID="+field.getAD_Tab_ID() + " Column_ID="+field.getAD_Column_ID()
-					);
+					LOG.config(f+": SeqNoGrid="+field.getSeqNoGrid() + " DisplayedGrid="+field.isDisplayedGrid() + " Displayed="+field.isDisplayed() 
+						+ "\t"+DISPLAYTYPE.get(displayType) + "\t Header="+field.getHeader() + " columnName="+columnName 
+						+ " DisplayType="+displayType);
+//					LOG.config(f+":SeqNoGrid="+field.getSeqNoGrid() + " columnName="+columnName 
+//					+ " DisplayType="+displayType + " Field_ID="+field.getAD_Field_ID() 
+//					+ " Reference="+field.getAD_Reference_Value_ID() + " DefaultValue="+field.getDefaultValue() 
+//					+ " Tab_ID="+field.getAD_Tab_ID() + " Column_ID="+field.getAD_Column_ID()
+//					);
 				}
 				
 				if(displayType == DisplayType.String
