@@ -24,6 +24,7 @@ import javax.swing.plaf.metal.OceanTheme;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.compiere.Adempiere;
+import org.compiere.model.GridWindow;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -49,15 +50,15 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	// frame mgt
 	List<JFrame> frames;
 	private static final int FRAMES_INITIAL_CAPACITY = 10;
-	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID) {
-		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID);
+	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID, GridWindow gridWindow) {
+		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID, gridWindow);
 		frame.setDefaultCloseOperation(frames.isEmpty() ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
 		frames.add(frame);
 		return frame;
 	}
-	private WindowFrame makeWindow(int window_ID) {
+	private WindowFrame makeWindow(int window_ID, GridWindow gridWindow) {
 		int frameNumber = frames.size();
-		return makeFrame(frameNumber, this, window_ID);
+		return makeFrame(frameNumber, this, window_ID, gridWindow);
 	}
 	boolean remove(JFrame frame) {
 		return frames.remove(frame);
@@ -143,13 +144,14 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		LOG.config("new frame aka Window with window_ID="+window_ID);
 		Properties ctx = Env.getCtx();
 		ctx.forEach((key,value) -> { // zum Test
-			LOG.info("key:"+key + " : " + value.toString());
+			LOG.info("ctx key:"+key + " : " + value.toString());
 		});
 		
-		if(WindowFrame.testWindow_ID(window_ID)==null) {
+		GridWindow gridWindow = getGridWindow(window_ID);
+		if(gridWindow==null) {
 			LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
 		} else {
-			WindowFrame frame = makeWindow(window_ID);
+			WindowFrame frame = makeWindow(window_ID, gridWindow);
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
 			frame.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
@@ -162,200 +164,24 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// gemeinsame JMenuItem's z.B mFile."Quit" in Window
         
         mFile.addSeparator(); // -------------------------
-        
-//		hiddenPrimePanel = new JPanel();
-//        miPrimeNumbers = new JMenuItem("Primzahlen (Demo)");
-//        miPrimeNumbers.addActionListener(event -> {
-//        	//hidableTabbedPane.getTabComponentAt(1); // liefert exception, wenn doch kein Demo da ist
-//        	if( !hidableTabbedPane.isTabsShown() || (hidableTabbedPane.getTabComponentAt(1)!=hiddenPrimePanel && hidableTabbedPane.getTabCount()==2)) {
-//        		hidableTabbedPane.addTab("Primzahlen", hiddenPrimePanel);
-//        	} else {
-//        		LOG.config("add tab Primzahlen");
-//        	}
-//        	msg.setText("start Primzahlen (Demo) in Tab");
-//			this.pack();
-//        	primeDemo(hiddenPrimePanel);
-//        });
-//		mFile.add(miPrimeNumbers);
-		
-//		hiddenBankPanel = new JPanel();
 		miBank = new JMenuItem("zeige Banken (Demo)", AIT.getImageIcon(AIT.PAYMENT, SMALL_ICON_SIZE));
 		miBank.addActionListener(event -> {
 			LOG.config("new frame Banken");
-			Properties ctx = Env.getCtx();
-			 			 
-			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
-			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
-			ctx.forEach((key,value) -> { // zum Test
-				LOG.info("key:"+key + " : " + value.toString());
-			});
-
-			int window_ID=158; // AD_Window_ID=158 
-			if(WindowFrame.testWindow_ID(window_ID)==null) {
-				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
-			} else {
-				WindowFrame frame = makeWindow(window_ID); // AD_Window_ID=158)
-				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			// TEST
-// TODO Tab muss so etwas wie GridController sein
-//			 *  The Grid Controller is the panel for single and multi-row presentation
-//			 *  and links to the Model Tab.
-
-			//VPanel vPanel = new VPanel("XXX", frame.getWindowNo()); //(String Name, int WindowNo) 
-			
-/* aus GridController.init() :
-		//  Set up Multi Row Table
-		vTable.setModel(m_mTab.getTableModel());
-
-		//  Update Table Info -------------------------------------------------
-		int size = setupVTable (m_aPanel, m_mTab, vTable);
-
-		//  Set Color on Tab Level
-		//  this.setBackgroundColor (mTab.getColor());
-
-		//  Single Row  -------------------------------------------------------
-       ...
- */
-/* aus GridController.initGrid :
-		vPanel = new VPanel(mTab.getName(), m_WindowNo);
-		vPanel.putClientProperty(AdempiereLookAndFeel.HIDE_IF_ONE_TAB, Boolean.TRUE);
-		if (this.isDetailGrid())
-		{
-			vPanel.setBorder(BorderFactory.createLineBorder(AdempierePLAF.getPrimary2()));
-		}
-		vPane.getViewport().add(xPanel, null); // private JScrollPane vPane = new JScrollPane();
-		xPanel.add(vPanel, BorderLayout.CENTER); // private CPanel xPanel = new CPanel();
-
-		setTabLevel(m_mTab.getTabLevel());
-
-		if (!lazy)
-			init();
-		else
-		{
-			//Load tab meta data, needed for includeTab to work
-			m_mTab.initTab(false);
-		}
-		---
-		private void init() ...
-		//  Single Row  -------------------------------------------------------
-		if (!m_onlyMultiRow) {
-			//	Set Softcoded Mnemonic &x
-			for (int i = 0; i < size; i++) {
-				GridField mField = m_mTab.getField(i);
-				if (mField.isDisplayed())
-					vPanel.setMnemonic(mField); <==============================
-			}   //  for all fields
-
-			//	Add Fields
-			for (int i = 0; i < size; i++) {
-				GridField mField = m_mTab.getField(i);
-				if (mField.isDisplayed()) {
-					VEditor vEditor = VEditorFactory.getEditor(m_mTab, mField, false);
-					if (vEditor == null)
-					{
-						log.warning("Editor not created for " + mField.getColumnName());
-						continue;
-					}
-					//  MField => VEditor - New Field value to be updated to editor
-					mField.addPropertyChangeListener(vEditor);
-					//  VEditor => this - New Editor value to be updated here (MTable)
-					vEditor.addVetoableChangeListener(this);
-					//  Add to VPanel
-					vPanel.addFieldBuffered(vEditor, mField);
-					//  APanel Listen to buttons
-					if (mField.getDisplayType() == DisplayType.Button && m_aPanel != null)
-						((JButton)vEditor).addActionListener (m_aPanel);
-				}
-			}   //  for all fields
-			vPanel.addFieldBuffered(null, null);  // flush the last one through
-
-			//  Use SR to size MR
-			mrPane.setPreferredSize(vPanel.getPreferredSize());
-		}   //  Single-Row
-
- */
-//			//vPanel.putClientProperty(key, value); // (Object key, Object value)
-//			GridTab gridTab = frame.getGridTabs().get(0);
-//			if(gridTab.isSingleRow()) { // isDetail aka Single Row Panel in MigLayout für dieses Tab
-//				// setBorder in Oberklasse von VPanel ,  BorderFactory.createLineBorder(Color color)
-//				
-////				vPanel.setMnemonic(mField); // TODO
-//				
-//				for (int i = 0; i < gridTab.getFieldCount(); i++) { // besser? .getFields(); und dann iterator?
-//					GridField mField = gridTab.getField(i);
-//					// public static VEditor getEditor (GridTab mTab, GridField mField, boolean tableEditor)
-//					//     interface VEditor !
-//					VEditor editor = // VEditorFactory.getEditor(m_mTab, mField, false);
-//							factoryGetEditor(gridTab, mField, false);
-//					vPanel.addFieldBuffered(editor, mField);
-//				}
-//			} else {
-//				LOG.warning(gridTab + " isDetail = "+ gridTab.isDetail() );
-//			}
-//			
-//			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(vPanel);
-			
-				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
-				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-				task.execute();
-			}			
+			openNewFrame(158);
 		});
 		mFile.add(miBank);
 
 		miCountry = new JMenuItem("zeige Länder (Demo)", AIT.getImageIcon(AIT.ONLINE, SMALL_ICON_SIZE));
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
-			Properties ctx = Env.getCtx();
-			 
-			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
-			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
-			ctx.setProperty("#AD_Language", "en_US"); // TODO Patch >>>>>>>>>>>>> in 3.9.3 gibt es lang de nicht 
-			ctx.forEach((key,value) -> { // zum Test
-				LOG.info("key:"+key + " : " + value.toString());
-			});
-			
-			int window_ID=122; // AD_Window_ID=122; "Country Region and City"
-			if(WindowFrame.testWindow_ID(window_ID)==null) {
-				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
-			} else {
-				WindowFrame frame = makeWindow(window_ID);
-				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-//				Tab tab = frame.getSelectedTab(); // wie erwartet null
-				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
-				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-				task.execute();
-			}
+			openNewFrame(122);
 		});
 		mFile.add(miCountry);
 		
 		miDocument = new JMenuItem("zeige Belege (Demo)", AIT.getImageIcon(AIT.ARCHIVE, SMALL_ICON_SIZE));
 		miDocument.addActionListener(event -> {
 			LOG.config("new frame Belege");
-			Properties ctx = Env.getCtx();
-			 
-			ctx.setProperty("#AD_Client_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_Org_ID", "11"); // TODO Patch 
-			ctx.setProperty("#AD_User_ID", "100"); // TODO Patch 
-			ctx.setProperty("#AD_Role_ID", "102"); // TODO Patch 
-//			ctx.setProperty("#AD_Language", "en_US"); // TODO Patch 
-			ctx.forEach((key,value) -> { // zum Test
-				LOG.info("key:"+key + " : " + value.toString());
-			});
-			
-			int window_ID=135; // guter Test: AD_Window_ID=135 Document Type 
-			if(WindowFrame.testWindow_ID(window_ID)==null) {
-				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
-			} else {
-				WindowFrame frame = makeWindow(window_ID);
-				LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-				GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
-				frame.setLocationRelativeTo(null);; // oben links würde es sonst angezeigt
-				task.execute();
-			}
+			openNewFrame(135); // Document Type 
 		});
 		mFile.add(miDocument);
 		
