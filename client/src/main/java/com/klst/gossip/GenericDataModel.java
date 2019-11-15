@@ -1,9 +1,9 @@
 package com.klst.gossip;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.swing.table.AbstractTableModel;
@@ -12,6 +12,7 @@ import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
+// TODO public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
 public class GenericDataModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -8353798775903481429L;
@@ -19,7 +20,8 @@ public class GenericDataModel extends AbstractTableModel {
 	private static final Logger LOG = Logger.getLogger(GenericDataModel.class.getName());
 
 	// die Zeilen von TableModel
-    private final List<Object[]> tableRows = new ArrayList<Object[]>();
+	protected List<Object[]> tableRows = new Vector<Object[]>();
+//    protected Vector    dataVector; // so ist es in DefaultTableModel, <code>Vector</code> of <code>Vectors</code>
 
     private int windowNo;
     private GridTab gridTab;
@@ -38,13 +40,18 @@ public class GenericDataModel extends AbstractTableModel {
 		return getClass().getName() +" windowNo "+windowNo + " gridTab:["+gridTab+"]";		
 	}
 	
+	// name wie in DefaultTableModel
+	Vector<Object[]> getDataVector() {
+        return (Vector<Object[]>)tableRows;
+    }
+
     /*
      * (non-Javadoc)
      * @see javax.swing.table.TableModel#getRowCount()
      */
 	@Override
 	public int getRowCount() {
-		return tableRows.size();
+		return getDataVector().size();
 	}
 
 	/*
@@ -62,6 +69,10 @@ public class GenericDataModel extends AbstractTableModel {
 	 */
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
+		// in DefaultTableModel
+//        Vector rowVector = (Vector)dataVector.elementAt(row);
+//        return rowVector.elementAt(column);
+
 		if(rowIndex >= getRowCount()) {
 			return new Object();
 		}
@@ -97,7 +108,7 @@ public class GenericDataModel extends AbstractTableModel {
 	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
 	
     public Object[] getRow(int rowIndex) {
-        return tableRows.get(rowIndex);
+        return getDataVector().get(rowIndex);
     }
 
     /*
@@ -134,15 +145,15 @@ public class GenericDataModel extends AbstractTableModel {
 
     // wird im Loader.process benötigt : bankTableModel.add(chunks); chunks == rows(der JTable)
     public void add(List<Object[]> chunks) {
-        int first = tableRows.size();
+        int first = getDataVector().size();
         int last = first + chunks.size() - 1;
-        tableRows.addAll(chunks);
+        getDataVector().addAll(chunks);
         fireTableRowsInserted(first, last);
     }
 
     public void add(Object[] row) {
-        int index = tableRows.size();
-        tableRows.add(row);
+        int index = getDataVector().size();
+        getDataVector().add(row);
         fireTableRowsInserted(index, index);
     }
     
@@ -171,7 +182,7 @@ public class GenericDataModel extends AbstractTableModel {
     }
     
     public void clear() {
-    	this.tableRows.clear();
+    	getDataVector().clear();
     }
     
 }
