@@ -19,12 +19,12 @@ public class GenericDataModel extends AbstractTableModel {
 
 	private static final Logger LOG = Logger.getLogger(GenericDataModel.class.getName());
 
-	// die Zeilen von TableModel
-	protected List<Object[]> tableRows = new Vector<Object[]>();
+	protected List<Object[]> dataVector = new Vector<Object[]>();
 //    protected Vector    dataVector; // so ist es in DefaultTableModel, <code>Vector</code> of <code>Vectors</code>
 
     private int windowNo;
-    private GridTab gridTab;
+    private GridTab gridTab;  // Tab Model - a combination of AD_Tab (the display attributes) and AD_Table information.
+
 	//private GridFieldBridge[] fields = null; // oder noch besser:
 	private GridFields fields;
 	private int rowsToLoad = -1; // der Loader liefert es
@@ -42,8 +42,8 @@ public class GenericDataModel extends AbstractTableModel {
 	
 	// name wie in DefaultTableModel
 	Vector<Object[]> getDataVector() {
-        return (Vector<Object[]>)tableRows;
-    }
+		return (Vector<Object[]>) dataVector;
+	}
 
     /*
      * (non-Javadoc)
@@ -74,7 +74,8 @@ public class GenericDataModel extends AbstractTableModel {
 //        return rowVector.elementAt(column);
 
 		if(rowIndex >= getRowCount()) {
-			return new Object();
+			return null;
+//			return new Object();
 		}
 		if(columnIndex < getColumnCount()) {
 			return getRow(rowIndex)[columnIndex];
@@ -107,7 +108,7 @@ public class GenericDataModel extends AbstractTableModel {
 	// if data model is editable:
 	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
 	
-    public Object[] getRow(int rowIndex) {
+    Object[] getRow(int rowIndex) {
         return getDataVector().get(rowIndex);
     }
 
@@ -157,32 +158,32 @@ public class GenericDataModel extends AbstractTableModel {
         fireTableRowsInserted(index, index);
     }
     
-    public String getName() {
-    	return this.gridTab.getName();
-    }
-    
-    public String getDbTableName() {
-    	return this.gridTab.get_TableName();
-    }
-    
+	public String getName() {
+		return this.gridTab.getName();
+	}
+
+	public String getDbTableName() {
+		return this.gridTab.get_TableName();
+	}
+
 	public int getWindowNo() {
 		return this.windowNo;
 	}
-	
-    public GridFields getColumns() { // ===> this.columnModel
-    	return this.fields;
-    }
-    
-    public int getRowsToLoad() {
-    	return this.rowsToLoad;
-    }
-    
-    public void setRowsToLoad(int rowsToLoad) {
-    	this.rowsToLoad = rowsToLoad;
-    }
-    
-    public void clear() {
-    	getDataVector().clear();
-    }
+
+	public GridFields getColumns() { // ===> this.columnModel
+		return this.fields;
+	}
+
+	public int getRowsToLoad() {
+		return this.rowsToLoad;
+	}
+
+	public void setRowsToLoad(int rowsToLoad) {
+		this.rowsToLoad = rowsToLoad;
+	}
+
+	public void clear() {
+		getDataVector().clear();
+	}
     
 }
