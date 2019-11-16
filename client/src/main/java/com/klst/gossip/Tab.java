@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
+import javax.swing.event.TableModelEvent;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -225,20 +226,24 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
+//		if(dataModel.getDbTableName().equals("AD_OrgType")) {
+//			LOG.warning("----------------const Patch für AD_OrgType == "+dataModel.getDbTableName());
+//			return new Dimension(523, 125);
+//		}
 		srp = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
 		return srp.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
 		this.dataModel = new GenericDataModel(this.gridTab, getWindowNo());
-		dataModel.addTableModelListener(event -> {
-			LOG.warning("event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
-			if(event.getFirstRow()==0 && this.currentRow<0) {
-				first();
-			}
-		});
+//		dataModel.addTableModelListener(event -> {
+//			LOG.warning("event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
+//			if(event.getFirstRow()==TableModelEvent.HEADER_ROW && this.currentRow<0) {
+//				first();
+//			}
+//		});
 
-		LOG.config(this.getName()+" isSingleRow:"+gridTab.isSingleRow());
+		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+gridTab.isSingleRow());
 		Dimension preferredDim = useDim;
 		if(preferredDim==null) {
 			preferredDim = getSingleRowPanelSize();
@@ -261,9 +266,10 @@ public class Tab extends JPanel implements ComponentListener {
 		} else {
 			this.setPreferredSize(preferredDim);
 	        JScrollPane scrollpane = new JScrollPane(this.mrp);
-	        Stacker stacker = new Stacker(scrollpane);
+//	        Stacker stacker = new Stacker(scrollpane);
 	        mrp.setName(gridTab.getName());
-	        add(stacker, BorderLayout.CENTER);	
+//	        add(stacker, BorderLayout.CENTER);
+	        add(scrollpane, BorderLayout.CENTER);
 	        
 //	        CustomColumnFactory factory = new CustomColumnFactory();
 	        
