@@ -119,17 +119,16 @@ public class GenericDataModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int columnIndex) {
     	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
-//    	GridField field = this.fields[column];
     	int displayType = field.getDisplayType();
     	if(logDisplayType.containsKey(field)) {
     		// schon geloggt
     	} else {
-        	LOG.config(field + " displayType:"+displayType);
+        	LOG.config(field + " Storage Class:"+DisplayType.getClass(displayType, true));
         	logDisplayType.put(field, displayType);
     	}
-    	// Return Storage Class - ist aber nicht die DisplayClass
+    	// Return Storage Class, (used for MiniTable) - ist aber nicht die DisplayClass
     	// die ist nämlich VEditor oder so!
-    	return DisplayType.getClass(displayType, true); // true == Boolean as CheckBox TODO, die anderen displayType
+    	return DisplayType.getClass(displayType, true); // true == nur für Boolean as CheckBox
     	// TODO 
     }
     // wg. LOG

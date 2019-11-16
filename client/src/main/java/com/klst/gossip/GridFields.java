@@ -1,10 +1,8 @@
 package com.klst.gossip;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.ListSelectionModel;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableColumn;
 
@@ -15,9 +13,12 @@ import org.jdesktop.swingx.table.TableColumnModelExt;
 
 // GridField aka TableColumn, vll von TableColumn ableiten
 // diese Klasse kapselt GridField[] fields
-// und hat nur LOG-Funktionalität
 
 // durch das Ableiten von org.jdesktop.swingx.table.DefaultTableColumnModelExt sind alle notwendigen Methoden wg implements TableColumnModelExt vorimplementiert
+// in super sind zwei Listen
+// - List<TableColumn> initialColumns : all columns, in the order in which were added to the model.
+// - List<TableColumn> currentColumns : all columns, in the order they would appear if all were visible.
+
 public class GridFields extends DefaultTableColumnModelExt // extends DefaultTableColumnModel
                         implements TableColumnModelExt {
 
@@ -25,28 +26,21 @@ public class GridFields extends DefaultTableColumnModelExt // extends DefaultTab
 	
 	private static final Logger LOG = Logger.getLogger(GridFields.class.getName());
 
-//	private GridFieldBridge[] fields = null; // gelöscht, denn die Felderliste gibt es schon in der Oberklasse
-	
-	// in DefaultTableColumnModelExt private List<TableColumn> initialColumns = new ArrayList<TableColumn>();
-	// ctor
-	//public DefaultTableColumnModelExt()
-//	public GridFields(GridFieldBridge[] fields) {
-//		super();
-//		this.fields = fields;
-//	}
 	public GridFields(GridField[] gfields) {
 		super();
 		LOG.config("GridField[].length="+gfields.length); // Land:33
-//		this.fields = new GridFieldBridge[gfields.length]; // löschen
 		for(int c = 0; c < gfields.length; c++) {
 			GridField gfield = gfields[c];
-			GridFieldBridge aColumn = new GridFieldBridge(gfield);
-//			this.addColumn(aColumn); // befüllt die Feldliste
-			if(aColumn.isDisplayed() && aColumn.isDisplayedGrid()) {
+			TableColumnExt aColumn = new GridFieldBridge(gfield);
+			GridFieldBridge gColumn = (GridFieldBridge)aColumn;
+			if(gColumn.isDisplayed() && gColumn.isDisplayedGrid()) {
 				// display column
+				aColumn.setToolTipText(gColumn.getDescription()); // TODO funktioniert nicht
+//				aColumn.setCellRenderer(cellRenderer);
 				this.addColumn(aColumn); 
+				LOG.config(c+" add visible: "+aColumn + " Description:"+gColumn.getDescription()+ " CellRenderer=CellRenderer"+aColumn.getCellRenderer());
 			} else {
-				LOG.config("not visible: "+aColumn);
+				LOG.config(c+" not visible: "+aColumn);
 /*				aColumn.setVisible(false); liefert
 Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: 6 >= 6
 	at java.util.Vector.elementAt(Vector.java:477)
@@ -96,43 +90,51 @@ Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException:
 			}
 		}
 		// TODO: die Breite ist nicht angepasst!
+		
 	}
 	
 	
 // wg. implements TableColumnModelExt
-//
-//	@Override
-//	public int getColumnCount(boolean includeHidden) {
-//		LOG.config(""+super.getColumnCount(false)+"/"+super.getColumnCount(true));
-//		return super.getColumnCount(includeHidden);
-//	}
-//
-//	@Override
-//	public List<TableColumn> getColumns(boolean includeHidden) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public TableColumnExt getColumnExt(Object identifier) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public TableColumnExt getColumnExt(int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//		
+
+	@Override
+	public int getColumnCount(boolean includeHidden) {
+		LOG.config("includeHidden="+includeHidden + " (false/true)="+super.getColumnCount(false)+"/"+super.getColumnCount(true));
+		return super.getColumnCount(includeHidden);
+	}
+
+	@Override
+	public List<TableColumn> getColumns(boolean includeHidden) {
+		LOG.config("return super...");
+		return super.getColumns(includeHidden);
+	}
+
+	@Override
+	public TableColumnExt getColumnExt(Object identifier) {
+		LOG.config("return super...");
+		return super.getColumnExt(identifier);
+	}
+
+	@Override
+	public TableColumnExt getColumnExt(int columnIndex) {
+		LOG.config("return super...");
+		return super.getColumnExt(columnIndex);
+	}
+		
+	@Override
+	public void addColumnModelListener(TableColumnModelListener x) {
+		LOG.config("TableColumnModelListener "+x);
+		super.addColumnModelListener(x);
+	}
+
+
 // wg. implements TableColumnModel
-//	
+	
 //	@Override
 //	public void addColumn(TableColumn aColumn) {
-//		// TODO Auto-generated method stub
-//		
+//		LOG.config("TableColumn "+aColumn);
+//		super.addColumn(aColumn);
 //	}
-//
+
 //	@Override
 //	public void removeColumn(TableColumn column) {
 //		// TODO Auto-generated method stub
@@ -226,12 +228,6 @@ Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException:
 //	public ListSelectionModel getSelectionModel() {
 //		// TODO Auto-generated method stub
 //		return null;
-//	}
-//
-//	@Override
-//	public void addColumnModelListener(TableColumnModelListener x) {
-//		// TODO Auto-generated method stub
-//		
 //	}
 //
 //	@Override
