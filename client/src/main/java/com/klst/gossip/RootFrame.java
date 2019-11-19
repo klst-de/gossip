@@ -32,7 +32,6 @@ import org.compiere.util.Env;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.client.LoginPanel;
-import com.klst.client.MenuPanel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -140,7 +139,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		loginPanel.setVisible(true);
 	}
 	
-	public void openNewFrame(int window_ID) { // TODO public raus
+	void openNewFrame(int window_ID) {
 		LOG.config("new frame aka Window with window_ID="+window_ID);
 		Properties ctx = Env.getCtx();
 		ctx.forEach((key,value) -> { // zum Test
@@ -153,7 +152,8 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		} else {
 			WindowFrame frame = makeWindow(window_ID, gridWindow);
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
-			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab
+			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab direkt laden, das nur testweise, also ohne Auswahl 
+			// denn es gibt Window mit AuswahlSpalten, zB Business Partner
 			frame.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
 			task.execute();
 		}
