@@ -118,7 +118,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		int parent_ID, boolean isSummary, String imageIndicator, boolean onBar, Color color)
 	{
 		super();
-		LOG.config( "MTreeNode Node_ID="+node_ID + ", seqNo="+seqNo + ", Parent_ID="+parent_ID + ", isSummary="+isSummary + ", imageIndicator="+imageIndicator+ " - " + name);
+		LOG.fine( "MTreeNode Node_ID="+node_ID + ", seqNo="+seqNo + ", Parent_ID="+parent_ID + ", isSummary="+isSummary + ", imageIndicator="+imageIndicator+ " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
 		m_name = name;

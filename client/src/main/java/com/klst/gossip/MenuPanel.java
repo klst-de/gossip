@@ -1,10 +1,11 @@
-package com.klst.client;
+package com.klst.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -40,12 +40,9 @@ import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
-import org.jdesktop.swingx.table.ColumnControlButton;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
-import com.klst.gossip.MenuTreeTableModel;
-import com.klst.gossip.RootFrame;
 import com.klst.icon.AbstractImageTranscoder;
 import com.klst.icon.TableColumnControlButton;
 import com.klst.model.MTree;
@@ -60,7 +57,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
 	public MenuPanel(RootFrame rootFrame) {
         super(new BorderLayout());
         this.rootFrame = rootFrame;
-        createModel(); // treeModel + treeTableModel
+        createModelImCtor(); // treeModel + treeTableModel
         initComponents();
         configureComponents();
         
@@ -70,10 +67,10 @@ public class MenuPanel extends JXPanel implements ActionListener {
         for(int i=0; i<actionMapKeys.length; i++) {
         	LOG.config("key "+i + " : "+ actionMapKeys[i]);
         }
+    	LOG.config("ctor fertig.\n");
 	}
 	
 	RootFrame rootFrame;
-//    private TreeModel treeModel;
     private TreeTableModel treeTableModel;
     private MTree vTree;
     private JXTreeTable tree;
@@ -81,7 +78,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
     private JXButton expandButton;
     private JXButton collapseButton;
     
-    private MouseListener mouseListener = new VTreePanel_mouseAdapter(this);
+    private MouseListener mouseListener = new MenuPanelMouseAdapter(this);
 
     private void initComponents() {  	
 //		tree = new JXTreeTable(treeTableModel); // gleichwertig zu
@@ -93,12 +90,10 @@ public class MenuPanel extends JXPanel implements ActionListener {
 		
 		//tree.setOverwriteRendererIcons(true);
 		
-//		tree.setName("componentTree");
-//		tree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-//		add(new JScrollPane(tree), BorderLayout.CENTER);
         tree.setName(COMPONENT_NAME);
         add(new JScrollPane(tree), BorderLayout.CENTER);
 
+        // TODO buttons raus
 		JComponent control = new JXPanel();
 		refreshButton = new JXButton("Refresh");
 		refreshButton.setName("refreshButton");
@@ -143,12 +138,12 @@ WHERE tn.AD_Tree_ID=10 AND tn.IsActive='Y'
 ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
  */
     private static final int DEFAULT_TREE_ID = 10;
-    private void createModel() {
+    private void createModelImCtor() {
     	int treeId = DEFAULT_TREE_ID;
     	boolean editable = false;
     	boolean allNodes = false;
     	String whereClause = null, trxName = null;
-    	LOG.info("AD_Tree_ID = per SQL: (default 10) ="+treeId);
+    	LOG.info("AD_Tree_ID = TODO per SQL: (default 10) ="+treeId); // TODO
     	
     	Properties ctx = Env.getCtx(); // props wg. https://github.com/klst-de/gossip/issues/2 :
 		ctx.setProperty("#AD_Client_ID", "11");
@@ -157,13 +152,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		ctx.setProperty("#AD_Role_ID", "102");
 
     	vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
-    	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu() + " root=" // + vTree.getRoot() 
+    	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu()
     			+ " rootNode=" + vTree.getRootNode());
     	MTreeNode rootNode = vTree.getRootNode();
-//    	treeModel = new MenuTreeModel(rootNode); 
-    	
-    	// JXTreeTable.TreeTableModelAdapter ist protected
-//    	treeTableModel = new JXTreeTable.TreeTableModelAdapter(treeModel, rootNode); // (TreeModel treeModel, NodeModel nodeModel)
     	treeTableModel = new MenuTreeTableModel(rootNode);
     }
     
@@ -368,20 +359,20 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		LOG.config("ActionCommand:"+e.getActionCommand() + " " + e.toString());	
 	}
 	
+	// call back
 	void mouseClicked(MouseEvent e) {
-		LOG.config("MouseEvent:" //+e.getSource()
+		LOG.finest("MouseEvent:" //+e.getSource()
 		+ " Button:"+e.getButton() + " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
 		// 1 java.awt.event.MouseEvent[MOUSE_CLICKED,(116,25),absolute(877,397),button=1,modifiers=Button1,clickCount=1] on componentTreeTable [16]
 		//MouseEvent.BUTTON1 == LIMA
 		//MouseEvent.BUTTON3 == REMA
-		e.getX(); e.getY();
 		if (e.getSource() instanceof JXTreeTable) {
 			if(((JXTreeTable)e.getSource()).getName()==COMPONENT_NAME) {
-				LOG.config("es ist "+COMPONENT_NAME); // tree
+				LOG.finest("es ist "+COMPONENT_NAME); // tree
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount()>0) {
 					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
 					int selRow = tree.getRowForPath(treePath);
-					LOG.config("es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
+					LOG.finest("es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
 					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
 					if(node.isWindow()) {
 						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
@@ -397,17 +388,16 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		}
 	}
 	
-	// abstract class MouseAdapter implements MouseListener, MouseWheelListener, MouseMotionListener
-	class VTreePanel_mouseAdapter extends java.awt.event.MouseAdapter {
+	class MenuPanelMouseAdapter extends MouseAdapter { // java.awt.event.MouseAdapter implements MouseListener, MouseWheelListener, MouseMotionListener
 		
-		MenuPanel m_adaptee;
+		MenuPanel adaptee;
 
-		VTreePanel_mouseAdapter(MenuPanel adaptee) {
-			m_adaptee = adaptee;
+		MenuPanelMouseAdapter(MenuPanel adaptee) {
+			this.adaptee = adaptee;
 		}
 
 		public void mouseClicked(MouseEvent e) {
-			m_adaptee.mouseClicked(e);
+			adaptee.mouseClicked(e);
 		}
 
 	    public void mouseReleased(MouseEvent e) {

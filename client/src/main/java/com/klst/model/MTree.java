@@ -128,7 +128,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		//  The Node Loop
 		try
 		{
-			// load Node details - addToTree -> getNodeDetail
+			// load Node details - addToTree => getNodeDetail
 			getNodeDetails(); 
 			//
 			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
@@ -169,11 +169,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		//  Done with loading - add remainder from buffer
 		if (treeNodes.size() != 0)
 		{
-			LOG.config("clearing buffer (expected size=45) size="+treeNodes.size()+"- Adding to: " + rootNode);
+			LOG.config("Done with loading - add remainder from buffer/clearing buffer (expected size=45) treeNodes.size="+treeNodes.size()+"- Adding to: " + rootNode);
 			treeNodes.forEach(c -> {
 				MTreeNode p = rootNode.findNode(c.getParent_ID());
 				if(p!=null) {
-					LOG.config(p + " ist parant für "+c);
+					LOG.fine(p + " ist parant für "+c);
 					p.add(c);
 					treeNodeMap.remove(c.getNode_ID());
 				}
@@ -184,7 +184,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		//	Nodes w/o parent
 		if (treeNodes.size() != 0)
 		{ // TODO 
-			LOG.severe (""+treeNodes.size()+" nodes w/o parent - NO!!!!!!! adding to root - " + treeNodes);
+			LOG.warning(""+treeNodes.size()+" nodes w/o parent - NO!!!!!!! adding to root)  - "); // + treeNodes);
 		}	//	nodes w/o parents
 
 		//  clean up
@@ -269,7 +269,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				sqlNode.append(hasWhere ? "\n AND " : " WHERE ");
 				sqlNode.append("(m.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE m.AD_Form_ID=f.AD_Form_ID AND (f.Classname IS NOT NULL OR f.JSPURL IS NOT NULL)))");
 			}
-			LOG.config("fertig mit "+getTreeType() + " isBaseLanguage="+base);
+			LOG.config("fertig mit TreeType:"+getTreeType() + ", isBaseLanguage="+base);
 		} 
 		//	Yamel Senih [ 9223372036854775807 ]
 		//	Load for Custom Tree
@@ -337,7 +337,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				}
 				list.add(Integer.valueOf(i));
 			}
-			LOG.config("#nodes aka i="+i + " nodeIdMap#:"+nodeIdMap.size() + " nodeIdMap[218]:"+nodeIdMap.get(Integer.valueOf(218)).size()); // NPE: + " nodeIdMap[0]#:"+nodeIdMap.get(Integer.valueOf(0)).size());
+			LOG.config("#nodes aka i="+i + " nodeIdMap#:"+nodeIdMap.size() + " nodeIdMap[218]:"+nodeIdMap.get(Integer.valueOf(218)).size());
 		} catch (SQLException e) 
 		{
 			LOG.log(Level.SEVERE, "", e);
@@ -397,15 +397,16 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		if (rootNode != null)
 			parent = rootNode.findNode(parentId);
 
-		if(parent==null) { // in Liste eintragen, da im Baum parant nicht gefunden!
-			LOG.warning("parent with id "+parentId+" not in tree! Adding ("+child+") to treeNodes #:"+treeNodes.size());
+		if(parent==null) { // in Liste eintragen, da im Baum parent nicht gefunden!
+			LOG.fine("parent with id "+parentId+" not in tree! Adding ("+child+") to treeNodes #:"+treeNodes.size());
 			treeNodes.add(child);
 			treeNodeMap.put(child.getNode_ID(), child);
 		} else {
 			// parent ist möglicherweise gar nicht parent von child !!
 			if(parent.getAllowsChildren()) {
 				parent.add(child);
-				LOG.config("added "+child + " to "+parent + " - treeNodeMap.Size="+treeNodeMap.size() + " == treeNodes.Size="+treeNodes.size());
+				LOG.fine("added child:"+child + " to parent:"+parent);
+				assert(treeNodeMap.size()==treeNodes.size());
 				// durch das Einfügen kann findNode andere Ergenisse liefern
 				treeNodes.forEach(c -> {
 					MTreeNode p = rootNode.findNode(c.getParent_ID());
@@ -485,10 +486,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					//
 					if (access != null		//	rw or ro for Role 
 						|| isTreeEditable)		//	Menu Window can see all
-					{ LOG.config("========================= 532 actionColor="+actionColor);
+					{ LOG.fine("========================= 488 actionColor="+actionColor);
 						retValue = new MTreeNode (node_ID, seqNo, name, description, parent_ID, isSummary, actionColor, onBar, null);	//	menu has no color
 					}
-				} else if(getTreeType().equals(TREETYPE_CustomTree)) { LOG.config("========================= 537");
+				} else if(getTreeType().equals(TREETYPE_CustomTree)) { LOG.config("========================= 491");
 					retValue = new MTreeNode (node_ID, seqNo,
 							name, description, parent_ID, isSummary,
 							actionColor, onBar, null);	//	menu has no color
@@ -509,7 +510,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 						String value = nodeRowSet.getString(index++);
 						name = value + " - " + name;
 					}// @Trifon-end
-					LOG.config("========================= 558 TreeType:"+getTreeType() + " sSummary:"+sSummary);
+					LOG.fine("========================= 512 TreeType:"+getTreeType() + " sSummary:"+sSummary);
 					retValue = new MTreeNode (node_ID, seqNo, name, description, parent_ID, isSummary, null, onBar, color); //	no action
 				}
 			}
