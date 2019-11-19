@@ -8,20 +8,21 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
-import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.CheckBoxProvider;
 import org.jdesktop.swingx.renderer.ComponentProvider;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
+
+import com.klst.icon.TableColumnControlButton;
 
 // https://stackoverflow.com/questions/18186495/using-tablecelleditor-and-tablecellrenderer-at-the-same-time
 /*
@@ -37,7 +38,8 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	
 	private static final Logger LOG = Logger.getLogger(MuliRowPanel.class.getName());
 
-	private GridTab gridTab = null;
+	private GridTab gridTab = null; // GridTab aus (base)org.compiere.model
+	
 	// in JTable gibt es einige member die protected sind zB. dataModel
 	
 	// ctor use factory method createXTable()
@@ -48,14 +50,16 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		super(dm);
 		this.gridTab = gridTab;
 		
+		setColumnControl(new TableColumnControlButton(this)); // das Icon austauschen
         setColumnControlVisible(true); // column control to the trailing corner of the scroll pane 
+        
         // replace grid lines with striping 
-        setShowGrid(false, false);
+        setShowGrid(false, false); // (boolean showHorizontalLines, boolean showVerticalLines)
 //        addHighlighter(HighlighterFactory.createSimpleStriping()); // beeinflußt renderer
         addHighlighter(HighlighterFactory.createAlternateStriping());
         this.setCellSelectionEnabled(true); // simultaneous row and columnselection is allowed
         
-        setDefaultRenderer(Object.class, new DefaultTableRenderer());
+        setDefaultRenderer(Object.class, new GenericTableRenderer());
         // Sets a default cell editor to be used if no editor has been set in a TableColumn.
         setDefaultEditor(Object.class, new GenericEditor()); 
 	}
@@ -66,25 +70,84 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		return table;
 	}
 	
-	@Override // aus JXTable
-	protected JTableHeader createDefaultTableHeader() { // TODO den Header besser: namen, column rentere und editoren dorthin!!!!
+	JTableHeader tableHeader;
+	@Override
+	protected JTableHeader createDefaultTableHeader() {
+		// TODO den Header besser: namen, column renderer und editoren dorthin!!!!
 		LOG.warning(this.dataModel.getClass().toString());
 		GenericDataModel dm = (GenericDataModel)dataModel;
 		GridFields columnModel = dm.getColumns(); // Header sind besser aber TODO die Breiten werden nicht richtig gerendert
-		return new JXTableHeader(columnModel) {
-			private static final long serialVersionUID = -4124370542563896297L;
+		tableHeader = new GenericTableHeader(columnModel, new DefaultTableRenderer());
+		return tableHeader; 	
+	}
 
-			@Override
-			public void updateUI() {
-				super.updateUI();
-				// need to do in updateUI to survive toggling of LAF
-				if (getDefaultRenderer() instanceof JLabel) {
-					((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
-
-				}
-			}
-
-		};
+	@Override
+	public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+		LOG.config("TableCellRenderer "+renderer + " int row, int column:"+row+", "+column); // + " dataModel.ColumnCount="+ dataModel.getColumnCount());
+		Component comp = super.prepareRenderer(renderer, row, column);
+		if(comp.getWidth()>tableHeader.getColumnModel().getColumn(column).getWidth()) {
+			LOG.config(">>>>>>>>>>>>>>>>COL "+column + " muss breiter werden von "+tableHeader.getColumnModel().getColumn(column).getWidth() + " auf "+comp.getWidth());
+		} else {
+			LOG.warning(column + " comp.getPreferredSize()="+comp.getPreferredSize()
+			+ " tableHeader.Width="+tableHeader.getColumnModel().getColumn(column).getWidth() 
+			+ " PreferredWidth="+tableHeader.getColumnModel().getColumn(column).getPreferredWidth());
+		}
+		return comp;
+		// exception in super.super, also JTable 5712: Object value = getValueAt(row, column);
+//// der code aus super:
+//        //Component stamp = super.prepareRenderer(renderer, row, column); <============== JTable
+//        	// -------------------------------- super.super JTable
+//                Object value = getValueAt(row, column); // exception
+//
+//                boolean isSelected = false;
+//                boolean hasFocus = false;
+//
+//                // Only indicate the selection and focused cell if not printing
+//                if (!isPaintingForPrint()) {
+//                    isSelected = isCellSelected(row, column);
+//
+//                    boolean rowIsLead =
+//                        (selectionModel.getLeadSelectionIndex() == row);
+//                    boolean colIsLead =
+//                        (columnModel.getSelectionModel().getLeadSelectionIndex() == column);
+//
+//                    hasFocus = (rowIsLead && colIsLead) && isFocusOwner();
+//                }
+//
+//                //return 
+//                Component stamp =
+//                		renderer.getTableCellRendererComponent(this, value, isSelected, hasFocus, row, column);
+//
+//        	// --------------------------------
+//        // #145-swingx: default renderers don't respect componentOrientation.
+//        adjustComponentOrientation(stamp);
+//        // #258-swingx: hacking around DefaultTableCellRenderer color memory.
+//        resetDefaultTableCellRendererColors(stamp, row, column);
+//
+//        ComponentAdapter adapter = getComponentAdapter(row, column);
+//        // a very slight optimization: if this instance never had a highlighter
+//        // added then don't create a compound here.
+//        if (compoundHighlighter != null) {
+//            stamp = compoundHighlighter.highlight(stamp, adapter);
+//        }
+//
+//        TableColumnExt columnExt = getColumnExt(column);
+//
+//        if (columnExt != null) {
+//            // JW: fix for #838 - artificial compound installs listener
+//            // PENDING JW: instead of doing the looping ourselves, how
+//            // about adding a method prepareRenderer to the TableColumnExt
+//            for (Highlighter highlighter : columnExt.getHighlighters()) {
+//                stamp = highlighter.highlight(stamp, adapter);
+//
+//            }
+//            // CompoundHighlighter columnHighlighters
+//            // = new CompoundHighlighter(columnExt.getHighlighters());
+//
+//        }
+//
+//        return stamp;
+//
 	}
 
 	// es gibt zwei exits bei public void tableChanged( ...
@@ -114,15 +177,24 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 
 		
         for(int c = 0; c < dataModel.getColumnCount(); c++) {
-        	Class<?> clazz = dataModel.getColumnClass(c);
+        	Class<?> storageClass = dataModel.getColumnClass(c);
+/* storageClass: implementiert in static (base) org.compiere.util.Class getClass(...)
+			return String.class;
+			return Integer.class;
+			return java.math.BigDecimal.class;
+			return java.sql.Timestamp.class;
+			return yesNoAsBoolean ? Boolean.class : String.class;
+			return byte[].class;
+		return Object.class;
+ */
         	// CellEditor sollten null sein, sie werden gleich gesetzt! Sind sie aber nicht!!!
-        	LOG.config("col "+c + " Class:"+dataModel.getColumnClass(c)
+        	LOG.config("col "+c + " storageClass:"+dataModel.getColumnClass(c)
 				+ " ColumnName:"+dataModel.getColumnName(c)
 //				+ " CellEditable:"+dataModel.isCellEditable(r, c)
-    			+ " CellRenderer:"+this.getColumnModel().getColumn(c).getCellRenderer() + "/" + this.getDefaultRenderer(clazz).getClass()
-        		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor() + "/" + this.getDefaultEditor(clazz).getClass()
+    			+ " CellRenderer:"+this.getColumnModel().getColumn(c).getCellRenderer() + "/" + this.getDefaultRenderer(storageClass).getClass()
+        		+ " CellEditor:"+this.getColumnModel().getColumn(c).getCellEditor() + "/" + this.getDefaultEditor(storageClass).getClass()
         		);
-        	if(clazz==Boolean.class) {
+        	if(storageClass==Boolean.class) {
 //        		DefaultCellEditor editor = new BooleanEditor();
 //        		editor.setClickCountToStart(1);
 ////        		this.getColumnModel().getColumn(c).setCellEditor(editor); // funktioniert so nicht! aber so:     		
@@ -139,7 +211,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         			this.getColumnModel().getColumn(c).setCellRenderer(new GossipTableRenderer(checkBoxProvider));
         		}
         		
-            } else if(clazz==Integer.class) {
+            } else if(storageClass==Integer.class) {
 //            	NumberEditor editor = new NumberEditor();
         		// test
         		if(dataModel.isCellEditable(0, c)) {
@@ -154,14 +226,14 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
         		}		
 //        		this.getColumnModel().getColumn(c).setCellEditor(new CellEditorAndRenderer(null, editor));
         		
-        	} else if(clazz==Timestamp.class) {
+        	} else if(storageClass==Timestamp.class) {
         		if(dataModel.isCellEditable(0, c)) {
         			// OK - es greift der DefaultRenderer und der DefaultEditor
         		} else {
         			this.getColumnModel().getColumn(c).setCellRenderer(roRenderer);
         		}
         		
-        	} else if(clazz==String.class) {
+        	} else if(storageClass==String.class) {
         		if(dataModel.isCellEditable(0, c)) {
         			// OK - es greift der DefaultRenderer und der DefaultEditor
         		} else {

@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
+import org.compiere.model.GridWindowVO;
 import org.compiere.model.MWindow;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -39,7 +40,7 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
  - enthält JPanel im Borderlayout im ContentPane 
  - das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
  */
-
+// ersetzt (AD client) APanel
 public class WindowFrame extends JFrame implements WindowListener {
 	
 	private static final long serialVersionUID = 5098403364836474988L;
@@ -104,9 +105,9 @@ public class WindowFrame extends JFrame implements WindowListener {
 	 *     JFrame(String title, GraphicsConfiguration gc)
 	 */
 	WindowFrame(String title) { // für RootFrame
-		this(title, null, -1);
+		this(title, null, -1, null);
 	}
-	WindowFrame(String title, RootFrame rootFrame, int window_ID) {
+	WindowFrame(String title, RootFrame rootFrame, int window_ID, GridWindow gridWindow) {
 		super(title);
 		windowCounter++;
 		this.windowNo = windowCounter-1;
@@ -121,7 +122,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 		if(this.window_ID == -1) {
 			setTitle(title); 
 		} else {
-			initGridWindow();
+			initGridWindow(gridWindow);
 			// mWindow ==> gridWindow
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
@@ -133,6 +134,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 		jPanel.add(createStatusBar(), BorderLayout.PAGE_END);
 		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
+		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}
 
 	private void initMenuBar() {
@@ -226,13 +228,65 @@ public class WindowFrame extends JFrame implements WindowListener {
 	}
 	
 	// can make window?
-	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein. Daher die Prüfung
-	static GridWindow testWindow_ID(int window_ID) {
-		return GridWindow.get(Env.getCtx(), windowCounter, window_ID); 
+	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein!
+	static GridWindow getGridWindow(int window_ID) {
+		// das statische GridWindow.get erstellte eine window value object instanz GridWindowVO.create (Env.getCtx(), WindowNo, AD_Window_ID)
+		// static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID = 0)
+		// GridWindowVO.create: #1 - AD_Window_ID=304; AD_Menu_ID=0
+/* statt
+		return GridWindow.get(Env.getCtx(), windowCounter, window_ID);
+	überschreibe ich es hier
+	                     get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
+*/
+		LOG.config("windowCounter=" + windowCounter + ", AD_Window_ID=" + window_ID);
+		GridWindowVO mWindowVO = create(Env.getCtx(), windowCounter, window_ID, 0); // in APanel Zeile 731
+		if (mWindowVO == null)
+			return null;
+		
+		LOG.config("Name=" + mWindowVO.Name
+				+ ", Description=" + mWindowVO.Description
+				+ ", Help=" + mWindowVO.Help
+				+ ", WindowType=" + mWindowVO.WindowType
+				+ ", AD_Color_ID=" + mWindowVO.AD_Color_ID
+				+ ", AD_Image_ID=" + mWindowVO.AD_Image_ID
+				+ ", WinHeight=" + mWindowVO.WinHeight
+				+ ", WinWidth=" + mWindowVO.WinWidth
+				+ ", IsSOTrx=" + mWindowVO.IsSOTrx
+				+ ", IsReadWrite=" + mWindowVO.IsReadWrite // anhand role = MRole.getDefault(ctx, false); windowAccess = role.getWindowAccess(vo.AD_Window_ID);
+				);
+		Properties ctx = Env.getCtx();
+		ctx.forEach((key,value) -> { // zum Test
+			LOG.info("ctx key:"+key + " : " + value.toString());
+		});
+		boolean virtual = false;
+		return new GridWindow(mWindowVO, virtual); // in APanel Zeile 738
+
 	}
-	private void initGridWindow() {
+	// == org.compiere.model.GridWindowVO ersetzen, dmit das sql angezeigt werden kann:
+	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID) {
+		StringBuffer sql = new StringBuffer("SELECT Name,Description,Help,WindowType, "
+			+ "AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, "
+			+ "IsSOTrx ");
+		if (Env.isBaseLanguage(ctx, "AD_Window"))
+			sql.append("\nFROM AD_Window w \nWHERE w.AD_Window_ID=? AND w.IsActive='Y'");
+		else
+			sql.append("\nFROM AD_Window_vt w \nWHERE w.AD_Window_ID=?")
+				.append(" AND AD_Language='")
+				.append(Env.getAD_Language(ctx)).append("'");
+		LOG.config("AD_Window_ID="+AD_Window_ID+" sql=\n"+sql
+				+ "\n !!! in GridWindowVO.create(..) call createTabs (GridWindowVO mWindowVO) !");
+/* z.B.
+SELECT Name,Description,Help,WindowType, AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, IsSOTrx 
+FROM AD_Window w 
+WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
+ */
+		// GridWindowVO.create auch private static boolean createTabs (GridWindowVO mWindowVO)
+		return GridWindowVO.create(ctx, WindowNo, AD_Window_ID, AD_Menu_ID);
+	}
+
+	private void initGridWindow(GridWindow gridWindow) {
 		LOG.config(">>>>GridWindow.get ...");
-		this.gridWindow = GridWindow.get(ctx, this.windowNo, this.window_ID); 
+		this.gridWindow = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
 		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		LOG.config("<<<<");
 		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
@@ -245,13 +299,9 @@ TODO Demo für jeden Typ
 		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
 		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
 		for (int i = 0; i < gridWindow.getTabCount(); i++) {
-			if(gridWindow.isTabInitialized(i)==false) {
-				LOG.config("gridTab "+i+" not initialized. Do it now ...");
-				gridWindow.initTab(i); // TODO verschieben in Tab
-			}
-			GridTab gridTab = gridWindow.getTab(i);
-			this.gridTabs.add(gridTab);
-			this.tabs.add(new Tab(gridTab, this)); // gridTabs und tabs korrespondieren
+			Tab tab = new Tab(this, i);
+			this.tabs.add(tab); // gridTabs und tabs korrespondieren
+			this.gridTabs.add(tab.getGridTab());
 		}
 	}
 	
