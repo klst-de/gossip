@@ -6,6 +6,7 @@ import javax.swing.table.TableModel;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 
@@ -23,6 +24,14 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	private static final long serialVersionUID = 4527635643876059507L;	
 	private static final Logger LOG = Logger.getLogger(MuliRowPanel.class.getName());
 
+	// Layout:
+	// - Grid lines
+	private static final boolean showHorizontalLines = true;
+	private static final boolean showVerticalLines = true;
+	// - Highlighter aka Decorator, die org.jdesktop.swingx.decorator.HighlighterFactory bietet mehrere an
+	//   SimpleStriping, AlternateStriping, ... siehe dort
+	private static Highlighter highlighter = HighlighterFactory.createAlternateStriping();
+			
 	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert, wird in Tab gebraucht
 	// dm ist GenericDataModel
 	// TODO wieso gridTab - es ist doch in GenericDataModel gekapselt
@@ -42,9 +51,8 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		setColumnControlVisible(true); // column control to the trailing corner of the scroll pane 
 
 		// replace grid lines with striping 
-		setShowGrid(false, false); // (boolean showHorizontalLines, boolean showVerticalLines)
-		addHighlighter(HighlighterFactory.createAlternateStriping());
-		// oder HighlighterFactory.createSimpleStriping()
+		setShowGrid(showHorizontalLines, showVerticalLines);
+		addHighlighter(highlighter);
 		
 		setDefaultRenderer(Object.class, new DefaultTableRenderer());
 	}
