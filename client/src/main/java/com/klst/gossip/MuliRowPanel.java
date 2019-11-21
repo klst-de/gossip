@@ -2,7 +2,6 @@ package com.klst.gossip;
 
 import java.util.logging.Logger;
 
-import javax.swing.JLabel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
@@ -70,18 +69,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 			columnModel.getColumn(c).setHeaderValue( ((GenericDataModel)dataModel).getHeaderValue(c) );
 		}
 
-		// aus XTableDemo:
-		jXTableHeader = new JXTableHeader(columnModel) {
-			@Override
-			public void updateUI() {
-				super.updateUI();
-				// need to do in updateUI to survive toggling of LAF (so steht es in XTableDemo)
-				if (getDefaultRenderer() instanceof JLabel) {
-					((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER); // damit die Header zentriert
-				}
-			}
-
-		};
+		jXTableHeader = new GenericTableHeader(columnModel);
 		return jXTableHeader;	
 	}
 

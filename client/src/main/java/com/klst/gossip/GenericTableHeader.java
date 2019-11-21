@@ -17,14 +17,16 @@ public class GenericTableHeader extends JXTableHeader { // JXTableHeader extends
 		super(tableColumnModel);
 	}
 	
-	@Override
 	/* need to do in updateUI to survive toggling of LAF (so steht es in XTableDemo)
 	 * ... und tatsächlich, wenn LAF umgeschaltet wird zB. nach Nimbus, dann
 	 * geht die (default) Zentrierung aka HorizontalAlignment im TableHeader verloren
 	 * 
 	 * das gilt für MuliRowPanel, das JXTable als Superklasse hat
 	 * und auch für MenuPanel, das JXTreeTable als member nutzt
+	 * 
+	 * TODO: TableHeader ist im MenuPanel nicht korrekt gerendert, wenn mit Nimbus als default LAF begonnen wird
 	 */
+	@Override
 	public void updateUI() {
 		super.updateUI();
 		if (getDefaultRenderer() instanceof JLabel) {
