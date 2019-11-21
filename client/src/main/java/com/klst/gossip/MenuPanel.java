@@ -21,6 +21,7 @@ import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.table.JTableHeader;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -52,7 +53,7 @@ public class MenuPanel extends JXPanel implements ActionListener {
 
 	private static final long serialVersionUID = 3820339775333768359L;
 	static Logger LOG = Logger.getLogger(MenuPanel.class.getName());
-	static final String COMPONENT_NAME = "componentTreeTable";
+	static final String COMPONENT_NAME = "menuTreeTable";
 
 	public MenuPanel(RootFrame rootFrame) {
         super(new BorderLayout());
@@ -81,8 +82,13 @@ public class MenuPanel extends JXPanel implements ActionListener {
     private MouseListener mouseListener = new MenuPanelMouseAdapter(this);
 
     private void initComponents() {  	
-//		tree = new JXTreeTable(treeTableModel); // gleichwertig zu
-		tree = new JXTreeTable();
+//		tree = new JXTreeTable(treeTableModel); // gleichwertig zu: new JXTreeTable(); tree.setTreeTableModel(treeTableModel);
+		tree = new JXTreeTable() {
+		    @Override
+		    protected JTableHeader createDefaultTableHeader() {
+		        return new GenericTableHeader(columnModel);
+		    }
+		};
 		tree.setTreeTableModel(treeTableModel);
 		
 		LOG.config("tree SelectionMode="+tree.getSelectionMode()); //  javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : 2

@@ -58,14 +58,15 @@ public class SingleRowPanel extends JPanel {
 	}
 	
 	public void showSingleRowPanelSize(int rowIndex) {
+		LOG.warning("rowIndex="+rowIndex);
 		GridFields fields = tableModel.getColumns();
 //		GridField[] fields = tableModel.getColumns();
 		for(int f=0; f<fields.getColumnCount(true); f++) {
 //			GridField field = fields[f];
 			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
 			if(field.isDisplayed()) {
-				Object o = this.tableModel.getValueAt(rowIndex, f);
-				if(o!=null) LOG.info("fieldno:"+f + " value:"+this.tableModel.getValueAt(rowIndex, f).toString());
+//				Object o = this.tableModel.getValueAt(rowIndex, f);
+//				if(o!=null) LOG.info("fieldno:"+f + " value:"+this.tableModel.getValueAt(rowIndex, f).toString());
 				VEditor editor = getEditor(field); // factory TODO
 //				field.addPropertyChangeListener(editor); ????????????????
 				vPanel.addFieldBufferedXXX(editor, field);
