@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.compiere.model.GridField;
 import org.jdesktop.swingx.table.TableColumnExt;
 
+// Kapselt GridField, das wiederum GridFieldVO enthält
 public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends TableColumn
 
 	private static final long serialVersionUID = 4112077272210070373L;
@@ -29,14 +30,58 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	public GridFieldBridge(GridField field) {
 		super();
 		this.field = field;
-//		this.field.getAD_Field_ID() // ? ==> modelIndex
-//		this.field.getHeader() // ? ==> Object headerValue
-		//Object identifier
-		//this.field.getDisplayType()
 
 		setIdentifier(this.field.getColumnName()); //  ==> Object identifier
 		setHeaderValue(this.field.getHeader());
-		setEditable(this.field.isEditable(false)); // checkContext
+//		setEditable(this.field.isEditable(true)); // always checkContext
+	}
+	
+	public int getAD_Column_ID() {
+		return field.getAD_Column_ID();
+	}
+	
+	public int getAD_Window_ID() {
+		return field.getAD_Window_ID();
+	}
+	
+	public int getAD_Tab_ID() {
+		return field.getAD_Tab_ID();
+	}
+	
+	public int getAD_Field_ID() {
+		return field.getAD_Field_ID();
+	}
+	
+	public int getPreferredWidthInListView() { // es gibt in TableColumn.getPreferredWidth() !
+		return field.getPreferredWidthInListView(); // field.getPreferredWidth();
+	}
+	
+	public int getDisplayLength() {
+		return field.getDisplayLength(); // field.getDisplayLength();
+	}
+	
+	public int getSortNo() {
+		return field.getSortNo();
+	}
+
+	public int getFieldLength() {
+		return field.getFieldLength();
+	}
+
+	public int getAD_Process_ID() {
+		return field.getAD_Process_ID();
+	}
+
+	public int getAD_Image_ID() {
+		return field.getAD_Image_ID();
+	}
+
+	public int getAD_Chart_ID() {
+		return field.getAD_Chart_ID();
+	}
+
+	public int getAD_Reference_Value_ID(){
+		return field.getAD_Reference_Value_ID();
 	}
 	
     public String getColumnName() {
@@ -55,8 +100,8 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
         return field.getColumnSQL(true); //	ColumnName or Virtual Column // boolean withAS
     }
 	
-    public boolean isEditable(boolean checkContext) {
-        return field.isEditable(true); // checkContext
+    public boolean isEditable(boolean checkContext) { // in super TableColumnExt gibt es isEditable() ohne para !
+        return field.isEditable(true); // always checkContext
     }
 	
     public boolean isMandatory(boolean checkContext) {

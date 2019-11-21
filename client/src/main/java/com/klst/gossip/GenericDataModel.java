@@ -7,19 +7,20 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
 // TODO public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
-public class GenericDataModel extends AbstractTableModel {
+public class GenericDataModel extends DefaultTableModel {
 
 	private static final long serialVersionUID = -8353798775903481429L;
 
 	private static final Logger LOG = Logger.getLogger(GenericDataModel.class.getName());
 
-	protected List<Object[]> dataVector = new Vector<Object[]>();
+//	protected List<Object[]> dataVector = new Vector<Object[]>();
 //    protected Vector    dataVector; // so ist es in DefaultTableModel, <code>Vector</code> of <code>Vectors</code>
 
     private int windowNo;
@@ -40,8 +41,9 @@ public class GenericDataModel extends AbstractTableModel {
 		return getClass().getName() +" windowNo "+windowNo + " gridTab:["+gridTab+"]";		
 	}
 	
-	// name wie in DefaultTableModel
-	Vector<Object[]> getDataVector() {
+	// name wie in DefaultTableModel, dort: public Vector getDataVector()
+	@Override
+	public Vector<Object[]> getDataVector() {
 		return (Vector<Object[]>) dataVector;
 	}
 
@@ -83,17 +85,17 @@ public class GenericDataModel extends AbstractTableModel {
         return null;
 	}
 	
-	// wird gerufen wenn celle angeckickt
     public boolean isCellEditable(int rowIndex, int columnIndex) {
     	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
-    	boolean isEditable = field.isEditable();
+    	final boolean checkContext = true;
+    	boolean isEditable = field.isEditable(checkContext);
 //    	GridField field = this.fields[columnIndex];
 //    	boolean isEditable = field.isEditable(false); // checkContext
-    	if(field.isEditable()) {
-    		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
-    	} else {
-    		LOG.config(""+rowIndex+" "+field + "isNOTEditable no context");
-    	}
+//    	if(field.isEditable()) {
+//    		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
+//    	} else {
+//    		LOG.config(""+rowIndex+" "+field + "isNOTEditable no context");
+//    	}
     	return isEditable;
     }
 
@@ -142,7 +144,11 @@ public class GenericDataModel extends AbstractTableModel {
     	return field.getColumnName();
     }
 
-
+    public Object getHeaderValue(int columnIndex) {
+    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
+    	return field.getHeaderValue();
+    }
+    
     // wird im Loader.process benötigt : bankTableModel.add(chunks); chunks == rows(der JTable)
     public void add(List<Object[]> chunks) {
         int first = getDataVector().size();

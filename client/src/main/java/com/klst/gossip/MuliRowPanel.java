@@ -2,13 +2,15 @@ package com.klst.gossip;
 
 import java.util.logging.Logger;
 
+import javax.swing.JLabel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
-import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 
 import com.klst.icon.TableColumnControlButton;
 
@@ -33,10 +35,10 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	private static Highlighter highlighter = HighlighterFactory.createAlternateStriping();
 			
 	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert, wird in Tab gebraucht
-	// dm ist GenericDataModel
+	// dataModel ist GenericDataModel
 	// TODO wieso gridTab - es ist doch in GenericDataModel gekapselt
-	protected static MuliRowPanel createXTable(TableModel dm, GridTab gridTab) {
-		return new MuliRowPanel(dm, gridTab);
+	protected static MuliRowPanel createXTable(TableModel dataModel, GridTab gridTab) {
+		return new MuliRowPanel(dataModel, gridTab);
 	}
 
 	// ctor use factory method createXTable()
@@ -44,8 +46,8 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		super();
 	}
 
-	private MuliRowPanel(TableModel dm, GridTab gridTab) {
-		super(dm);
+	private MuliRowPanel(TableModel dataModel, GridTab gridTab) {
+		super(dataModel); // es gibt noch ctor in super mit TableColumnModel: (TableModel dm, TableColumnModel cm) und andere
 
 		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
 		setColumnControlVisible(true); // column control to the trailing corner of the scroll pane 
@@ -54,7 +56,42 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		setShowGrid(showHorizontalLines, showVerticalLines);
 		addHighlighter(highlighter);
 		
-		setDefaultRenderer(Object.class, new DefaultTableRenderer());
+		setDefaultRenderer(Object.class, new GenericTableRenderer());
+//		super.dataModel.isCellEditable(rowIndex, columnIndex)
+//		super.dataModel.getColumnCount();
+//		super.dataModel.getRowCount();
+		LOG.config(dataModel.getColumnCount()+"/"+dataModel.getRowCount()); 
 	}
 
+	JXTableHeader jXTableHeader;
+	protected JTableHeader createDefaultTableHeader() {
+		//this.columnModel.getColumn(0).setHeaderValue("A"); // set first column
+		for(int c = 0; c < columnModel.getColumnCount(); c++) {
+			columnModel.getColumn(c).setHeaderValue( ((GenericDataModel)dataModel).getHeaderValue(c) );
+		}
+
+		// aus XTableDemo:
+		jXTableHeader = new JXTableHeader(columnModel) {
+			@Override
+			public void updateUI() {
+				super.updateUI();
+				// need to do in updateUI to survive toggling of LAF (so steht es in XTableDemo)
+				if (getDefaultRenderer() instanceof JLabel) {
+					((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER); // damit die Header zentriert
+				}
+			}
+
+		};
+		return jXTableHeader;	
+	}
+
+	// get the rendering component for the given cell
+//	public Component prepareRenderer(int row, int col) {
+//		Component stamp = super.prepareRenderer(row, col); // the decorated Component used as a stamp to renderthe specified cell
+//		LOG.config(col+"/"+row + " stamp:"+stamp);
+//		if(stamp instanceof JLabel) {
+//			((JLabel)stamp).setForeground(Color.LIGHT_GRAY);
+//		}
+//		return stamp;		
+//	}
 }

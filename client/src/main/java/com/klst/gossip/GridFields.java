@@ -1,5 +1,4 @@
 package com.klst.gossip;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -19,7 +18,7 @@ import org.jdesktop.swingx.table.TableColumnModelExt;
 // - List<TableColumn> initialColumns : all columns, in the order in which were added to the model.
 // - List<TableColumn> currentColumns : all columns, in the order they would appear if all were visible.
 
-public class GridFields extends DefaultTableColumnModelExt // extends DefaultTableColumnModel
+public class GridFields extends DefaultTableColumnModelExt // extends DefaultTableColumnModel implements TableColumnModel, ropertyChangeListener, ListSelectionListener, Serializable
                         implements TableColumnModelExt {
 
 	private static final long serialVersionUID = 5218395949102734661L;
