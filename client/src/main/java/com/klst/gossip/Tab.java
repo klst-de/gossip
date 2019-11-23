@@ -254,7 +254,7 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		this.mrp = MuliRowPanel.createXTable(dataModel, gridTab);
+		this.mrp = MuliRowPanel.createXTable(dataModel);
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(gridTab.isSingleRow()) {	

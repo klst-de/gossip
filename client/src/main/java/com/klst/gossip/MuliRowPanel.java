@@ -1,15 +1,25 @@
 package com.klst.gossip;
 
+import java.util.Date;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.compiere.model.GridTab;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
+import org.jdesktop.swingx.renderer.CheckBoxProvider;
+import org.jdesktop.swingx.renderer.DefaultTableRenderer;
+import org.jdesktop.swingx.renderer.IconValues;
+import org.jdesktop.swingx.renderer.MappedValue;
+import org.jdesktop.swingx.renderer.StringValues;
 
 import com.klst.icon.TableColumnControlButton;
 
@@ -35,9 +45,9 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 			
 	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert, wird in Tab gebraucht
 	// dataModel ist GenericDataModel
-	// TODO wieso gridTab - es ist doch in GenericDataModel gekapselt
-	protected static MuliRowPanel createXTable(TableModel dataModel, GridTab gridTab) {
-		return new MuliRowPanel(dataModel, gridTab);
+	// ohne gridTab - es ist in GenericDataModel gekapselt
+	protected static MuliRowPanel createXTable(TableModel dataModel) {
+		return new MuliRowPanel(dataModel);
 	}
 
 	// ctor use factory method createXTable()
@@ -45,7 +55,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		super();
 	}
 
-	private MuliRowPanel(TableModel dataModel, GridTab gridTab) {
+	private MuliRowPanel(TableModel dataModel) {
 		super(dataModel); // es gibt noch ctor in super mit TableColumnModel: (TableModel dm, TableColumnModel cm) und andere
 
 		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
@@ -55,13 +65,44 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		setShowGrid(showHorizontalLines, showVerticalLines);
 		addHighlighter(highlighter);
 		
-		setDefaultRenderer(Object.class, new GenericTableRenderer());
+		//setDefaultRenderer(Object.class, new GenericTableRenderer());
+// JXTable uses instances of this as per-class default renderers. 
+
+		 setDefaultRenderer(Object.class, new DefaultTableRenderer());
+		 setDefaultRenderer(Number.class, new DefaultTableRenderer(StringValues.NUMBER_TO_STRING, JLabel.RIGHT));
+		 setDefaultRenderer(Date.class, new DefaultTableRenderer(StringValues.DATE_TO_STRING));
+		 // use the same center aligned default for Image/Icon
+		 TableCellRenderer renderer = new DefaultTableRenderer(new MappedValue(StringValues.EMPTY, IconValues.ICON), JLabel.CENTER);
+		 setDefaultRenderer(Icon.class, renderer);
+		 setDefaultRenderer(ImageIcon.class, renderer);
+		 // use a CheckBoxProvider for booleans
+		 setDefaultRenderer(Boolean.class, new DefaultTableRenderer(new CheckBoxProvider()));
+		 
+
 //		super.dataModel.isCellEditable(rowIndex, columnIndex)
 //		super.dataModel.getColumnCount();
 //		super.dataModel.getRowCount();
 		LOG.config(dataModel.getColumnCount()+"/"+dataModel.getRowCount()); 
 	}
+/* zum Nachlesen aus super:
+ * ... JXTable registers SwingX default table renderers instead of core defaults (see {@link DefaultTableRenderer}) 
+ * The recommended approach for
+ * customizing rendered content it to intall a DefaultTableRenderer configured
+ * with a custom String- and/or IconValue. F.i. assuming the cell value is a
+ * File and should be rendered by showing its name followed and date of last
+ * change:
+ * 
+ * <pre><code>
+ * StringValue sv = new StringValue() {
+ *      public String getString(Object value) {
+ *        if (!(value instanceof File)) return StringValues.TO_STRING.getString(value);
+ *        return StringValues.FILE_NAME.getString(value) + &quot;, &quot; 
+ *           + StringValues.DATE_TO_STRING.getString(((File) value).lastModified());
+ * }};
+ * table.setCellRenderer(File.class, new DefaultTableRenderer(sv));
+ * </code></pre>
 
+ */
 	JXTableHeader jXTableHeader;
 	protected JTableHeader createDefaultTableHeader() {
 		//this.columnModel.getColumn(0).setHeaderValue("A"); // set first column
@@ -73,13 +114,37 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		return jXTableHeader;	
 	}
 
+	protected void createDefaultEditors() {
+		LOG.config("wann kommt diese Methode dran?????????????????");
+		super.createDefaultEditors(); // für Object.class Number.class Boolean.class
+	}
 	// get the rendering component for the given cell
 //	public Component prepareRenderer(int row, int col) {
 //		Component stamp = super.prepareRenderer(row, col); // the decorated Component used as a stamp to renderthe specified cell
 //		LOG.config(col+"/"+row + " stamp:"+stamp);
-//		if(stamp instanceof JLabel) {
-//			((JLabel)stamp).setForeground(Color.LIGHT_GRAY);
-//		}
 //		return stamp;		
 //	}
+
+	// es gibt zwei exits bei public void tableChanged( ...
+	// - preprocessModelChange(e)
+	// - postprocessModelChange(e); 
+	protected void preprocessModelChange(TableModelEvent event) {
+		LOG.config("Column:"+event.getColumn() + " FirstRow="+event.getFirstRow()+" LastRow="+event.getLastRow() + " Source:"+event.getSource());
+//		String name = this.gridTab==null ? "null" : this.gridTab.getName();
+//		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
+		super.preprocessModelChange(event);
+	}
+//	protected void postprocessModelChange(TableModelEvent event) {
+//		String name = this.gridTab==null ? "null" : this.gridTab.getName();
+//		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
+//		super.postprocessModelChange(event);
+//		if(dataModel.getRowCount()>0 && !isSetColumnEditors && name!=null) {
+//			setColumnEditors();
+//		}
+//	}
+
+	public void setColumnEditors() {
+		
+	}
+
 }
