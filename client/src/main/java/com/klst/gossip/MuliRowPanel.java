@@ -16,7 +16,6 @@ import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.CheckBoxProvider;
-import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.renderer.IconValues;
 import org.jdesktop.swingx.renderer.MappedValue;
 import org.jdesktop.swingx.renderer.StringValues;
@@ -65,19 +64,16 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		setShowGrid(showHorizontalLines, showVerticalLines);
 		addHighlighter(highlighter);
 		
-		//setDefaultRenderer(Object.class, new GenericTableRenderer());
-// JXTable uses instances of this as per-class default renderers. 
-
-		 setDefaultRenderer(Object.class, new DefaultTableRenderer());
-		 setDefaultRenderer(Number.class, new DefaultTableRenderer(StringValues.NUMBER_TO_STRING, JLabel.RIGHT));
-		 setDefaultRenderer(Date.class, new DefaultTableRenderer(StringValues.DATE_TO_STRING));
-		 // use the same center aligned default for Image/Icon
-		 TableCellRenderer renderer = new DefaultTableRenderer(new MappedValue(StringValues.EMPTY, IconValues.ICON), JLabel.CENTER);
-		 setDefaultRenderer(Icon.class, renderer);
-		 setDefaultRenderer(ImageIcon.class, renderer);
-		 // use a CheckBoxProvider for booleans
-		 setDefaultRenderer(Boolean.class, new DefaultTableRenderer(new CheckBoxProvider()));
-		 
+		// JXTable uses instances of this as per-class default renderers.
+		setDefaultRenderer(Object.class, new GenericTableRenderer());
+		setDefaultRenderer(Number.class, new GenericTableRenderer(StringValues.NUMBER_TO_STRING, JLabel.RIGHT));
+		setDefaultRenderer(Date.class, new GenericTableRenderer(StringValues.DATE_TO_STRING));
+		// use the same center aligned default for Image/Icon
+		TableCellRenderer renderer = new GenericTableRenderer(new MappedValue(StringValues.EMPTY, IconValues.ICON), JLabel.CENTER);
+		setDefaultRenderer(Icon.class, renderer);
+		setDefaultRenderer(ImageIcon.class, renderer);
+		// use a CheckBoxProvider for booleans
+		setDefaultRenderer(Boolean.class, new GenericTableRenderer(new CheckBoxProvider()));		 
 
 //		super.dataModel.isCellEditable(rowIndex, columnIndex)
 //		super.dataModel.getColumnCount();
