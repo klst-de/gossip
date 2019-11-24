@@ -6,15 +6,13 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
-// TODO public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
-public class GenericDataModel extends DefaultTableModel {
+public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
 
 	private static final long serialVersionUID = -8353798775903481429L;
 
@@ -38,7 +36,7 @@ public class GenericDataModel extends DefaultTableModel {
 	}
 
 	public String toString() {
-		return getClass().getName() +" windowNo "+windowNo + " gridTab:["+gridTab+"]";		
+		return getClass().getName() +" windowNo="+windowNo + " gridTab:["+gridTab+"]" + " #fields="+fields.getColumnCount();		
 	}
 	
 	// name wie in DefaultTableModel, dort: public Vector getDataVector()
