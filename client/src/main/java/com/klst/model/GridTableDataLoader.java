@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package com.klst.model;
 
 import java.io.Serializable;
 import java.sql.Blob;
@@ -17,6 +17,8 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
+
+import com.klst.gossip.GridFieldBridge;
 
 /* 
 SwingWorker Workflow , @see javax.swing.SwingWorker<T, V>
@@ -53,13 +55,13 @@ Often, the Current thread is the Event DispatchThread.
 //aka Loader innner class in (base)GridTable implements Serializable, Runnable 
 //T - the result type returned by this SwingWorker's doInBackground and get methods
 //V - the type used for carrying out intermediate results by this SwingWorker's publish and process methods
-public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> implements Serializable {
+public class GridTableDataLoader extends SwingWorker<List<Object[]>, Object[]> implements Serializable {
 
-	private static final long serialVersionUID = 7687507315859041009L;
+	private static final long serialVersionUID = -1482907759339623751L;
 
-	private static final Logger LOG = Logger.getLogger(GenericDataLoader.class.getName());
+	private static final Logger LOG = Logger.getLogger(GridTableDataLoader.class.getName());
 	
-	private GenericDataModel dataModel;
+	private GridTable dataModel;
 	
 	private String trxName;
 	// trxName ist in GridTable mit setter und getter, hat dort aber nix zu suchen
@@ -71,18 +73,13 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	private List<Object[]> dbResultRows;
 
 	// ctor
-	public GenericDataLoader(GenericDataModel dm) {
+	public GridTableDataLoader(GridTable dm) {
 		this.dataModel = dm;
 		LOG.config("dataModel "+this.dataModel);
-// GridFieldVO hieß vormals / >13Jahre zurück MFieldVO	
-//		List<GridFieldVO> fieldModel = dataModel.getGridFieldVOList(); // seqno ist nicht zu bekommen, aber die Reihenfolge entspricht seqno
-//		fieldModel.forEach( field -> {
-//			LOG.config("Field_ID:"+field.AD_Field_ID + ", Column_ID:"+field.AD_Column_ID);
-//		});
 		
-		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
-//		trxName = dataModel.m_virtual ? Trx.createTrxName("Loader") : null;
-//		dataModel.setTrxName(trxName); // in swing dataModel hat trxName nix zu suchen
+//		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
+		trxName = dataModel.m_virtual ? Trx.createTrxName("Loader") : null;
+		dataModel.setTrxName(trxName); // in swing dataModel hat trxName nix zu suchen
 		trx  = trxName != null ? Trx.get(trxName, true) : null;	
 	}
 
@@ -98,25 +95,26 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		pstmt = DB.prepareStatement(sql, getTrxName());
 		resultSet = pstmt.executeQuery();
 		resultSet.next();
-		int expectedNumberofRows = resultSet.getInt(1);	
-		dataModel.setRowsToLoad(expectedNumberofRows);
+		int rowsToFind = resultSet.getInt(1);	
+//		dataModel.setRowsToLoad(rowsToFind);
 		close();
+//		LOG.config(sql + "; Query results to "+rowsToFind);
 		
 		// jetzt die tatsächlichen Daten halen
 		sql = getSelectAll();
-		LOG.config(expectedNumberofRows + " rows expected, trxName:"+getTrxName() + ", sql query=\n"+sql);
-		dbResultRows = new ArrayList<Object[]>(expectedNumberofRows);
+		LOG.config(rowsToFind + " rows expected, trxName:"+getTrxName() + ", sql query=\n"+sql);
+		dbResultRows = new ArrayList<Object[]>(rowsToFind);
 		pstmt = DB.prepareStatement(sql, getTrxName());
 		resultSet = pstmt.executeQuery();
-		while(resultSet.next() && (dbResultRows.size() < expectedNumberofRows) && !super.isCancelled()) {
+		while(resultSet.next() && (dbResultRows.size() < rowsToFind) && !super.isCancelled()) {
 			Object[] rowData = readData(resultSet, dbResultRows.size());
 			dbResultRows.add(rowData);
 			super.publish(rowData);
-			super.setProgress(100 * dbResultRows.size() / expectedNumberofRows);
+			super.setProgress(100 * dbResultRows.size() / rowsToFind);
 		}
 		close();
 		if(super.isCancelled()) {
-			LOG.warning("cancelled "+dbResultRows.size()+"/"+expectedNumberofRows + " "+100 * dbResultRows.size() / expectedNumberofRows);
+			LOG.warning("cancelled "+dbResultRows.size()+"/"+rowsToFind + " "+100 * dbResultRows.size() / rowsToFind);
 			super.firePropertyChange("cancelled", false, true);
 		}
 		return dbResultRows;
@@ -144,19 +142,19 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 //	------------------- private:
 	
 	private String getTrxName() {
-//		return dataModel.getTrxName();  // trxName ist in GridTable mit setter und getter, ABER in swing dataModel hat trxName nix zu suchen
-		return trxName;
+		return dataModel.getTrxName();  // trxName ist in GridTable mit setter und getter, ABER in swing dataModel hat trxName nix zu suchen
+//		return trxName;
 	}
+	
 	// SelectCountStar und SelectAll haben gemeinsame where clause, aus GridTable.m_whereClause und RO/RW Access TODO
     private String getSelectCountStar() {
     	return "SELECT COUNT(*) FROM "+dataModel.getTableName();
     }
     private String getSelectAll() {
-    	LOG.config("dataModel.ColumnCount="+dataModel.getColumnCount());
 		StringBuffer select = new StringBuffer("SELECT ");
 		for(int f=0; f<dataModel.getColumnCount(); f++) {
 			if(f > 0) select.append(",");
-			GridFieldBridge field = dataModel.getFieldModel(f);
+			GridFieldBridge field = (GridFieldBridge)dataModel.columnIdentifiers.get(f);
 			select.append(field.getColumnSQL()); // ColumnName or Virtual Column withAS
 		}
 		select.append("\n FROM "); // new line macht sin im log gut
@@ -176,7 +174,9 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			// get row data field by field
 			for (int f = 0; f < size; f++) {
 				// field metadata aka Column Info, GridField field 
-				GridFieldBridge field = dataModel.getFieldModel(f);
+				Object columnInfo = dataModel.columnIdentifiers.get(f);
+				GridFieldBridge field = (GridFieldBridge)columnInfo;
+// TODO:				GridFieldBridge field = dataModel.getFieldModel(f);
 				columnName = field.getColumnName();
 				displayType = field.getDisplayType(); // aka AD_Reference_ID
 				if(row==0) {

@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
-import javax.swing.event.TableModelEvent;
 
 import org.compiere.model.GridTab;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -318,11 +317,6 @@ public class Tab extends JPanel implements ComponentListener {
 	@Override
 	public void componentResized(ComponentEvent e) {
 		LOG.warning(""+e.getComponent());
-		if(e.getComponent() instanceof Tab) {
-			Tab tab = (Tab)e.getComponent();
-			LOG.config("ParentTab:"+gridTab.getParentTab());
-			this.dataLoader.execute();
-		}
 	}
 
 	@Override

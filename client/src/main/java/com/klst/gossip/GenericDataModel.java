@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 
@@ -138,14 +139,17 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 
     @Override
     public String getColumnName(int columnIndex) {
-    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
+    	GridFieldBridge field = getFieldModel(columnIndex);
 //    	LOG.config("column:"+columnIndex + " ColumnName/Identifier:"+field.getIdentifier() + " Header:"+field.getHeaderValue());
     	return field.getColumnName();
     }
 
+    // getFieldModel(int columnIndex).seqno ist nicht zu bekommen, aber die List Reihenfolge entspricht seqno
+    List<GridFieldVO> getGridFieldVOList() {
+    	return gridTab.getM_vo().getFields(); 	
+    }
+    
     GridFieldBridge getFieldModel(int columnIndex) {
-//		Object fieldModel = columnIdentifiers.get(columnIndex);
-//		return(GridFieldBridge)fieldModel;
     	return (GridFieldBridge)this.fields.getColumn(columnIndex);
     }
     
