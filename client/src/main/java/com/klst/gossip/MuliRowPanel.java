@@ -1,6 +1,7 @@
 package com.klst.gossip;
 
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -9,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.jdesktop.swingx.JXTable;
@@ -82,11 +84,8 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 	}
 /* zum Nachlesen aus super:
  * ... JXTable registers SwingX default table renderers instead of core defaults (see {@link DefaultTableRenderer}) 
- * The recommended approach for
- * customizing rendered content it to intall a DefaultTableRenderer configured
- * with a custom String- and/or IconValue. F.i. assuming the cell value is a
- * File and should be rendered by showing its name followed and date of last
- * change:
+ * The recommended approach for customizing rendered content is to intall a DefaultTableRenderer configured with a custom String- and/or IconValue. 
+ * F.i. assuming the cell value is a File and should be rendered by showing its name followed and date of last change:
  * 
  * <pre><code>
  * StringValue sv = new StringValue() {
@@ -121,26 +120,33 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 //		return stamp;		
 //	}
 
-	// es gibt zwei exits bei public void tableChanged( ...
+	// es gibt zwei exits in (super) public void tableChanged( ...
 	// - preprocessModelChange(e)
 	// - postprocessModelChange(e); 
 	protected void preprocessModelChange(TableModelEvent event) {
 		LOG.config("Column:"+event.getColumn() + " FirstRow="+event.getFirstRow()+" LastRow="+event.getLastRow() + " Source:"+event.getSource());
-//		String name = this.gridTab==null ? "null" : this.gridTab.getName();
-//		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
 		super.preprocessModelChange(event);
 	}
-//	protected void postprocessModelChange(TableModelEvent event) {
-//		String name = this.gridTab==null ? "null" : this.gridTab.getName();
-//		LOG.config("gridTab.Name=:'"+name + "', event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount());
-//		super.postprocessModelChange(event);
-//		if(dataModel.getRowCount()>0 && !isSetColumnEditors && name!=null) {
-//			setColumnEditors();
-//		}
-//	}
-
-	public void setColumnEditors() {
-		
+	protected void postprocessModelChange(TableModelEvent event) {
+		LOG.config("Column:"+event.getColumn() + " FirstRow="+event.getFirstRow()+" LastRow="+event.getLastRow() + " Source:"+event.getSource());
+		super.postprocessModelChange(event);
+		if(dataModel.getRowCount()>0 && !isSetColumnEditors && event.getLastRow()>-1) {
+			setColumnEditors();
+		}
+	}
+	boolean isSetColumnEditors = false;
+	public void setColumnEditors() { // TODO das sind noch keine Editoren
+		isSetColumnEditors = true;
+		GridFields tableColumnModel = ((GenericDataModel)dataModel).getColumns(); // aka TableColumnModel
+//		List<TableColumn> colList = tableColumnModel.getColumns(true); // get all columns, includeHidden
+//		colList.forEach(aColumn -> {
+//			GridFieldBridge gColumn = (GridFieldBridge)aColumn;
+//			LOG.config(aColumn.getModelIndex() + ":" + gColumn);
+//		});
+		Object[] row0 = ((GenericDataModel)dataModel).getRow(0);
+		for(int c=0; c<tableColumnModel.getColumnCount(); c++) {
+			LOG.config("first row,col "+c+" "+row0[c] + (row0[c]==null ? "" : " "+row0[c].getClass()));
+		}
 	}
 
 }

@@ -162,12 +162,12 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 
     public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("GridFieldBridge[field="+this.field.toString());
-		stringBuilder.append(", DisplayType="+getDisplayType()); 
-		stringBuilder.append(", isDisplayed="+isDisplayed()); 
-		stringBuilder.append(", isDisplayedGrid="+isDisplayedGrid()); 
-		
-		stringBuilder.append("]");
+		stringBuilder.append("GridFieldBridge[");
+		stringBuilder.append("DisplayType=").append(getDisplayType()); 
+		stringBuilder.append(", isDisplayed=").append(isDisplayed()); 
+		stringBuilder.append(", isDisplayedGrid=").append(isDisplayedGrid()); 
+		stringBuilder.append("] ");
+		stringBuilder.append(this.field.toStringX());
 		return stringBuilder.toString();	
     }
 

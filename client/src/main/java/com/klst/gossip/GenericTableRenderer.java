@@ -43,7 +43,7 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
     		return value;
     	}
     	String className = "org.compiere.model.X_" + columnName.substring(0, columnName.length()-3);
-    	LOG.config(">>>>>>>>>>>>>>>>>className="+className);
+    	LOG.config(columnName + " >>> className="+className);
     	try {
 			Class<?> classClass = ClassLoader.getSystemClassLoader().loadClass(className);
 			// oder kurz: Class<?> theClass = Class.forName(theType);
@@ -91,26 +91,15 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     	Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    	LOG.config(table 
-    			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass())
-    			+ "\ncomponent:"+component);
+//    	LOG.config(table 
+//    			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass())
+//    			+ "\ncomponent:"+component);
     	
 		if(table instanceof MuliRowPanel) {
-//			if(row==-1) { // TableHeader
-//				return component;
-//			}
-			//TableModel dataModel = table.getModel();
 			GenericDataModel dataModel = (GenericDataModel)table.getModel();
 			if(dataModel.isCellEditable(row, column)) {
 				// TODO dann sollten sie einen Editor haben
 			} else {
-////				LOG.config("ColumnClass aka Storage Class aka DisplayType="+dataModel.getColumnClass(column)); // java.lang.Integer java.lang.String ...
-//				if(dataModel.getColumnName(column).endsWith("_ID")) { // zB AD_Org_ID
-////					new X_AD_Org(Properties ctx, int AD_Org_ID = value, String trxName)
-//					LOG.config(">>>>>>>>>>>>>>>>>ColumnName="+dataModel.getColumnName(column));
-//					// value ersetzten durch "select value from XXX -tablename where dataModel.getColumnName(column)=value"
-//					// bzw Lookup gridField.getLookup()
-//				}
 				value = getObject(dataModel.getColumnName(column), value);
 				component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				((JComponent)component).setForeground(Color.GRAY);

@@ -87,19 +87,6 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}
 
-	public void setLoadState(StateValue state) {
-		LOG.config(this.getName()+" StateValue:"+state);
-//		frame.actionStatus.setText(state.name()); // sieht nicht gut aus => Ampel:
-		frame.actionStatus.setIcon(statusToTrafficlights.get(state));
-		if(state.equals(StateValue.STARTED)) {
-			frame.setVisible(true);		
-			updateStatusBar();
-		} else if(state.equals(StateValue.DONE)) {
-			frame.setVisible(true);	
-			updateStatusBar();
-		}
-	}
-
 	public GridTab getGridTab() {
 		return this.gridTab;
 	}
@@ -209,7 +196,7 @@ public class Tab extends JPanel implements ComponentListener {
 //		GridTab gridTab = getGridTabs().get(0); // first Tab
 //		Tab tab = getTabs().get(0); 
 		Dimension preferredDim = initModelAndTable(null); // null == calculate preferredDim 
-		LOG.config(this.getName()+" preferredDim:"+preferredDim);
+		LOG.config("'"+this.getName()+"' preferredDim:"+preferredDim);
         frame.tabPane = new HidableTabbedPane(gridTab.getName(), this);
         for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
         	GridTab gt = getGridTabs().get(i);
@@ -273,7 +260,7 @@ public class Tab extends JPanel implements ComponentListener {
 	        
 //	        CustomColumnFactory factory = new CustomColumnFactory();
 	        
-	        LOG.config("CellSelectionEnabled:"+mrp.getCellSelectionEnabled()); // sollte true sein!?
+	        LOG.config("CellSelectionEnabled:"+mrp.getCellSelectionEnabled()); // sollte true sein!? TODO ist aber false
 			this.listSelectionModel = mrp.getSelectionModel();
 	        listSelectionModel.addListSelectionListener(event -> {
 	        	currentRow = event.getFirstIndex();
@@ -291,34 +278,51 @@ public class Tab extends JPanel implements ComponentListener {
  		this.dataLoader = new GenericDataLoader(this.dataModel);
  		
         BindingGroup group = new BindingGroup();
-        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, 
-        		BeanProperty.create("progress"),
-        		frame.progressBar, BeanProperty.create("value")));
-        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, 
-        		BeanProperty.create("state"),
-        		this, BeanProperty.create("loadState"))); // call setLoadState 
-//        group.addBinding(Bindings.createAutoBinding(READ, loader, 
-//        		BeanProperty.create("cancelled"), // liefert Boolean.TRUE
-//        		frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+//      group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("cancelled"), frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
         group.bind();
 
 //		setVisible(true); // in setLoadState
         
         dataLoader.addPropertyChangeListener(event -> {
-        	if ("cancelled".equals(event.getPropertyName())) {
-        		if(dataLoader.isCancelled()) {
-        			frame.tableStatus.setText("cancelled ");
-        			setLoadState(StateValue.PENDING);
-        		}
+        	//LOG.config("event.getPropertyName() =============== event:"+event);
+//        	if ("cancelled".equals(event.getPropertyName())) { // ist gar nicht gebunden ==> also raus/auskommentieren
+//        		if(dataLoader.isCancelled()) {
+//        			frame.tableStatus.setText("cancelled ");
+//        			setLoadState(StateValue.PENDING);
+//        		}
+//        	}
+        	if ("state".equals(event.getPropertyName())) {
+//        		if(event.getNewValue()==StateValue.DONE) ...
+        		setLoadState((StateValue)event.getNewValue());
         	}
         });
 		return dataLoader;		
+	}
+
+	public void setLoadState(StateValue state) {
+		LOG.config(this.getName()+" StateValue:"+state);
+//		frame.actionStatus.setText(state.name()); // sieht nicht gut aus => Ampel:
+		frame.actionStatus.setIcon(statusToTrafficlights.get(state));
+		if(state.equals(StateValue.STARTED)) {
+			frame.setVisible(true);		
+			updateStatusBar();
+		} else if(state.equals(StateValue.DONE)) {
+			frame.setVisible(true);	
+			updateStatusBar();
+		}
 	}
 
 	// wg. ComponentListener
 	@Override
 	public void componentResized(ComponentEvent e) {
 		LOG.warning(""+e.getComponent());
+		if(e.getComponent() instanceof Tab) {
+			Tab tab = (Tab)e.getComponent();
+			LOG.config("ParentTab:"+gridTab.getParentTab());
+			this.dataLoader.execute();
+		}
 	}
 
 	@Override

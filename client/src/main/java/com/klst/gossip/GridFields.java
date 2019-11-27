@@ -10,7 +10,7 @@ import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
-// GridField aka TableColumn, vll von TableColumn ableiten
+// GridField aka TableColumn
 // diese Klasse kapselt GridField[] fields
 
 // durch das Ableiten von org.jdesktop.swingx.table.DefaultTableColumnModelExt sind alle notwendigen Methoden wg implements TableColumnModelExt vorimplementiert
@@ -40,51 +40,6 @@ public class GridFields extends DefaultTableColumnModelExt // extends DefaultTab
 				LOG.config(c+" add visible: "+aColumn + " Description:"+gColumn.getDescription()+ " CellRenderer=CellRenderer"+aColumn.getCellRenderer());
 			} else {
 				LOG.config(c+" not visible: "+aColumn);
-/*				aColumn.setVisible(false); liefert
-Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: 6 >= 6
-	at java.util.Vector.elementAt(Vector.java:477)
-	at javax.swing.table.DefaultTableColumnModel.getColumn(DefaultTableColumnModel.java:294)
-	at com.klst.gossip.SingleRowPanel.getSingleRowPanelSize(SingleRowPanel.java:44)
-	at com.klst.gossip.Tab.getSingleRowPanelSize(Tab.java:229)
-	at com.klst.gossip.Tab.initModelAndTable(Tab.java:244)
-	at com.klst.gossip.Tab.getDataLoader(Tab.java:210)
-	at com.klst.gossip.RootFrame.openNewFrame(RootFrame.java:156)
-	at com.klst.client.MenuPanel.mouseClicked(MenuPanel.java:403)
-	at com.klst.client.MenuPanel$VTreePanel_mouseAdapter.mouseClicked(MenuPanel.java:421)
-	at java.awt.AWTEventMulticaster.mouseClicked(AWTEventMulticaster.java:270)
-	at java.awt.Component.processMouseEvent(Component.java:6542)
-	at javax.swing.JComponent.processMouseEvent(JComponent.java:3324)
-	at org.jdesktop.swingx.JXTreeTable.processMouseEvent(JXTreeTable.java:460)
-	at java.awt.Component.processEvent(Component.java:6304)
-	at java.awt.Container.processEvent(Container.java:2239)
-	at java.awt.Component.dispatchEventImpl(Component.java:4889)
-	at java.awt.Container.dispatchEventImpl(Container.java:2297)
-	at java.awt.Component.dispatchEvent(Component.java:4711)
-	at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4904)
-	at java.awt.LightweightDispatcher.processMouseEvent(Container.java:4544)
-	at java.awt.LightweightDispatcher.dispatchEvent(Container.java:4476)
-	at java.awt.Container.dispatchEventImpl(Container.java:2283)
-	at java.awt.Window.dispatchEventImpl(Window.java:2746)
-	at java.awt.Component.dispatchEvent(Component.java:4711)
-	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:760)
-	at java.awt.EventQueue.access$500(EventQueue.java:97)
-	at java.awt.EventQueue$3.run(EventQueue.java:709)
-	at java.awt.EventQueue$3.run(EventQueue.java:703)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:74)
-	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:84)
-	at java.awt.EventQueue$4.run(EventQueue.java:733)
-	at java.awt.EventQueue$4.run(EventQueue.java:731)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:74)
-	at java.awt.EventQueue.dispatchEvent(EventQueue.java:730)
-	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:205)
-	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:116)
-	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:105)
-	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
-	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:93)
-	at java.awt.EventDispatchThread.run(EventDispatchThread.java:82)
- */
 //				this.isRemovedToInvisibleEvent(c); // bewirkt nichts ?????
 			}
 		}
@@ -97,7 +52,7 @@ Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException:
 
 	@Override
 	public int getColumnCount(boolean includeHidden) {
-		LOG.config("includeHidden="+includeHidden + " (false/true)="+super.getColumnCount(false)+"/"+super.getColumnCount(true));
+//		LOG.config("includeHidden="+includeHidden + " (false/true)="+super.getColumnCount(false)+"/"+super.getColumnCount(true));
 		return super.getColumnCount(includeHidden);
 	}
 

@@ -27,6 +27,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 	//private GridFieldBridge[] fields = null; // oder noch besser:
 	private GridFields fields;
 	private int rowsToLoad = -1; // der Loader liefert es
+	boolean m_virtual = false; // wie in GridTable TODO erklären
 	
 	// ctor
 	public GenericDataModel(GridTab gridTab, int windowNo) {
@@ -138,10 +139,16 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
     @Override
     public String getColumnName(int columnIndex) {
     	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
-    	LOG.config("column:"+columnIndex + " ColumnName/Identifier:"+field.getIdentifier() + " Header:"+field.getHeaderValue());
+//    	LOG.config("column:"+columnIndex + " ColumnName/Identifier:"+field.getIdentifier() + " Header:"+field.getHeaderValue());
     	return field.getColumnName();
     }
 
+    GridFieldBridge getFieldModel(int columnIndex) {
+//		Object fieldModel = columnIdentifiers.get(columnIndex);
+//		return(GridFieldBridge)fieldModel;
+    	return (GridFieldBridge)this.fields.getColumn(columnIndex);
+    }
+    
     public Object getHeaderValue(int columnIndex) {
     	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
     	return field.getHeaderValue();
@@ -165,7 +172,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 		return this.gridTab.getName();
 	}
 
-	public String getDbTableName() {
+	public String getTableName() {
 		return this.gridTab.get_TableName();
 	}
 
