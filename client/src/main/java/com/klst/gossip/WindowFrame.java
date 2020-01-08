@@ -20,6 +20,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
@@ -180,7 +181,11 @@ public class WindowFrame extends JFrame implements WindowListener {
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
             	Tab tab = this.getSelectedTab();
-            	tab.refresh(); // Exception tab kann null sein, zB im RootFrame TODO
+            	if(tab==null) { // tab kann null sein, zB im RootFrame TODO
+            		LOG.config("TODO refresh for "+this + "\nLaF:"+UIManager.getLookAndFeel());
+             	} else {
+            		tab.refresh();
+            	}
             });
             mEdit.add(refreshItem);
 

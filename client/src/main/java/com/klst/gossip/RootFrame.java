@@ -124,13 +124,13 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
 		loginPanel = new LoginPanel();
 		
-//		updateLaF(NimbusLookAndFeel.class.getName()); // TODO Nimbus als default LAF (statt Metal Ocean): 
-		// TableHeader ist im MenuPanel nicht korrekt gerendert
-		// vertikal ScrolBar nicht Nimbus
-		
 		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
 		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
 
+		updateLaF(NimbusLookAndFeel.class.getName(), false); // Nimbus als default LAF (statt Metal Ocean): 
+		miNimbusLaF.setSelected(true);
+		// TableHeader ist im MenuPanel nicht korrekt gerendert - Spaltenbreite
+		
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -419,6 +419,10 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 	}
 	
 	private void updateLaF(String plaf) {
+		updateLaF(plaf, true);
+	}
+	
+	private void updateLaF(String plaf, boolean propagate) {
 		try {
 			UIManager.setLookAndFeel(plaf);
 //			msg.setText(plaf);
@@ -434,7 +438,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		}
 		SwingUtilities.updateComponentTreeUI(this);
 		this.pack();
-		// propagieren:
+		if(!propagate) return;
 		Iterator<JFrame> i = frames.iterator();
 		while(i.hasNext()) {
 			JFrame f = i.next();
