@@ -182,7 +182,8 @@ public class WindowFrame extends JFrame implements WindowListener {
             refreshItem.addActionListener(event -> {
             	Tab tab = this.getSelectedTab();
             	if(tab==null) { // tab kann null sein, zB im RootFrame TODO
-            		LOG.config("TODO refresh for "+this + "\nLaF:"+UIManager.getLookAndFeel());
+            		LOG.config("refresh for "+this + "\nLaF:"+UIManager.getLookAndFeel());
+            		this.refresh();
              	} else {
             		tab.refresh();
             	}
@@ -228,6 +229,10 @@ public class WindowFrame extends JFrame implements WindowListener {
 
 	}
 
+	void refresh() {
+		LOG.config("to be implemented by subclass");
+	}
+	
 	public int getWindowNo() {
 		return this.windowNo;
 	}

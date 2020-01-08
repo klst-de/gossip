@@ -159,7 +159,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			GridFieldBridge field = dataModel.getFieldModel(f);
 			select.append(field.getColumnSQL()); // ColumnName or Virtual Column withAS
 		}
-		select.append("\n FROM "); // new line macht sin im log gut
+		select.append("\n FROM "); // new line macht sich im log gut
 		select.append(dataModel.getTableName());
 		return select.toString();
     }

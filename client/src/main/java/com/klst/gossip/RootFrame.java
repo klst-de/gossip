@@ -1,6 +1,7 @@
 package com.klst.gossip;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -64,6 +65,8 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	}
 	// <<<
 
+	Dimension initialSize;
+	
 	JMenuItem miBank;
 	JMenuItem miCountry;
 	JMenuItem miDocument;
@@ -134,6 +137,8 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+		initialSize = getBounds().getSize(); 
+    	LOG.config("ctor fertig. initialSize="+initialSize + " width="+this.getWidth() + " height="+this.getHeight()+ "\n");
 	}
 
 	void login() {
@@ -287,6 +292,12 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
         });
         group.add(miNimbusLaF);
         mLuf.add(miNimbusLaF);
+	}
+
+	void refresh() {
+		menuPanel.setInitialTree();
+    	setSize(initialSize);
+    	revalidate();
 	}
 
 	// wie  VEditorFactory.getEditor(m_mTab, mField, false); // TODO

@@ -230,8 +230,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         	
         refreshButton.addActionListener(event -> {
         	LOG.config("event "+event); // TODO initial size merken
-        	tree.collapseAll();
-        	tree.expandRow(0);
+        	rootFrame.refresh();
         });
 
         expandButton.addActionListener(event -> {
@@ -252,6 +251,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // treePanel.addPropertyChangeListener(VTreePanel.NODE_SELECTION, this);
 //        tree.addPropertyChangeListener(listener);
         tree.addMouseListener(mouseListener);
+    }
+    
+    void setInitialTree() {
+    	tree.collapseAll();
+    	tree.expandRow(0);   	
     }
     
     // <snip> JXTree rollover
@@ -367,7 +371,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 	
 	// call back
 	void mouseClicked(MouseEvent e) {
-		LOG.finest("MouseEvent:" //+e.getSource()
+		LOG.config("MouseEvent:" //+e.getSource()
 		+ " Button:"+e.getButton() + " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
 		// 1 java.awt.event.MouseEvent[MOUSE_CLICKED,(116,25),absolute(877,397),button=1,modifiers=Button1,clickCount=1] on componentTreeTable [16]
 		//MouseEvent.BUTTON1 == LIMA
@@ -378,7 +382,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount()>0) {
 					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
 					int selRow = tree.getRowForPath(treePath);
-					LOG.finest("es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
+					LOG.config("381 es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
 					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
 					if(node.isWindow()) {
 						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
