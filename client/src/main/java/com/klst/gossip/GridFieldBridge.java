@@ -1,8 +1,12 @@
 package com.klst.gossip;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.compiere.model.GridField;
+import org.compiere.model.Lookup;
+import org.compiere.model.MAccountLookup;
+import org.compiere.model.MImage;
 import org.jdesktop.swingx.table.TableColumnExt;
 
 // Kapselt GridField, das wiederum GridFieldVO enthält
@@ -144,6 +148,14 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
         return field.isLongField();
     }
 	
+    public boolean isAutocomplete() {
+        return field.isAutocomplete();
+    }
+	
+    public List<String> getEntries() {
+    	return field.getEntries();
+    }
+    
     public int getSeqNoGrid() { // ist immer 0!
         return field.getSeqNoGrid();
     }
@@ -160,6 +172,38 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
         return field.getIncluded_Tab_ID();
     }
 
+    public String getValueMax() {
+        return field.getValueMax();
+    }
+    public String getValueMin() {
+        return field.getValueMin();
+    }
+    
+    public String getVFormat() {
+    	return field.getVFormat();
+    }
+    
+    public String getObscureType() {
+    	return field.getObscureType();
+    }
+    
+    public String getHelp() {
+    	return field.getHelp();
+    }
+    
+    public Lookup getLookup() {
+    	return field.getLookup();
+    }
+    
+    public MAccountLookup getAccountLookup() {
+    	return new MAccountLookup(field.getVO().ctx, field.getWindowNo());
+    }
+    
+    public MImage getImage() {
+    	field.getVFormat();
+    	return MImage.get(field.getVO().ctx, field.getAD_Image_ID());
+    }
+    
     public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("GridFieldBridge[");
