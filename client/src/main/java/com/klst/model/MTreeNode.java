@@ -147,8 +147,8 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 //	private boolean		m_iscollapsible;
 
 	public String toString() {
-		return "["+m_node_ID + "/" + m_parent_ID // + "/" + m_onBar + "/" + m_color 
-				+ " " +m_imageIndicator + m_seqNo + " - " + m_name +"]"; 
+		return "["+getClass() + " node_ID/parent_ID:" +m_node_ID + "/" + m_parent_ID // + "/" + m_onBar + "/" + m_color 
+				+ " imageIndicator+seqNo:" +m_imageIndicator + m_seqNo + " name=" + m_name +"]"; 
 	}
 
 	public int getNode_ID() {

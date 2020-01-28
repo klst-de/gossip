@@ -382,7 +382,27 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount()>0) {
 					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
 					int selRow = tree.getRowForPath(treePath);
-					LOG.config("381 es ist "+COMPONENT_NAME + " row:"+selRow + " "+treePath.getLastPathComponent());
+					LOG.config("386 es ist "+COMPONENT_NAME + " row:"+selRow + " treePath:"+treePath
+							+ "\n   0.PathComponent:"+treePath.getPathComponent(0) 
+							+ "\n LastPathComponent:"+treePath.getLastPathComponent() + " Path.size="+treePath.getPath().length);
+					
+					JXTreeTable tt = (JXTreeTable)e.getSource();
+					TreePath tp = tt.getPathForLocation(e.getX(), e.getY());
+//					TreePath tp = tt.getPathForRow(selRow);
+//					tt.getTreeTableModel()
+					LOG.config(" ExpandsSelectedPaths="+tt.getExpandsSelectedPaths() +" "+tp);
+					if(tt.getExpandsSelectedPaths()) {
+						if(tt.isExpanded(tp)) tt.collapsePath(tp);
+						else {
+							tt.expandPath(tp);
+						}
+					}
+/* zu https://github.com/klst-de/gossip/issues/5
+ 
+nach diesem commit tritt dr Fehler auf, wenn aus das "Menu Expand" icon geklickt wird	
+dto bei "Sales Management" - es wird Lead geoffnet 			
+ 					
+ */
 					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
 					if(node.isWindow()) {
 						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
