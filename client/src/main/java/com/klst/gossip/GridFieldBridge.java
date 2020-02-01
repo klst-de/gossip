@@ -17,6 +17,8 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	private static final Logger LOG = Logger.getLogger(GridFieldBridge.class.getName());
 	
 	private GridField field = null;
+	private Class<?> colClass = null;
+	private int displayType = 0; //-1;
 	
 	// TableColumn ctors:
     //public TableColumn() 
@@ -39,6 +41,19 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 		setHeaderValue(this.field.getHeader());
 //		setEditable(this.field.isEditable(true)); // always checkContext
 	}
+	public GridFieldBridge(String columnName, String header, Class<?> colClass, int displayType) {
+		super();
+		this.field = null;
+		this.colClass = colClass;
+		this.displayType = displayType;
+
+		setIdentifier(columnName);
+		setHeaderValue(header);
+	}
+	
+	public Class<?> getColClass() {
+		return this.colClass;
+	}
 	
 	public int getAD_Column_ID() {
 		return field.getAD_Column_ID();
@@ -53,6 +68,7 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	}
 	
 	public int getAD_Field_ID() {
+		if(field==null) return -1;
 		return field.getAD_Field_ID();
 	}
 	
@@ -89,6 +105,7 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	}
 	
     public String getColumnName() {
+    	if(field==null) return (String)getIdentifier();
         return field.getColumnName(); // oder (String)this.getIdentifier();
     }
 	
@@ -101,18 +118,23 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     }
 	
     public String getColumnSQL() {
+//    	LOG.config(""+field);
+    	if(field==null) return (String)getIdentifier();
         return field.getColumnSQL(true); //	ColumnName or Virtual Column // boolean withAS
     }
 	
     public boolean isEditable(boolean checkContext) { // in super TableColumnExt gibt es isEditable() ohne para !
+    	if(field==null) return false;
         return field.isEditable(true); // always checkContext
     }
 	
     public boolean isMandatory(boolean checkContext) {
+    	if(field==null) return false;
         return field.isMandatory(true); // checkContext
     }
 	
     public boolean isDisplayed() {
+    	if(field==null) return true;
         return field.isDisplayed();
     }
 	
@@ -125,22 +147,27 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     }
 	
     public boolean isHeading() {
+    	if(field==null) return false;
         return field.isHeading();
     }
 	
     public boolean isReadOnly() {
+    	if(field==null) return true;
         return field.isReadOnly();
     }
 	
     public boolean isUpdateable() {
+    	if(field==null) return false;
         return field.isUpdateable();
     }
 	
     public boolean isEncryptedColumn() {
+    	if(field==null) return false;
         return field.isEncryptedColumn();
     }
 	
     public boolean isSameLine() {
+    	if(field==null) return false;
         return field.isSameLine();
     }
 	
@@ -161,15 +188,18 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     }
 	
     public int getDisplayType() {
+    	if(field==null) return this.displayType;
         return field.getDisplayType();
     }
 	
     public int getWindowNo() {
+    	if(field==null) return -1; // TODO interim
         return field.getWindowNo();
     }
 	
     public int getIncluded_Tab_ID() {
-        return field.getIncluded_Tab_ID();
+    	if(field==null) return -1; // TODO interim
+    	return field.getIncluded_Tab_ID();
     }
 
     public String getValueMax() {
@@ -207,11 +237,17 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("GridFieldBridge[");
-		stringBuilder.append("Field_IDe=").append(getAD_Field_ID()); 
-		stringBuilder.append(", isDisplayed=").append(isDisplayed()); 
-		stringBuilder.append(", isDisplayedGrid=").append(isDisplayedGrid()); 
-		stringBuilder.append("] ");
-		stringBuilder.append(this.field.toStringX());
+		if(field==null) {
+			stringBuilder.append("ColumnName=").append(getColumnName()); 
+			stringBuilder.append(", DisplayType=").append(getDisplayType()); 
+			stringBuilder.append("] ");		
+		} else {
+			stringBuilder.append("Field_IDe=").append(getAD_Field_ID()); 
+			stringBuilder.append(", isDisplayed=").append(isDisplayed()); 
+			stringBuilder.append(", isDisplayedGrid=").append(isDisplayedGrid()); 
+			stringBuilder.append("] ");
+			stringBuilder.append(this.field.toStringX());		
+		}
 		return stringBuilder.toString();	
     }
 

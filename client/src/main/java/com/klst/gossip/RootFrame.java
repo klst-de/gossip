@@ -50,15 +50,15 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	// frame mgt
 	List<JFrame> frames;
 	private static final int FRAMES_INITIAL_CAPACITY = 10;
-	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID, GridWindow gridWindow) {
-		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID, gridWindow);
+	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID, Object object) {
+		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID, object);
 		frame.setDefaultCloseOperation(frames.isEmpty() ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
 		frames.add(frame);
 		return frame;
 	}
-	private WindowFrame makeWindow(int window_ID, GridWindow gridWindow) {
+	private WindowFrame makeWindow(int window_ID, Object object) {
 		int frameNumber = frames.size();
-		return makeFrame(frameNumber, this, window_ID, gridWindow);
+		return makeFrame(frameNumber, this, window_ID, object);
 	}
 	boolean remove(JFrame frame) {
 		return frames.remove(frame);
@@ -149,22 +149,33 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 	}
 	
 	void openNewFrame(int window_ID) {
+		openNewFrame(window_ID, null);
+	}
+	void openNewFrame(int window_ID, GenericDataModel gdm) {
 		LOG.config("new frame aka Window with window_ID="+window_ID);
 		Properties ctx = Env.getCtx();
 		ctx.forEach((key,value) -> { // zum Test
 			LOG.info("ctx key:"+key + " : " + value.toString());
 		});
 		
-		GridWindow gridWindow = getGridWindow(window_ID);
-		if(gridWindow==null) {
-			LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
-		} else {
+		if(gdm==null) {
+			GridWindow gridWindow = getGridWindow(window_ID);
+			if(gridWindow==null) {
+				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+				return;		
+			}
 			WindowFrame frame = makeWindow(window_ID, gridWindow);
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab direkt laden, das nur testweise, also ohne Auswahl 
 			// denn es gibt Window mit AuswahlSpalten, zB Business Partner
 			frame.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
 			task.execute();
+		} else {
+			WindowFrame frame = makeWindow(window_ID, gdm);
+			LOG.config("infoframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
+			GenericDataLoader task = frame.infoWindow.getDataLoader();
+			frame.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
+			task.execute();						
 		}
 		
 	}

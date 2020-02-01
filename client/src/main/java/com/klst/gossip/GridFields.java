@@ -25,6 +25,10 @@ public class GridFields extends DefaultTableColumnModelExt // extends DefaultTab
 	
 	private static final Logger LOG = Logger.getLogger(GridFields.class.getName());
 
+	public GridFields() {
+		super();
+		LOG.warning("empty - use addColumn");
+	}
 	public GridFields(GridField[] gfields) {
 		super();
 		LOG.config("GridField[].length="+gfields.length); // Land:33

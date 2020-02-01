@@ -11,6 +11,8 @@ import javax.swing.table.DefaultTableModel;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Msg;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
 public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
@@ -24,7 +26,8 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 
     private int windowNo;
     private GridTab gridTab;  // Tab Model - a combination of AD_Tab (the display attributes) and AD_Table information.
-
+    private String name, tableName;
+    
 	//private GridFieldBridge[] fields = null; // oder noch besser:
 	private GridFields fields;
 	private int rowsToLoad = -1; // der Loader liefert es
@@ -34,9 +37,41 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 	public GenericDataModel(GridTab gridTab, int windowNo) {
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
-		this.fields = new GridFields(this.gridTab.getFields());
+		if(this.gridTab==null) {
+			this.fields = new GridFields();
+		} else {
+			this.fields = new GridFields(this.gridTab.getFields());
+			this.name = gridTab.getName();
+			this.tableName = gridTab.get_TableName();
+			LOG.warning("gridTab.Name="+name + " gridTab.TableName="+tableName);
+		}
 	}
 
+	public GenericDataModel(String string, int infoWindowId) {
+		this((GridTab)null, infoWindowId);
+		this.name = string;
+		if("Product".equals(string)) {
+			this.tableName = "M_PRODUCT_STOCK_V";   // aus InfoProduct : String s_sqlFrom = " M_PRODUCT_STOCK_V ";
+/* aus InfoProduct
+        		new ColumnInfo(" ", "M_Warehouse_ID", IDColumn.class),
+        		new ColumnInfo(Msg.translate(Env.getCtx(), "WarehouseName"), "WarehouseName", String.class),
+        		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyAvailable"), "sum(QtyAvailable)", Double.class, true, true, null),
+        		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOnHand"), "sum(QtyOnHand)", Double.class),
+           		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyReserved"), "sum(QtyReserved)", Double.class),
+           		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOrdered"), "sum(QtyOrdered)", Double.class)};
+ */
+//			fields.addColumn(new GridFieldBridge("M_Warehouse_ID", Msg.translate(Env.getCtx(), "M_Warehouse_ID"), IDColumn.class));
+			fields.addColumn(new GridFieldBridge("M_Warehouse_ID", Msg.translate(Env.getCtx(), "Warehouse"), Integer.class, DisplayType.ID));
+			fields.addColumn(new GridFieldBridge("WarehouseName", Msg.translate(Env.getCtx(), "WarehouseName"), String.class, DisplayType.String));
+			fields.addColumn(new GridFieldBridge("QtyAvailable", Msg.translate(Env.getCtx(), "QtyAvailable"), Double.class, DisplayType.Number));
+			fields.addColumn(new GridFieldBridge("QtyOnHand", Msg.translate(Env.getCtx(), "QtyOnHand"), Double.class, DisplayType.Number));
+			fields.addColumn(new GridFieldBridge("QtyReserved", Msg.translate(Env.getCtx(), "QtyReserved"), Double.class, DisplayType.Number));
+			fields.addColumn(new GridFieldBridge("QtyOrdered", Msg.translate(Env.getCtx(), "QtyOrdered"), Double.class, DisplayType.Number));
+			// ...
+		} else {
+			LOG.warning("TODO nicht implementiert für "+string); // TODO
+		}
+	}
 	public String toString() {
 		return getClass().getName() +" windowNo="+windowNo + " gridTab:["+gridTab+"]" + " #fields="+fields.getColumnCount();		
 	}
@@ -173,11 +208,13 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
     }
     
 	public String getName() {
-		return this.gridTab.getName();
+		return this.name;
+//		return this.gridTab.getName();
 	}
 
 	public String getTableName() {
-		return this.gridTab.get_TableName();
+		return this.tableName;
+//		return this.gridTab.get_TableName();
 	}
 
 	public int getWindowNo() {

@@ -1,6 +1,7 @@
 package com.klst.gossip;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
@@ -19,6 +20,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -48,6 +50,8 @@ public class WindowFrame extends JFrame implements WindowListener {
 
 	private static final Logger LOG = Logger.getLogger(WindowFrame.class.getName());
 	
+	static final int INFO_WINDOW_ID = 385; // "Info Window" == AD_Window_ID=385
+	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
 	
 	static final int SMALL_ICON_SIZE = 16;
@@ -62,7 +66,8 @@ public class WindowFrame extends JFrame implements WindowListener {
 	private String trxName;
 	private MWindow mWindow; // eigentlich sollten allen mWindow Daten aus gridWindow kommen
 	// GridWindow is ein wrapper für MWindow
-	protected GridWindow gridWindow; // GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
+	protected GridWindow gridWindow; // (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
+	protected InfoPanel infoWindow; 
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
 	private List<GridTab> gridTabs; // TODO verschieben nach WindowPame - wieso List statt Set
@@ -108,7 +113,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	WindowFrame(String title) { // für RootFrame
 		this(title, null, -1, null);
 	}
-	WindowFrame(String title, RootFrame rootFrame, int window_ID, GridWindow gridWindow) {
+	WindowFrame(String title, RootFrame rootFrame, int window_ID, Object object) {
 		super(title);
 		windowCounter++;
 		this.windowNo = windowCounter-1;
@@ -120,18 +125,22 @@ public class WindowFrame extends JFrame implements WindowListener {
 
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
-		if(this.window_ID == -1) {
-			setTitle(title); 
-		} else {
-			initGridWindow(gridWindow);
+		if(object instanceof GridWindow) {
+			initGridWindow((GridWindow)object);
 			// mWindow ==> gridWindow
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
-			setTitle(); 
+//			setTitle();
+			setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
+		} else if(object instanceof GenericDataModel) {
+			initInfoWindow((GenericDataModel)object);
+			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
+		} else {
+			assert(window_ID==-1);
+			setTitle(title); 
 		}
 		getContentPane().add(jPanel);
 		
-//		jPanel.add(progressBar, BorderLayout.PAGE_END);
 		jPanel.add(createStatusBar(), BorderLayout.PAGE_END);
 		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
@@ -142,10 +151,13 @@ public class WindowFrame extends JFrame implements WindowListener {
 		LOG.config(menuBar.toString());
 		this.setJMenuBar(menuBar);
 		menuBar.add(mFile);
+		menuBar.add(mInfo);
 		menuBar.add(mEdit);
 		
 		mFile.setName("file");
 		mFile.setText("File");
+		mInfo.setName("info");
+		mInfo.setText("Info");
 		mEdit.setName("edit");
 		mEdit.setText("Edit");
         if(!Env.isMac()) { 
@@ -167,12 +179,61 @@ public class WindowFrame extends JFrame implements WindowListener {
             });
             mFile.add(logoutItem);
             
+            JMenuItem infoProductlItem = new JMenuItem("Product Info", AIT.getImageIcon(AIT.PRODUCT, SMALL_ICON_SIZE));
+            infoProductlItem.setName("infoProduct");
+            infoProductlItem.setActionCommand("infoProduct");
+            infoProductlItem.addActionListener(event -> {
+            	LOG.config("item:"+infoProductlItem);
+				LOG.config("canAccessInfo:"+InfoPanel.canAccessInfo("Product"));
+				// INFO_WINDOW_ID "Info Window" AD_Window_ID=385
+				GenericDataModel tm = new GenericDataModel("Product", INFO_WINDOW_ID);
+//				InfoPanel ip = new InfoPanel(tm); zu früh, frame noch nicht da
+				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
+            });
+            mInfo.add(infoProductlItem);
+            
+            JMenuItem infoBPartnerItem = new JMenuItem("Business Partner Info", AIT.getImageIcon(AIT.BPARTNER, SMALL_ICON_SIZE));
+            infoBPartnerItem.setName("infoBPartner");
+            infoBPartnerItem.setActionCommand("infoBPartner");
+            infoBPartnerItem.addActionListener(event -> {
+            	LOG.config("item:"+infoProductlItem);
+				JComponent jc = this.getRootPane();
+				JRootPane rp = this.getRootPane(); // JComponent
+				/*
+Prsuedo:  aus AEnv
+		else if (actionCommand.equals("InfoProduct") && AEnv.canAccessInfo("PRODUCT"))
+		{ // aus Menu: JFrame:org.compiere.apps.AMenu WindowNo=0
+			org.compiere.apps.search.Info.showProduct (Env.getFrame(c), WindowNo);
+checkAccess
+AD_Window_ID=0 in menu
+? InfoPanel ist eine R/O-Variante von SingleRowPanel
+in ZK-UI gibt es abstract class InfoPanel extends Window
+				 */
+//				LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID() + " RootPane/JComponent:"+rp.getContentPane()); // Bank 158
+//				rootFrame.openNewFrame(mm.getAD_Window_ID()); ist für Objekte aus AD_Window 
+//				es gibt eine AD_Window mit Namen "Info Window" AD_Window_ID=385 (nichts definiert)
+				InfoPanel ip = null;
+				LOG.config("canAccessInfo:"+InfoPanel.canAccessInfo("BPARTNER"));
+            });
+            mInfo.add(infoBPartnerItem);
+            
             JMenuItem cancelItem = new JMenuItem("Cancel", AIT.getImageIcon(AIT.CANCEL, SMALL_ICON_SIZE));
             cancelItem.setName("cancel");
             cancelItem.setActionCommand("cancel");
             cancelItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.cancel(); // Exception tab kann null sein, zB im RootFrame TODO
+            	LOG.config("eventSource:"+event.getSource());
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+//            		Tab tab = (Tab)c;
+//            		tab.cancel();
+            		this.dispose();
+            		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.cancel();
+            	} else {
+            		LOG.warning("cancel on Component "+c);
+            	}
             });
             mEdit.add(cancelItem);
             
@@ -180,12 +241,15 @@ public class WindowFrame extends JFrame implements WindowListener {
             refreshItem.setName("refresh");
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	if(tab==null) { // tab kann null sein, zB im RootFrame TODO
-            		LOG.config("refresh for "+this + "\nLaF:"+UIManager.getLookAndFeel());
-            		this.refresh();
-             	} else {
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+            		Tab tab = (Tab)c;
             		tab.refresh();
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.refresh();
+            	} else {
+            		LOG.warning("refresh on Component "+c);
             	}
             });
             mEdit.add(refreshItem);
@@ -194,8 +258,16 @@ public class WindowFrame extends JFrame implements WindowListener {
             firstItem.setName("first");
             firstItem.setActionCommand("first");
             firstItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.first();
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+            		Tab tab = (Tab)c;
+            		tab.first();
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.first();
+            	} else {
+            		LOG.warning("go to first on Component "+c);
+            	}
             });
             mEdit.add(firstItem);
 
@@ -203,8 +275,16 @@ public class WindowFrame extends JFrame implements WindowListener {
             previousItem.setName("previous");
             previousItem.setActionCommand("previous");
             previousItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.previous();
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+            		Tab tab = (Tab)c;
+            		tab.previous();
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.previous();
+            	} else {
+            		LOG.warning("previous item on Component "+c);
+            	}
             });
             mEdit.add(previousItem);
 
@@ -212,8 +292,16 @@ public class WindowFrame extends JFrame implements WindowListener {
             nextItem.setName("next");
             nextItem.setActionCommand("next");
             nextItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.next();
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+            		Tab tab = (Tab)c;
+            		tab.next();
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.next();
+            	} else {
+            		LOG.warning("next item on Component "+c);
+            	}
             });
             mEdit.add(nextItem);
 
@@ -221,8 +309,16 @@ public class WindowFrame extends JFrame implements WindowListener {
             lastItem.setName("last");
             lastItem.setActionCommand("last");
             lastItem.addActionListener(event -> {
-            	Tab tab = this.getSelectedTab();
-            	tab.last();
+            	Component c = this.getSelectedTab();
+            	if(c instanceof Tab) {
+            		Tab tab = (Tab)c;
+            		tab.last();
+            	} else if(c instanceof InfoPanel) {
+            		InfoPanel i = (InfoPanel)c;
+            		i.last();
+            	} else {
+            		LOG.warning("next item on Component "+c);
+            	}
             });
             mEdit.add(lastItem);
         }
@@ -284,22 +380,35 @@ public class WindowFrame extends JFrame implements WindowListener {
 				.append(" AND AD_Language='")
 				.append(Env.getAD_Language(ctx)).append("'");
 		LOG.config("AD_Window_ID="+AD_Window_ID+" sql=\n"+sql
-				+ "\n !!! in GridWindowVO.create(..) call createTabs (GridWindowVO mWindowVO) !");
+				+ "\n !!! in (base)GridWindowVO.create(..) call createTabs (GridWindowVO mWindowVO) !");
 /* z.B.
 SELECT Name,Description,Help,WindowType, AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, IsSOTrx 
 FROM AD_Window w 
 WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
  */
+		if(AD_Window_ID==INFO_WINDOW_ID) { // Für INFO_WINDOW_ID liefert GridWindowVO.create "Not found" - sollte aber NoAccess sein
+			//GridWindowVO vo = new GridWindowVO(ctx, WindowNo); // private ctor!
+			//LOG.config("Add R/O acces to WindowNo "+INFO_WINDOW_ID); // auch das bringt nix
+// -----------> MRole.saveWarning: AccessTableNoView - Required=4(System Data) != UserLevel= CO [16]
+			return null;
+		}
 		// GridWindowVO.create auch private static boolean createTabs (GridWindowVO mWindowVO)
 		return GridWindowVO.create(ctx, WindowNo, AD_Window_ID, AD_Menu_ID);
 	}
 
+	private void initInfoWindow(GenericDataModel gdm) {
+		this.infoWindow = new InfoPanel(this, gdm);
+	}
 	private void initGridWindow(GridWindow gridWindow) {
+//		if(gridWindow==null) {
+//			LOG.warning("gridWindow==null");
+//			this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5 , bleibt leer
+//			return;
+//		}
 		LOG.config(">>>>GridWindow.get ...");
 		this.gridWindow = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
 		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		LOG.config("<<<<");
-		this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5
 /* WINDOWTYPEs: aus GridWindowVO		
 		public static final String	WINDOWTYPE_QUERY = "Q";
 		public static final String	WINDOWTYPE_TRX = "T";
@@ -315,14 +424,15 @@ TODO Demo für jeden Typ
 		}
 	}
 	
-	public Tab getSelectedTab() {
+	public Component getSelectedTab() { // Component can be Tab
 		if(this.tabPane==null) {
 			LOG.warning("tabPane is null");
-			return (Tab)null;
+			return null;
 		}
 		int index = tabPane.getSelectedIndex();
-		LOG.config("tabPane selected/tabs:"+index + "/" + tabPane.getTabCount());
-		return (Tab)tabPane.getComponentAt(index);
+		Component c = tabPane.getComponentAt(index);
+		LOG.config("tabPane selected/tabs:"+index + "/" + tabPane.getTabCount() + " Component:"+c);
+		return c;
 	}
 	
 	List<GridTab> getGridTabs() {
@@ -375,18 +485,25 @@ TODO Demo für jeden Typ
 
     // überschreiben, damit beim DISPOSE_ON_CLOSE der Loader worker gestoppt wird : cancel
     public void dispose() {
-    	tabs.forEach( (tab) -> {
-    		tab.cancel();
-		});
+    	if(infoWindow!=null) infoWindow.cancel();
+    	if(tabs!=null) {
+    		tabs.forEach( (tab) -> {
+    			tab.cancel();
+    		});
+    		tabs = null;
+		} else {
+			
+		}
+    	this.rootFrame.remove(this);
     	super.dispose();
     }
     
 	public void setTitle(String title) {
 		super.setTitle(title);
 	}
-	void setTitle() {
-		setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
-	}
+//	void setTitle() {
+//		setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
+//	}
 	
 	public void setTabPane(HidableTabbedPane hidableTabbedPane) { // TODO raus
 		this.tabPane = hidableTabbedPane; 
