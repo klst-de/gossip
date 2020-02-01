@@ -25,7 +25,7 @@ public class TableColumnControlButton extends ColumnControlButton { // ColumnCon
 	@Override
 	protected void updateActionUI() {
         if (getAction() == null) return;
-        Icon icon = AIT.getImageIcon(AIT.MENU, SMALL_ICON_SIZE);
+        Icon icon = AIT.getImageIcon(AIT.TABLE_COLUMN_CONTROL, SMALL_ICON_SIZE);
         getAction().putValue(Action.SMALL_ICON, icon);
 	}
 	
