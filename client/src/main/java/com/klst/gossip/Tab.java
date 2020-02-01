@@ -94,8 +94,8 @@ public class Tab extends JPanel implements ComponentListener {
 		if(this.dataLoader==null) {
 			return;
 		}
-		LOG.config("mayInterruptIfRunning");
-		dataLoader.cancel(true); // true == mayInterruptIfRunning 
+		LOG.fine("mayInterrupt dataLoader IfRunning");
+		dataLoader.cancel(true); // true == mayInterruptIfRunning
 	}
 	
 	public void refresh() {
