@@ -20,9 +20,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
@@ -184,10 +182,9 @@ public class WindowFrame extends JFrame implements WindowListener {
             infoProductlItem.setActionCommand("infoProduct");
             infoProductlItem.addActionListener(event -> {
             	LOG.config("item:"+infoProductlItem);
-				LOG.config("canAccessInfo:"+InfoPanel.canAccessInfo("Product"));
+				LOG.config("canAccessInfo:"+InfoDataModel.canAccessInfo("Product"));
 				// INFO_WINDOW_ID "Info Window" AD_Window_ID=385
-				GenericDataModel tm = new GenericDataModel("Product", INFO_WINDOW_ID);
-//				InfoPanel ip = new InfoPanel(tm); zu früh, frame noch nicht da
+				GenericDataModel tm = new InfoDataModel("Product", INFO_WINDOW_ID);
 				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
             });
             mInfo.add(infoProductlItem);
@@ -196,24 +193,10 @@ public class WindowFrame extends JFrame implements WindowListener {
             infoBPartnerItem.setName("infoBPartner");
             infoBPartnerItem.setActionCommand("infoBPartner");
             infoBPartnerItem.addActionListener(event -> {
-            	LOG.config("item:"+infoProductlItem);
-				JComponent jc = this.getRootPane();
-				JRootPane rp = this.getRootPane(); // JComponent
-				/*
-Prsuedo:  aus AEnv
-		else if (actionCommand.equals("InfoProduct") && AEnv.canAccessInfo("PRODUCT"))
-		{ // aus Menu: JFrame:org.compiere.apps.AMenu WindowNo=0
-			org.compiere.apps.search.Info.showProduct (Env.getFrame(c), WindowNo);
-checkAccess
-AD_Window_ID=0 in menu
-? InfoPanel ist eine R/O-Variante von SingleRowPanel
-in ZK-UI gibt es abstract class InfoPanel extends Window
-				 */
-//				LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID() + " RootPane/JComponent:"+rp.getContentPane()); // Bank 158
-//				rootFrame.openNewFrame(mm.getAD_Window_ID()); ist für Objekte aus AD_Window 
-//				es gibt eine AD_Window mit Namen "Info Window" AD_Window_ID=385 (nichts definiert)
-				InfoPanel ip = null;
-				LOG.config("canAccessInfo:"+InfoPanel.canAccessInfo("BPARTNER"));
+            	LOG.config("item:"+infoBPartnerItem);
+				LOG.config("canAccessInfo:"+InfoDataModel.canAccessInfo("BPartner"));
+				GenericDataModel tm = new InfoDataModel("BPartner", INFO_WINDOW_ID);
+				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
             });
             mInfo.add(infoBPartnerItem);
             
@@ -224,8 +207,6 @@ in ZK-UI gibt es abstract class InfoPanel extends Window
             	LOG.config("eventSource:"+event.getSource());
             	Component c = this.getSelectedTab();
             	if(c instanceof Tab) {
-//            		Tab tab = (Tab)c;
-//            		tab.cancel();
             		this.dispose();
             		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             	} else if(c instanceof InfoPanel) {

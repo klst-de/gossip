@@ -5,13 +5,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 import java.awt.BorderLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -20,9 +14,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 
-import org.compiere.model.I_AD_Role;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -30,6 +21,7 @@ import org.jdesktop.beansbinding.Bindings;
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 // ? InfoPanel ist eine R/O-Variante von MuliRowPanel extends JXTable, bzw Tab extends JPanel, das MuliRowPanel enthält 
+// in AD heißt es MiniTable
 public class InfoPanel extends JPanel implements ComponentListener {
 
 	private static final long serialVersionUID = -8886435209941973618L;
@@ -39,7 +31,8 @@ public class InfoPanel extends JPanel implements ComponentListener {
 	private static EnumMap<StateValue, Icon> statusToTrafficlights = new EnumMap<>(StateValue.class);
 	
 	// AD Komponenten:
-	// 
+	// (client) MiniTable extends (base)CTable implements IMiniTable
+	//
 	// swing Komponenten:
 	// JPanel 
 	// HidableTabbedPane parentContainer
@@ -206,77 +199,6 @@ public class InfoPanel extends JPanel implements ComponentListener {
 			text.append("/").append(dataModel.getRowsToLoad());
 		}
 		frame.tableRows.setText(text.toString());
-	}
-
-	private static final Map<String, String> ALLOWANCE = createMap();
-    private static Map<String, String> createMap() {
-        Map<String, String> result = new HashMap<String, String>();
-        result.put("Account", I_AD_Role.COLUMNNAME_Allow_Info_Account);
-        result.put("Asset", I_AD_Role.COLUMNNAME_Allow_Info_Asset);
-        result.put("BPartner", I_AD_Role.COLUMNNAME_Allow_Info_BPartner);
-        result.put("CashJournal", I_AD_Role.COLUMNNAME_Allow_Info_CashJournal);
-        result.put("CRP", I_AD_Role.COLUMNNAME_Allow_Info_CRP);
-        result.put("InOut", I_AD_Role.COLUMNNAME_Allow_Info_InOut);
-        result.put("Invoice", I_AD_Role.COLUMNNAME_Allow_Info_Invoice);
-        result.put("MRP", I_AD_Role.COLUMNNAME_Allow_Info_MRP);
-        result.put("Order", I_AD_Role.COLUMNNAME_Allow_Info_Order);
-        result.put("Payment", I_AD_Role.COLUMNNAME_Allow_Info_Payment);
-        result.put("Product", I_AD_Role.COLUMNNAME_Allow_Info_Product);
-        result.put("Resource", I_AD_Role.COLUMNNAME_Allow_Info_Resource);
-        result.put("Schedule", I_AD_Role.COLUMNNAME_Allow_Info_Schedule);
-        return Collections.unmodifiableMap(result);
-    }
-
-	// aus (client) AEnv
-	/**
-	 * 
-	 * @param infoWindowName Urspünglich suffix zu ALLOW_INFO_ bildet spalte in AD_ROLE, 
-	 *  besser aus AD_ROLE (AD_Table_ID=156) holen
-	 *  oder aus I_AD_Role.COLUMNNAME_Allow_Info_Account
-	 *                    .COLUMNNAME_Allow_Info_Asset
-	 *                    .COLUMNNAME_Allow_Info_BPartner
-	 *                    ... statisch
-	 * @return
-	 */
-	public static boolean canAccessInfo(String infoWindowName) {
-		boolean result=false;
-		int roleid= Env.getAD_Role_ID(Env.getCtx());
-		String sqlRolePermission="Select COUNT(AD_ROLE_ID) AS ROWCOUNT FROM AD_ROLE WHERE AD_ROLE_ID=" + roleid  
-	                              + " AND " + ALLOWANCE.get(infoWindowName) + "='Y'"; 
-
-		LOG.config(sqlRolePermission); 
-		PreparedStatement prolestmt = null; 
-		ResultSet rs = null;
-		try 
-		{ 
-			prolestmt = DB.prepareStatement (sqlRolePermission, null); 
-	 
-			rs = prolestmt.executeQuery ();  
-	 
-			rs.next(); 
-	 
-			if (rs.getInt("ROWCOUNT")>0)
-			{
-				result=true;
-			}
-			else 
-			{
-				return false;
-			}
-		} 
-		catch (Exception e) 
-		{
-				System.out.println(e); 
-				LOG.log(Level.SEVERE, "(1)", e); 
-		} 
-		finally
-		{
-			DB.close(rs, prolestmt);
-			rs = null; prolestmt = null;
-		}
-	
-		return result; 
-		
 	}
 
 	// wg. ComponentListener
