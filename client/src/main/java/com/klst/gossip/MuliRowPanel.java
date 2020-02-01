@@ -1,7 +1,6 @@
 package com.klst.gossip;
 
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -10,7 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.jdesktop.swingx.JXTable;
@@ -111,6 +109,21 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 
 	protected void createDefaultEditors() {
 		LOG.config("wann kommt diese Methode dran?????????????????");
+/* aus super:
+
+        defaultEditorsByColumnClass = new UIDefaults(3, 0.75f);
+        defaultEditorsByColumnClass.put(Object.class, new GenericEditor());
+        // Numbers
+        // JW: fix for 
+        // Issue #1183-swingx: NumberEditorExt throws in getCellEditorValue if
+        //   Integer (short, byte..) below/above min/max.
+        // Issue #1236-swingx: NumberEditorExt cannot be used in columns with Object type
+        defaultEditorsByColumnClass.put(Number.class, new NumberEditorExt(true));
+        // Booleans
+        defaultEditorsByColumnClass.put(Boolean.class, new BooleanEditor());
+
+
+ */
 		super.createDefaultEditors(); // für Object.class Number.class Boolean.class
 	}
 	// get the rendering component for the given cell
