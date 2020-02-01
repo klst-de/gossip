@@ -102,7 +102,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		dataModel.setRowsToLoad(expectedNumberofRows);
 		close();
 		
-		// jetzt die tatsächlichen Daten halen
+		// jetzt die tatsächlichen Daten holen
 		sql = getSelectAll();
 		LOG.config(expectedNumberofRows + " rows expected, trxName:"+getTrxName() + ", sql query=\n"+sql);
 		dbResultRows = new ArrayList<Object[]>(expectedNumberofRows);
@@ -176,11 +176,12 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			// get row data field by field
 			for (int f = 0; f < size; f++) {
 				// field metadata aka Column Info, GridField field 
+//				LOG.config(f+"/"+fieldData.length+": row="+row);
 				GridFieldBridge field = dataModel.getFieldModel(f);
 				columnName = field.getColumnName();
 				displayType = field.getDisplayType(); // aka AD_Reference_ID
 				if(row==0) {
-					LOG.config(f+": "+field); //SeqNoGrid="+field.getSeqNoGrid());
+					LOG.config(f+"/"+size+": "+field); //SeqNoGrid="+field.getSeqNoGrid());
 				}
 				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
 				if (displayType == DisplayType.Integer
@@ -236,9 +237,12 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 				//	String
 				else
 					fieldData[f] = rs.getString(f+1);				//	String
+				
 				//	Encrypted
 				if (field.isEncryptedColumn() && displayType != DisplayType.YesNo)
 					fieldData[f] = decrypt(fieldData[f]);
+				
+//				LOG.config("next field "+f);			
 			}
 		}
 		catch (SQLException e)
