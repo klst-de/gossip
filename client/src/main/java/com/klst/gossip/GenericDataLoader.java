@@ -96,8 +96,14 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		sql = this.getSelectCountStar();
 		LOG.config(sql + "; trxName:"+getTrxName());
 		pstmt = DB.prepareStatement(sql, getTrxName());
-		resultSet = pstmt.executeQuery();
-		resultSet.next();
+		try {
+			resultSet = pstmt.executeQuery();
+			resultSet.next();
+		} catch (SQLException ex) {
+			LOG.log(Level.SEVERE, ex.toString() + " sql:\n"+sql);
+//			ex.printStackTrace();
+			throw ex;
+		}
 		int expectedNumberofRows = resultSet.getInt(1);	
 		dataModel.setRowsToLoad(expectedNumberofRows);
 		close();
