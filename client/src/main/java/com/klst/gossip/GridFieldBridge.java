@@ -17,7 +17,6 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	private static final Logger LOG = Logger.getLogger(GridFieldBridge.class.getName());
 	
 	private GridField field = null;
-	private Class<?> colClass = null;
 	private int displayType = 0; //-1;
 	
 	// TableColumn ctors:
@@ -41,18 +40,13 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 		setHeaderValue(this.field.getHeader());
 //		setEditable(this.field.isEditable(true)); // always checkContext
 	}
-	public GridFieldBridge(String columnName, String header, Class<?> colClass, int displayType) {
+	public GridFieldBridge(String columnName, String header, int displayType) {
 		super();
 		this.field = null;
-		this.colClass = colClass;
 		this.displayType = displayType;
 
 		setIdentifier(columnName);
 		setHeaderValue(header);
-	}
-	
-	public Class<?> getColClass() {
-		return this.colClass;
 	}
 	
 	public int getAD_Column_ID() {
