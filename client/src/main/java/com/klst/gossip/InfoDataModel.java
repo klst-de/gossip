@@ -1,15 +1,19 @@
 package com.klst.gossip;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MColumn;
+import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -26,26 +30,106 @@ public class InfoDataModel extends GenericDataModel {
 		
 		this.setName(name);
 		if("Product".equals(name)) {
-			this.setTableName("M_PRODUCT_STOCK_V");   // aus InfoProduct : String s_sqlFrom = " M_PRODUCT_STOCK_V "; 
-			// TODO hat das auch ein AD_Table_Id ? JA AD_Table_ID=53011 ===> dann Daten von dort holen, auch die Columns
-/* aus InfoProduct
-        		new ColumnInfo(" ", "M_Warehouse_ID", IDColumn.class),
-        		new ColumnInfo(Msg.translate(Env.getCtx(), "WarehouseName"), "WarehouseName", String.class),
-        		                                                                                             , boolean readOnly, boolean colorColumn, String keyPairColSQL
-        		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyAvailable"), "sum(QtyAvailable)", Double.class, true, true, null),
-        		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOnHand"), "sum(QtyOnHand)", Double.class),
-           		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyReserved"), "sum(QtyReserved)", Double.class),
-           		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOrdered"), "sum(QtyOrdered)", Double.class)};
+			MTable mTable = new MTable(Env.getCtx(), I_M_Product.Table_ID, null);
+			this.setTableName(mTable.getTableName()); // I_M_Product.Table_ID==208
+
+/* Info_Column[] ausprogrammiert in InfoProduct.getTableLayout()
+
+	non CTextField Suchfelder in InfoProduct:
+	private VLookup fPriceList_ID;
+	private VLookup fProductCategory_ID;
+	private VLookup fVendor_ID;
+	private VLookup fWarehouse_ID;
+	private VLookup fAS_ID;
+	private VPAttribute fASI_ID;
+
+		ArrayList<Info_Column> list = new ArrayList<Info_Column>();
+		list.add(new Info_Column(" ", "p.M_Product_ID", IDColumn.class, false));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "Discontinued").substring(0, 1), "p.Discontinued", Boolean.class));
+(client)Info_Column extends  (base)org.compiere.model.GridField.ColumnInfo
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "M_Product_Category_ID"), "pc.Name", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "Value"), "p.Value", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "Name"), "p.Name", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "UPC"), "p.UPC", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "SKU"), "p.SKU", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "C_UOM_ID"), "u.name", String.class));
+		if (isValidVObject(fPriceList_ID))
+		{ // bomPriceList ist sql-Function: bompricelist(numeric, numeric)
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "PriceList"), "bomPriceList(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceList",  BigDecimal.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "PriceStd"), "bomPriceStd(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceStd", BigDecimal.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "PriceLimit"), "bomPriceLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS PriceLimit", BigDecimal.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "Margin"), "bomPriceStd(p.M_Product_ID, pr.M_PriceList_Version_ID)-bomPriceLimit(p.M_Product_ID, pr.M_PriceList_Version_ID) AS Margin", BigDecimal.class));
+		}
+		if (isValidVObject(fWarehouse_ID))
+		{
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "IsStocked"), "p.isStocked", Boolean.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyAvailable"), "case when p.IsBOM='N' and (p.ProductType!='I' OR p.IsStocked='N') then to_number(get_Sysconfig('QTY_TO_SHOW_FOR_SERVICES', '99999', p.ad_client_id, 0), '99999999999') else bomQtyAvailable(p.M_Product_ID,?,0) end AS QtyAvailable", Double.class, true, true, null));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyOnHand"), "case when p.IsBOM='N' and (p.ProductType!='I' OR p.IsStocked='N') then to_number(get_Sysconfig('QTY_TO_SHOW_FOR_SERVICES', '99999', p.ad_client_id, 0), '99999999999') else bomQtyOnHand(p.M_Product_ID,?,0) end AS QtyOnHand", Double.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyReserved"), "bomQtyReserved(p.M_Product_ID,?,0) AS QtyReserved", Double.class));
+			list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyOrdered"), "bomQtyOrdered(p.M_Product_ID,?,0) AS QtyOrdered", Double.class));
+			if (isUnconfirmed())
+			{
+				list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyUnconfirmed"), "(SELECT SUM(c.TargetQty) FROM M_InOutLineConfirm c INNER JOIN M_InOutLine il ON (c.M_InOutLine_ID=il.M_InOutLine_ID) INNER JOIN M_InOut i ON (il.M_InOut_ID=i.M_InOut_ID) WHERE c.Processed='N' AND i.M_Warehouse_ID=? AND il.M_Product_ID=p.M_Product_ID) AS QtyUnconfirmed", Double.class));
+				list.add(new Info_Column(Msg.translate(Env.getCtx(), "QtyUnconfirmedMove"), "(SELECT SUM(c.TargetQty) FROM M_MovementLineConfirm c INNER JOIN M_MovementLine ml ON (c.M_MovementLine_ID=ml.M_MovementLine_ID) INNER JOIN M_Locator l ON (ml.M_LocatorTo_ID=l.M_Locator_ID) WHERE c.Processed='N' AND l.M_Warehouse_ID=? AND ml.M_Product_ID=p.M_Product_ID) AS QtyUnconfirmedMove", Double.class));
+			}
+		}
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "Vendor"), "bp.Name", String.class));
+		list.add(new Info_Column(Msg.translate(Env.getCtx(), "IsInstanceAttribute"), "pa.IsInstanceAttribute", Boolean.class));
+
+ */			
+			
+			List<MColumn> mColumnList = mTable.getColumnsAsList();
+			Map<String, MColumn> mColumnMap = new HashMap<>(); 
+			mColumnList.forEach( mColumn -> {
+				LOG.config("ID:"+mColumn.get_ID() + " : AD_Reference_ID/DisplayType=" + mColumn.getAD_Reference_ID()+ " : ColumnName=" + mColumn.getColumnName());
+				mColumnMap.put(mColumn.getColumnName(), mColumn);
+			});
+			
+			addColumn(I_M_Product.COLUMNNAME_M_Product_ID, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_Discontinued, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_M_Product_Category_ID, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_Value, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_Name, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_UPC, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_SKU, mColumnMap);
+			addColumn(I_M_Product.COLUMNNAME_C_UOM_ID, mColumnMap);
+/*
+
+			s_productFrom += " 
+LEFT OUTER JOIN (SELECT mpp.M_Product_ID, mpp.M_PriceList_Version_id, mpp.IsActive, mpp.PriceList, mpp.PriceStd, mpp.PriceLimit
+                   FROM M_ProductPrice mpp, M_PriceList_Version mplv
+                  WHERE mplv.M_PriceList_Version_ID = mpp.M_PriceList_Version_ID AND mplv.IsActive = 'Y') pr
+ ON (p.M_Product_ID=pr.M_Product_ID AND pr.IsActive='Y' 
+
+
  */
-//			fields.addColumn(new GridFieldBridge("M_Warehouse_ID", Msg.translate(Env.getCtx(), "M_Warehouse_ID"), IDColumn.class));
-			fields.addColumn(new GridFieldBridge("M_Warehouse_ID", Msg.translate(Env.getCtx(), "Warehouse"), Integer.class, DisplayType.ID));
-			fields.addColumn(new GridFieldBridge("WarehouseName", Msg.translate(Env.getCtx(), "WarehouseName"), String.class, DisplayType.String));
-			fields.addColumn(new GridFieldBridge("QtyAvailable", Msg.translate(Env.getCtx(), "QtyAvailable"), Double.class, DisplayType.Number));
-			fields.addColumn(new GridFieldBridge("QtyOnHand", Msg.translate(Env.getCtx(), "QtyOnHand"), Double.class, DisplayType.Number));
-			fields.addColumn(new GridFieldBridge("QtyReserved", Msg.translate(Env.getCtx(), "QtyReserved"), Double.class, DisplayType.Number));
-			fields.addColumn(new GridFieldBridge("QtyOrdered", Msg.translate(Env.getCtx(), "QtyOrdered"), Double.class, DisplayType.Number));
+			// 101 ist pr.M_PriceList_Version_ID dh M_ProductPrice.M_PriceList_Version_id für GardenWorld
+			addColumn("101 as M_PriceList_Version_ID", Msg.translate(Env.getCtx(), "PriceList_Version"), DisplayType.ID);
+			// bomPriceList ist sql-Function: bompricelist(numeric, numeric)
+			addColumn("bomPriceList(M_Product_ID, 101) AS PriceList", Msg.translate(Env.getCtx(), "PriceList"), DisplayType.Amount);
+			
+			addColumn("IsStocked", mColumnMap);
+			
+			// "Quantity to show for services in InfoProduct window"
+			// sql Function: bomqtyavailable(numeric, numeric, numeric)
+//	    product_id numeric,
+//	    warehouse_id numeric, // vorerst 50002 == "Fertilizer"
+//	    locator_id numeric)   // 0
+			// sql Function: get_Sysconfig('QTY_TO_SHOW_FOR_SERVICES', '99999', ad_client_id, 0)
+			addColumn("(case when IsBOM='N' and (ProductType!='I' OR IsStocked='N') then to_number(get_Sysconfig('QTY_TO_SHOW_FOR_SERVICES', '99999', ad_client_id, 0), '99999999999') else bomQtyAvailable(M_Product_ID,50002,0) end) AS QtyAvailable"
+					, Msg.translate(Env.getCtx(), "QtyAvailable"), DisplayType.Number);
+			
 		} else if("BPartner".equals(name)) {
-			this.setTableName("C_BPartner");
+			MTable mTable = new MTable(Env.getCtx(), I_C_BPartner.Table_ID, null);
+			this.setTableName(mTable.getTableName()); // 291
+			
+			List<MColumn> mColumnList = mTable.getColumnsAsList();
+			Map<String, MColumn> mColumnMap = new HashMap<>(); 
+			mColumnList.forEach( mColumn -> {
+				LOG.config("ID:"+mColumn.get_ID() + " : AD_Reference_ID/DisplayType=" + mColumn.getAD_Reference_ID()+ " : ColumnName=" + mColumn.getColumnName());
+				mColumnMap.put(mColumn.getColumnName(), mColumn);
+			});
+			
 /* aus InfoBPartner
 	private static Info_Column[] s_Layout = {
 		new Info_Column(" ", "C_BPartner.C_BPartner_ID", IDColumn.class),
@@ -57,19 +141,56 @@ public class InfoDataModel extends GenericDataModel {
 		new Info_Column(Msg.translate(Env.getCtx(), "SO_CreditUsed"), "C_BPartner.SO_CreditUsed", BigDecimal.class),
 		new Info_Column(Msg.translate(Env.getCtx(), "Revenue"), "C_BPartner.ActualLifetimeValue", BigDecimal.class)
 	};
+
+ AD_Column_ID = 2893 , ... ermitteln:
+ 
+select * from ad_column where ad_table_id in(
+select ad_table_id from ad_table where tablename='C_BPartner') -- 'C_UOM')
+order by 1
+
  */
-			fields.addColumn(new GridFieldBridge("C_BPartner_ID", Msg.translate(Env.getCtx(), "C_BPartner_ID"), Integer.class, DisplayType.ID));
-			fields.addColumn(new GridFieldBridge("Value", Msg.translate(Env.getCtx(), "Value"), String.class, DisplayType.String));
-			fields.addColumn(new GridFieldBridge("TotalOpenBalance", Msg.translate(Env.getCtx(), "C_BP_Group_ID"), BigDecimal.class, DisplayType.Amount));
-			fields.addColumn(new GridFieldBridge("C_BPartner.SO_CreditLimit-C_BPartner.SO_CreditUsed AS SO_CreditAvailable", Msg.translate(Env.getCtx(), "SO_CreditAvailable"), BigDecimal.class, DisplayType.Amount));
-			fields.addColumn(new GridFieldBridge("SO_CreditUsed", Msg.translate(Env.getCtx(), "SO_CreditUsed"), BigDecimal.class, DisplayType.Amount));
-			fields.addColumn(new GridFieldBridge("ActualLifetimeValue", Msg.translate(Env.getCtx(), "ActualLifetimeValue"), BigDecimal.class, DisplayType.Amount));
+			addColumn(I_C_BPartner.COLUMNNAME_C_BPartner_ID, mColumnMap);
+			addColumn(I_C_BPartner.COLUMNNAME_Value, mColumnMap);
+			addColumn(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, mColumnMap);
+			addColumn(I_C_BPartner.COLUMNNAME_TotalOpenBalance, mColumnMap);
+			
+			// TODO SO_CreditAvailable als virtuell definieren:
+			addColumn("C_BPartner.SO_CreditLimit-C_BPartner.SO_CreditUsed AS SO_CreditAvailable", Msg.translate(Env.getCtx(), "SO_CreditAvailable"), DisplayType.Amount);
+			
+			addColumn(I_C_BPartner.COLUMNNAME_SO_CreditUsed, mColumnMap);
+			addColumn(I_C_BPartner.COLUMNNAME_ActualLifeTimeValue, mColumnMap);	
 			// ...
 		} else {
 			LOG.warning("TODO nicht implementiert für "+name);
 		}
 	}
 
+	private void addColumn(String identifier, String header, int displayType) {
+		fields.addColumn(
+			new GridFieldBridge(-1
+				, identifier
+				, header
+				, displayType)
+			);
+	}
+	private void addColumn(String columnName, Map<String, MColumn> mColumnMap) {
+//		mColumnMap.forEach( (k,v) -> {
+//			LOG.config("k:"+k + " : " + v);
+//		});
+//		assert(columnName.equals(mColumnMap.get(columnName).getColumnName()));
+//		MColumn mapVal = mColumnMap.get(columnName);
+//		LOG.config(">>>>>>>>>>"+mapVal);
+//		mapVal.get_ID();
+		int column_ID = mColumnMap.get(columnName).get_ID();
+		MColumn mColumn = new MColumn(Env.getCtx(), column_ID, null);
+		fields.addColumn(
+			new GridFieldBridge(column_ID
+				, columnName
+				, mColumn.get_Translation("Name")
+				, mColumnMap.get(columnName).getAD_Reference_ID())
+			);
+	}
+	
 	private static final Map<String, String> ALLOWANCE = createMap();
     private static Map<String, String> createMap() {
         Map<String, String> result = new HashMap<String, String>();
