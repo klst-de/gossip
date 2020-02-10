@@ -9,8 +9,8 @@ import org.compiere.grid.VPanel;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
-import org.compiere.model.GridField;
-import org.compiere.model.Lookup;
+//import org.compiere.model.GridField;
+//import org.compiere.model.Lookup;
 import org.compiere.util.DisplayType;
 
 public class SingleRowPanel extends JPanel {
