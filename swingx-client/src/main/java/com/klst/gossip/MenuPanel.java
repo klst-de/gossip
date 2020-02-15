@@ -86,10 +86,10 @@ public class MenuPanel extends JXPanel implements ActionListener {
     private JXButton expandButton;
     private JXButton collapseButton;
     
-    private MouseListener mouseListener = new MenuPanelMouseAdapter();
-    TreeSelectionListener treeSelectionListener = new SelectionListener();
-    TreeWillExpandListener treeWillExpandListener = new WillExpandListener();
-    TreeExpansionListener treeExpansionListener = new ExpansionListener();
+    private MouseListener mouseListener = new MenuPanelMouseAdapter(); // TODO kann weg
+    private TreeSelectionListener treeSelectionListener = new SelectionListener(); // TODO kann weg ==> Lambda
+    private TreeWillExpandListener treeWillExpandListener = new WillExpandListener(); // TODO kann weg
+    private TreeExpansionListener treeExpansionListener = new ExpansionListener(); // TODO kann weg
     
     private class JXTreeMenuTable extends JXTreeTable {
 
@@ -271,9 +271,33 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         tree.sizeColumnsToFit(2); // tut nicht
         
 //        tree.addMouseListener(mouseListener);
-        tree.addTreeSelectionListener(treeSelectionListener);
-        tree.addTreeExpansionListener(treeExpansionListener);
-        tree.addTreeWillExpandListener(treeWillExpandListener);
+        tree.addTreeSelectionListener(event -> {
+			if(event.getSource() instanceof JXTree) {
+				JXTree tree = (JXTree)event.getSource();
+				TreePath treePath = event.getPath(); // first path element
+				MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
+//				LOG.config("treePath:"+treePath 
+//				+ "\n NewLeadSelectionPath"+event.getNewLeadSelectionPath()		
+//				+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandsSelectedPaths:"+tree.getExpandsSelectedPaths());
+				
+				if(node.isWindow()) {
+					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
+					rootFrame.openNewFrame(mm.getAD_Window_ID());
+				//} else if(...)
+				// TODO Process, ...
+				} else {
+					if(tree.getExpandsSelectedPaths()) {
+						if(!tree.isExpanded(treePath)) {
+							tree.expandPath(treePath);
+						} else {
+							tree.collapsePath(treePath);
+						}
+					}
+				}
+			}
+        });
+//        tree.addTreeExpansionListener(treeExpansionListener);
+//        tree.addTreeWillExpandListener(treeWillExpandListener);
     }
     
     void setInitialTree() {
@@ -392,6 +416,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		LOG.config("ActionCommand:"+e.getActionCommand() + " " + e.toString());	
 	}
 	
+	@Deprecated // als Lambda implementiert
 	class SelectionListener implements TreeSelectionListener {
 
 		@Override
@@ -423,6 +448,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		
 	}
 		
+	// to prevent expanding
 	class WillExpandListener implements TreeWillExpandListener {
 
 		@Override
