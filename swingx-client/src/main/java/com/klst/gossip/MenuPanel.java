@@ -19,10 +19,15 @@ import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -30,6 +35,7 @@ import org.compiere.model.MMenu;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
+import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
@@ -75,21 +81,37 @@ public class MenuPanel extends JXPanel implements ActionListener {
 	RootFrame rootFrame;
     private TreeTableModel treeTableModel;
     private MTree vTree;
-    private JXTreeTable tree;
+    private JXTreeMenuTable tree;
     private JXButton refreshButton;
     private JXButton expandButton;
     private JXButton collapseButton;
     
     private MouseListener mouseListener = new MenuPanelMouseAdapter();
+    TreeSelectionListener treeSelectionListener = new SelectionListener();
+    TreeWillExpandListener treeWillExpandListener = new WillExpandListener();
+    TreeExpansionListener treeExpansionListener = new ExpansionListener();
+    
+    private class JXTreeMenuTable extends JXTreeTable {
 
+	    @Override
+	    protected JTableHeader createDefaultTableHeader() {
+	        return new GenericTableHeader(columnModel);
+	    }
+
+	    @Override
+	    protected void processMouseEvent(MouseEvent e) {
+	    	super.processMouseEvent(e);
+	    }
+    }
     private void initComponents() {  	
 //		tree = new JXTreeTable(treeTableModel); // gleichwertig zu: new JXTreeTable(); tree.setTreeTableModel(treeTableModel);
-		tree = new JXTreeTable() {
-		    @Override
-		    protected JTableHeader createDefaultTableHeader() {
-		        return new GenericTableHeader(columnModel);
-		    }
-		};
+//		tree = new JXTreeTable() {
+//		    @Override
+//		    protected JTableHeader createDefaultTableHeader() {
+//		        return new GenericTableHeader(columnModel);
+//		    }
+//		};
+    	tree = new JXTreeMenuTable();
 		tree.setTreeTableModel(treeTableModel);
 		
 		LOG.config("tree SelectionMode="+tree.getSelectionMode()); //  javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : 2
@@ -248,7 +270,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         tree.sizeColumnsToFit(0); // Breite der menu spalten anpassen
         tree.sizeColumnsToFit(2); // tut nicht
         
-        tree.addMouseListener(mouseListener);
+//        tree.addMouseListener(mouseListener);
+        tree.addTreeSelectionListener(treeSelectionListener);
+        tree.addTreeExpansionListener(treeExpansionListener);
+        tree.addTreeWillExpandListener(treeWillExpandListener);
     }
     
     void setInitialTree() {
@@ -367,63 +392,91 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		LOG.config("ActionCommand:"+e.getActionCommand() + " " + e.toString());	
 	}
 	
-//	// call back
-//	void mouseClicked(MouseEvent e) {
-//		LOG.config("MouseEvent:" +e.getID()
-//		+ " Button:"+e.getButton() + " ModifiersEx:"+e.getModifiersEx()+ " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
-//		// 1 java.awt.event.MouseEvent[MOUSE_CLICKED,(116,25),absolute(877,397),button=1,modifiers=Button1,clickCount=1] on componentTreeTable [16]
-//		//MouseEvent.BUTTON1 == LIMA
-//		//MouseEvent.BUTTON3 == REMA
-//		if (e.getSource() instanceof JXTreeTable) {
-//			if(((JXTreeTable)e.getSource()).getName()==COMPONENT_NAME) {
-//				LOG.finest("es ist "+COMPONENT_NAME); // tree
-//				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount()>0) {
-//					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-//					int selRow = tree.getRowForPath(treePath);
-//					LOG.config("386 es ist "+COMPONENT_NAME + " row:"+selRow + " treePath:"+treePath
-//							+ "\n   0.PathComponent:"+treePath.getPathComponent(0) 
-//							+ "\n LastPathComponent:"+treePath.getLastPathComponent() + " Path.size="+treePath.getPath().length);
-//					
-//					// -- wg. https://github.com/klst-de/gossip/issues/5
-//					// der Fehler tritt nicht mehr auf, allerdings ist das "Menu Expand" icon derart deaktiviert
-//					// dass Menu wieder einclappt sobad Maustaste wieder losgelassen wird
-//					// =====> e.getModifiersEx()
-//					JXTreeTable tt = (JXTreeTable)e.getSource();
-//					TreePath tp = tt.getPathForLocation(e.getX(), e.getY());
-//					//tt.getActionForKeyStroke(aKeyStroke)
-//					//tt.getCellEditor(row, column)
-//					//tt.getCellRenderer(row, column)
-//					//tt.getHierarchicalColumn()
-//					LOG.config("ColumnControl:"+tt.getColumnControl() + " ColumnExt:"+tt.getColumnExt(0) + " ExpandedDescendants:"+tt.getExpandedDescendants(tp)
-//					+ " ExpandsSelectedPaths="+tt.getExpandsSelectedPaths() +" "+tp);
-//					if(tt.getExpandsSelectedPaths()) {
-//						if(tt.isExpanded(tp)) tt.collapsePath(tp);
-//						else {
-//							tt.expandPath(tp);
-//						}
-//					}
-////					if(tt.getExpandedDescendants(tp)==null) { // expanded
-////						if(tt.isExpanded(tp)) tt.collapsePath(tp);
-////					} else {
-////						tt.expandPath(tp);
-////					}
-//					// <--
-//
-//					MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
-//					if(node.isWindow()) {
-//						//MTree_NodeMM mm = MTree_NodeMM.get(vTree, node.getNode_ID());
-//						MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
-//						JComponent jc = this.getRootPane();
-//						JRootPane rp = this.getRootPane(); // JComponent
-//						LOG.config("es ist "+COMPONENT_NAME + " node:"+node + " AD_Window_ID="+mm.getAD_Window_ID() + " RootPane/JComponent:"+rp.getContentPane()); // Bank 158
-//						rootFrame.openNewFrame(mm.getAD_Window_ID());
-//					}
-////					firePropertyChange(NODE_SELECTION, null, node);
-//				}
-//			};
-//		}
-//	}
-	
+	class SelectionListener implements TreeSelectionListener {
+
+		@Override
+		public void valueChanged(TreeSelectionEvent e) {
+			LOG.config("TreeSelectionEvent:" +e);
+			if (e.getSource() instanceof JXTree) {
+				JXTree tree = (JXTree)e.getSource();
+				TreePath treePath = e.getPath(); // first path element
+//				TreePath op = e.getOldLeadSelectionPath();
+				MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
+				LOG.config("treePath:"+treePath 
+				+ "\n NewLeadSelectionPath"+e.getNewLeadSelectionPath()		
+				+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandsSelectedPaths:"+tree.getExpandsSelectedPaths());
+				if(node.isWindow()) {
+					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
+					rootFrame.openNewFrame(mm.getAD_Window_ID());
+				} else {
+					if (tree.getExpandsSelectedPaths()) {
+						if (tree.isExpanded(treePath))
+							tree.collapsePath(treePath);
+						else {
+							tree.expandPath(treePath);
+						}
+					}
+//					tree.setLeadSelectionPath(op);
+				}
+			}
+		}
+		
+	}
+		
+	class WillExpandListener implements TreeWillExpandListener {
+
+		@Override
+		public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+			LOG.config("TreeExpansionEvent:" +event);
+			if (event.getSource() instanceof JXTreeMenuTable) {
+				JXTreeMenuTable tree = (JXTreeMenuTable)event.getSource();
+				if(tree.getName()==COMPONENT_NAME) {
+					TreePath treePath = event.getPath();
+					LOG.config("treePath:"+treePath 
+					+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandedDescendants:"+tree.getExpandedDescendants(treePath));
+//					isExpanded=true
+				}
+			}
+		}
+
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	class ExpansionListener implements TreeExpansionListener {
+
+		@Override
+		public void treeExpanded(TreeExpansionEvent event) {
+			LOG.config("TreeExpansionEvent:" +event);
+			if (event.getSource() instanceof JXTreeMenuTable) {
+				JXTreeMenuTable tree = (JXTreeMenuTable)event.getSource();
+				if(tree.getName()==COMPONENT_NAME) {
+					TreePath treePath = event.getPath();
+					LOG.config("treePath:"+treePath 
+					+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandedDescendants:"+tree.getExpandedDescendants(treePath));
+//					isExpanded=true , dann kommt mousePressed MouseEvent:501 dran
+				}
+			}
+		}
+
+		@Override
+		public void treeCollapsed(TreeExpansionEvent event) {
+			LOG.config("treeCollapsed:" +event);
+			if (event.getSource() instanceof JXTreeMenuTable) {
+				JXTreeMenuTable tree = (JXTreeMenuTable)event.getSource();				
+				if(tree.getName()==COMPONENT_NAME) {
+					TreePath treePath = event.getPath();
+					LOG.config("treePath:"+treePath 
+					+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandedDescendants:"+tree.getExpandedDescendants(treePath));
+//					isExpanded=false
+				}
+			}
+		}
+		
+	}
 	// alle Methoden in (awt) abstract class MouseAdapter sind leer vorimplementiet
 /*
 aus MouseEvent:
@@ -436,21 +489,12 @@ For example, if the first mouse button is pressed, events are sent in the follow
  */
 	class MenuPanelMouseAdapter extends MouseAdapter { // java.awt.event.MouseAdapter implements MouseListener, MouseWheelListener, MouseMotionListener
 		
-//		MenuPanel adaptee;
-
-//		MenuPanelMouseAdapter(MenuPanel adaptee) {
-//			this.adaptee = adaptee;
-//		}
-
-//		int mouseEvent = MouseEvent.NOBUTTON;
-//		JXTreeTable tree; // wie
-		
 	    /**
 	     * {@inheritDoc}
 	     */
 	    public void mouseClicked(MouseEvent e) {
-	    	if (e.getSource() instanceof JXTreeTable) {
-	    		JXTreeTable tree = (JXTreeTable)e.getSource();
+	    	if (e.getSource() instanceof JXTreeMenuTable) {
+	    		JXTreeMenuTable tree = (JXTreeMenuTable)e.getSource();
 	    		if(tree.getName()==COMPONENT_NAME && SwingUtilities.isLeftMouseButton(e)) {
 					LOG.config("MouseEvent:" +e.getID()
 					+ " Button:"+e.getButton() + " ModifiersEx:"+e.getModifiersEx()+ " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
@@ -509,14 +553,15 @@ For example, if the first mouse button is pressed, events are sent in the follow
 	     * {@inheritDoc}
 	     */
 	    public void mousePressed(MouseEvent e) {
-	    	if (e.getSource() instanceof JXTreeTable) {
-	    		JXTreeTable tree = (JXTreeTable)e.getSource();
+	    	if (e.getSource() instanceof JXTreeMenuTable) {
+	    		JXTreeMenuTable tree = (JXTreeMenuTable)e.getSource();
 	    		if(tree.getName()==COMPONENT_NAME && SwingUtilities.isLeftMouseButton(e)) {
 					LOG.config("MouseEvent:" +e.getID()
 					+ " Button:"+e.getButton() + " ModifiersEx:"+e.getModifiersEx()+ " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
 //					adaptee.mousePressed(e);
 					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
 					LOG.config("tree.isExpanded(treePath)="+tree.isExpanded(treePath) + " ExpandedDescendants:"+tree.getExpandedDescendants(treePath));
+//					tree.processMouseEvent(e);
 	    		}
 	    	}
 	    }
@@ -525,14 +570,16 @@ For example, if the first mouse button is pressed, events are sent in the follow
 	     * {@inheritDoc}
 	     */
 	    public void mouseReleased(MouseEvent e) {
-	    	if (e.getSource() instanceof JXTreeTable) {
-	    		JXTreeTable tree = (JXTreeTable)e.getSource();
+	    	if (e.getSource() instanceof JXTreeMenuTable) {
+	    		JXTreeMenuTable tree = (JXTreeMenuTable)e.getSource();
 	    		if(tree.getName()==COMPONENT_NAME && SwingUtilities.isLeftMouseButton(e)) {
 					LOG.config("MouseEvent:" +e.getID()
 					+ " Button:"+e.getButton() + " ModifiersEx:"+e.getModifiersEx()+ " " + e.getX()+","+e.getY() + " ClickCount:"+ e.getClickCount() + " "+e.toString());
 //					adaptee.mouseReleased(e);
 					TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
 					LOG.config("tree.isExpanded(treePath)="+tree.isExpanded(treePath) + " ExpandedDescendants:"+tree.getExpandedDescendants(treePath));
+//					tree.processMouseEvent(e);
+//					e.consume();
 	    		}
 	    	}
 	    }
