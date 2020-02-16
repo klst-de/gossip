@@ -175,10 +175,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     	LOG.info("AD_Tree_ID = TODO per SQL: (default 10) ="+treeId); // TODO
     	
     	Properties ctx = Env.getCtx(); // props wg. https://github.com/klst-de/gossip/issues/2 :
-		ctx.setProperty("#AD_Client_ID", "11");
-		ctx.setProperty("#AD_Org_ID", "11");
-		ctx.setProperty("#AD_User_ID", "100");
-		ctx.setProperty("#AD_Role_ID", "102");
+		ctx.setProperty("#AD_Client_ID", "11");	// GardenWorld
+		ctx.setProperty("#AD_Org_ID", "11");	// HQ
+		ctx.setProperty("#AD_User_ID", "100");	// SuperUser
+		ctx.setProperty("#AD_Role_ID", "102");	// GardenWorld Admin
 
     	vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu()
