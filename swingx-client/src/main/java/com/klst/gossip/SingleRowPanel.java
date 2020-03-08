@@ -12,6 +12,7 @@ import org.compiere.grid.ed.VLookup;
 //import org.compiere.model.GridField;
 //import org.compiere.model.Lookup;
 import org.compiere.util.DisplayType;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 public class SingleRowPanel extends JPanel {
 
@@ -38,7 +39,7 @@ public class SingleRowPanel extends JPanel {
 	}
 	
 	public Dimension getSingleRowPanelSize() {
-		GridFields fields = tableModel.getColumns();
+		TableColumnModelExt fields = tableModel.getColumns();
 		for(int f=0; f<fields.getColumnCount(true); f++) {
 //			GridField field = fields[f];
 			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
@@ -59,7 +60,7 @@ public class SingleRowPanel extends JPanel {
 	
 	public void showSingleRowPanelSize(int rowIndex) {
 		LOG.warning("rowIndex="+rowIndex);
-		GridFields fields = tableModel.getColumns();
+		TableColumnModelExt fields = tableModel.getColumns();
 //		GridField[] fields = tableModel.getColumns();
 		for(int f=0; f<fields.getColumnCount(true); f++) {
 //			GridField field = fields[f];
