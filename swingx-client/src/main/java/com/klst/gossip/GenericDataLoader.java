@@ -17,6 +17,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
+import org.jdesktop.swingx.table.TableColumnExt;
 
 /* 
 SwingWorker Workflow , @see javax.swing.SwingWorker<T, V>
@@ -183,8 +184,8 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			for (int f = 0; f < size; f++) {
 				// field metadata aka Column Info, GridField field 
 //				LOG.config(f+"/"+fieldData.length+": row="+row);
-				GridFieldBridge field = dataModel.getFieldModel(f);
-				columnName = field.getColumnName();
+				GridFieldBridge field = dataModel.getFieldModel(f); // GridFieldBridge extends TableColumnExt
+				columnName = field.getColumnName(); // ? oder getIdentifier()
 				displayType = field.getDisplayType(); // aka AD_Reference_ID
 				if(row==0) {
 					LOG.config(f+"/"+size+": "+field); //SeqNoGrid="+field.getSeqNoGrid());
@@ -247,7 +248,8 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 				//	Encrypted
 				if (field.isEncryptedColumn() && displayType != DisplayType.YesNo)
 					fieldData[f] = decrypt(fieldData[f]);
-				
+
+				field.setValue(fieldData[f], false);
 //				LOG.config("next field "+f);			
 			}
 		}
