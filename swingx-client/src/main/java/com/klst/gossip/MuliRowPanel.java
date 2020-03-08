@@ -8,6 +8,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
@@ -19,6 +20,7 @@ import org.jdesktop.swingx.renderer.CheckBoxProvider;
 import org.jdesktop.swingx.renderer.IconValues;
 import org.jdesktop.swingx.renderer.MappedValue;
 import org.jdesktop.swingx.renderer.StringValues;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.icon.TableColumnControlButton;
 
@@ -75,6 +77,7 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 		// use a CheckBoxProvider for booleans
 		setDefaultRenderer(Boolean.class, new GenericTableRenderer(new CheckBoxProvider()));		 
 
+		this.createDefaultEditors();
 //		super.dataModel.isCellEditable(rowIndex, columnIndex)
 //		super.dataModel.getColumnCount();
 //		super.dataModel.getRowCount();
@@ -96,6 +99,10 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
  * </code></pre>
 
  */
+	GenericDataModel getDataModel() {
+		return (GenericDataModel)dataModel;
+	}
+	
 	JXTableHeader jXTableHeader;
 	protected JTableHeader createDefaultTableHeader() {
 		//this.columnModel.getColumn(0).setHeaderValue("A"); // set first column
@@ -147,18 +154,37 @@ public class MuliRowPanel extends JXTable { // JXTable extends JTable implements
 			setColumnEditors();
 		}
 	}
+	
+/*
+
+To add a column to this JTable to display the modelColumn'th column of data in the model with agiven width, cellRenderer,and cellEditor you can use: 
+
+      addColumn(new TableColumn(modelColumn, width, cellRenderer, cellEditor));
+
+
+ */
+	// public void setDefaultEditor(Class<?> columnClass, TableCellEditor editor)
+	// public TableCellEditor getDefaultEditor(Class<?> columnClass)
+	// active cell editor
+	// (JTable) public TableCellEditor getCellEditor(int row, int column)
+	//          public TableCellEditor getCellEditor()
 	boolean isSetColumnEditors = false;
 	public void setColumnEditors() { // TODO das sind noch keine Editoren
+		// this.getCellEditor() active cell editor
 		isSetColumnEditors = true;
-		GridFields tableColumnModel = ((GenericDataModel)dataModel).getColumns(); // aka TableColumnModel
+		TableColumnModelExt tableColumnModel = this.getDataModel().getColumns(); // aka TableColumnModel
 //		List<TableColumn> colList = tableColumnModel.getColumns(true); // get all columns, includeHidden
 //		colList.forEach(aColumn -> {
 //			GridFieldBridge gColumn = (GridFieldBridge)aColumn;
 //			LOG.config(aColumn.getModelIndex() + ":" + gColumn);
 //		});
-		Object[] row0 = ((GenericDataModel)dataModel).getRow(0);
+		Object[] row0 = this.getDataModel().getRow(0);
 		for(int c=0; c<tableColumnModel.getColumnCount(); c++) {
-			LOG.config("first row,col "+c+" "+row0[c] + (row0[c]==null ? "" : " "+row0[c].getClass()));
+			Class<? extends Object> clazz = row0[c]==null ? null : row0[c].getClass();
+			Class<? extends Object> columnClass =  this.getDataModel().getColumnClass(c);
+			int dt = this.getDataModel().getFieldModel(c).getDisplayType();
+			// isCellEditable? ist es korrekt? -  zumindest für Organisation Type stimmt es:
+			LOG.config("first row,col "+c+" isCellEditable:"+this.getDataModel().isCellEditable(0, c) + " dt="+dt + " :"+row0[c] + " columnClass:"+columnClass+"/"+clazz);
 		}
 	}
 

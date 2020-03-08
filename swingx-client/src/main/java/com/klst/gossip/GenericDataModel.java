@@ -11,11 +11,14 @@ import javax.swing.table.DefaultTableModel;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
+import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
 // in AD: (base)GridTable extends AbstractTableModel mit Loader
 public class GenericDataModel extends DefaultTableModel { // extends AbstractTableModel implements Serializable
-
+// subclassed by InfoDataModel
+	
 	private static final long serialVersionUID = -8353798775903481429L;
 
 	private static final Logger LOG = Logger.getLogger(GenericDataModel.class.getName());
@@ -29,7 +32,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
     , tableName; // gridTab.get_TableName() oder InfoProduct : String s_sqlFrom
     
 	//private GridFieldBridge[] fields = null; // oder noch besser:
-	GridFields fields;
+    DefaultTableColumnModelExt fields; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
 	private int rowsToLoad = -1; // der Loader liefert es
 	boolean m_virtual = false; // wie in GridTable TODO erklären
 	
@@ -37,13 +40,13 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 	public GenericDataModel(GridTab gridTab, int windowNo) {
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
-		if(this.gridTab==null) {
-			this.fields = new GridFields();
+		if(this.gridTab==null) {  // das kann null sein in Subclass InfoDataModel
+			this.fields = new DefaultTableColumnModelExt();
 		} else {
 			this.fields = new GridFields(this.gridTab.getFields());
 			this.setName(gridTab.getName());
 			this.setTableName(gridTab.get_TableName());
-			LOG.warning("gridTab.Name="+name + " gridTab.TableName="+tableName);
+			LOG.warning("gridTab.Name="+name + " gridTab.TableName="+tableName + " fields:"+fields);
 		}
 	}
 
@@ -95,18 +98,15 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
         return null;
 	}
 	
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
-    	final boolean checkContext = true;
-    	boolean isEditable = field.isEditable(checkContext);
-//    	GridField field = this.fields[columnIndex];
-//    	boolean isEditable = field.isEditable(false); // checkContext
-//    	if(field.isEditable()) {
-//    		LOG.config(""+rowIndex+" "+field + "isEditable no context, checkContext:"+field.isEditable(true));
-//    	} else {
-//    		LOG.config(""+rowIndex+" "+field + "isNOTEditable no context");
-//    	}
-    	return isEditable;
+	@Override // DefaultTableModel liefert immer true
+    public boolean isCellEditable(int row, int column) {
+		if(this.fields instanceof GridFields) {
+	    	GridFieldBridge field = (GridFieldBridge)fields.getColumn(column);
+	    	final boolean checkContext = true;
+	    	boolean isEditable = field.isEditable(checkContext);
+	    	return isEditable;
+		}
+		return super.isCellEditable(row, column);
     }
 
     // TODO das muss in Tab impementiert werden!
@@ -117,8 +117,80 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 //		
 //	}
 	
-	// if data model is editable:
-	// TODO public void setValueAt(Object aValue, int rowIndex, int columnIndex);
+	@Override // if data model is editable:
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		// aus super:
+//        Vector rowVector = (Vector)dataVector.elementAt(row); // hier exception, weil noch keine editoren implementiert sind
+//        rowVector.setElementAt(aValue, column);
+//        fireTableCellUpdated(row, column);
+/*
+
+Exception in thread "AWT-EventQueue-0" java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to java.util.Vector
+	at javax.swing.table.DefaultTableModel.setValueAt(DefaultTableModel.java:664)
+	at javax.swing.JTable.setValueAt(JTable.java:2744)
+	at org.jdesktop.swingx.JXTable.setValueAt(JXTable.java:1473)
+	at javax.swing.JTable.editingStopped(JTable.java:4729)
+	at javax.swing.AbstractCellEditor.fireEditingStopped(AbstractCellEditor.java:141)
+	at javax.swing.DefaultCellEditor$EditorDelegate.stopCellEditing(DefaultCellEditor.java:368)
+	at javax.swing.DefaultCellEditor.stopCellEditing(DefaultCellEditor.java:233)
+	at javax.swing.DefaultCellEditor$EditorDelegate.actionPerformed(DefaultCellEditor.java:385)
+	at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:2022)
+	at javax.swing.AbstractButton$Handler.actionPerformed(AbstractButton.java:2348)
+	at javax.swing.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:402)
+	at javax.swing.JToggleButton$ToggleButtonModel.setPressed(JToggleButton.java:308)
+	at javax.swing.plaf.basic.BasicButtonListener.mouseReleased(BasicButtonListener.java:252)
+	at java.awt.Component.processMouseEvent(Component.java:6539)
+	at javax.swing.JComponent.processMouseEvent(JComponent.java:3324)
+	at java.awt.Component.processEvent(Component.java:6304)
+	at java.awt.Container.processEvent(Container.java:2239)
+	at java.awt.Component.dispatchEventImpl(Component.java:4889)
+	at java.awt.Container.dispatchEventImpl(Container.java:2297)
+	at java.awt.Component.dispatchEvent(Component.java:4711)
+	at javax.swing.plaf.basic.BasicTableUI$Handler.repostEvent(BasicTableUI.java:948)
+	at javax.swing.plaf.basic.BasicTableUI$Handler.mouseReleased(BasicTableUI.java:1164)
+	at java.awt.AWTEventMulticaster.mouseReleased(AWTEventMulticaster.java:290)
+	at java.awt.AWTEventMulticaster.mouseReleased(AWTEventMulticaster.java:289)
+	at java.awt.Component.processMouseEvent(Component.java:6539)
+	at javax.swing.JComponent.processMouseEvent(JComponent.java:3324)
+	at java.awt.Component.processEvent(Component.java:6304)
+	at java.awt.Container.processEvent(Container.java:2239)
+	at java.awt.Component.dispatchEventImpl(Component.java:4889)
+	at java.awt.Container.dispatchEventImpl(Container.java:2297)
+	at java.awt.Component.dispatchEvent(Component.java:4711)
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4904)
+	at java.awt.LightweightDispatcher.processMouseEvent(Container.java:4535)
+	at java.awt.LightweightDispatcher.dispatchEvent(Container.java:4476)
+	at java.awt.Container.dispatchEventImpl(Container.java:2283)
+	at java.awt.Window.dispatchEventImpl(Window.java:2746)
+	at java.awt.Component.dispatchEvent(Component.java:4711)
+	at java.awt.EventQueue.dispatchEventImpl(EventQueue.java:760)
+	at java.awt.EventQueue.access$500(EventQueue.java:97)
+	at java.awt.EventQueue$3.run(EventQueue.java:709)
+	at java.awt.EventQueue$3.run(EventQueue.java:703)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:74)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:84)
+	at java.awt.EventQueue$4.run(EventQueue.java:733)
+	at java.awt.EventQueue$4.run(EventQueue.java:731)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:74)
+	at java.awt.EventQueue.dispatchEvent(EventQueue.java:730)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:205)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:116)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:105)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:93)
+	at java.awt.EventDispatchThread.run(EventDispatchThread.java:82)
+
+
+ */
+		LOG.warning("TODO not implemented row/colum "+rowIndex+"/"+columnIndex + " Object value="+aValue); //TODO
+//		if(this.fields instanceof GridFields) {
+//	    	GridFieldBridge field = (GridFieldBridge)fields.getColumn(columnIndex);
+//	    	field.setValue(aValue, false); // inserting==false
+//		}
+//		//super.setValueAt(aValue, rowIndex, columnIndex);
+	}
 	
     Object[] getRow(int rowIndex) {
         return getDataVector().get(rowIndex);
@@ -202,7 +274,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 		return this.windowNo;
 	}
 
-	public GridFields getColumns() { // ===> this.columnModel
+	public TableColumnModelExt getColumns() { // ===> this.columnModel
 		return this.fields;
 	}
 
