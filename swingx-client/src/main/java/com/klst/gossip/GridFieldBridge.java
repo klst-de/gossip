@@ -9,7 +9,7 @@ import org.compiere.model.MAccountLookup;
 import org.compiere.model.MImage;
 import org.jdesktop.swingx.table.TableColumnExt;
 
-// Kapselt GridField, das wiederum GridFieldVO enthält
+// Kapselt GridField, das wiederum GridFieldVO mit public membern enthält
 public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends TableColumn
 
 	private static final long serialVersionUID = 4112077272210070373L;
@@ -47,6 +47,14 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 
 		setIdentifier(columnName);
 		setHeaderValue(header);
+	}
+	
+	Object getValue() {
+		return field.getValue();
+	}
+	
+	void setValue(Object newValue, boolean inserting) {
+		field.setValue(newValue, inserting);
 	}
 	
 	public int getAD_Column_ID() {
