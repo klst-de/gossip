@@ -166,7 +166,7 @@ order by 1
 	}
 
 	private void addColumn(String identifier, String header, int displayType) {
-		fields.addColumn(new GridFieldBridge(identifier, header, displayType));
+		super.addColumn(new GridFieldBridge(identifier, header, displayType));
 	}
 	private void addColumn(String columnName, Map<String, MColumn> mColumnMap) {
 //		mColumnMap.forEach( (k,v) -> {
@@ -178,7 +178,7 @@ order by 1
 //		mapVal.get_ID();
 		int column_ID = mColumnMap.get(columnName).get_ID();
 		MColumn mColumn = new MColumn(Env.getCtx(), column_ID, null);
-		fields.addColumn(
+		super.addColumn(
 			new GridFieldBridge(/*column_ID,*/ columnName
 				, mColumn.get_Translation("Name")
 				, mColumnMap.get(columnName).getAD_Reference_ID())

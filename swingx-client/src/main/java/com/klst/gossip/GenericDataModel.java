@@ -32,7 +32,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
     , tableName; // gridTab.get_TableName() oder InfoProduct : String s_sqlFrom
     
 	//private GridFieldBridge[] fields = null; // oder noch besser:
-    DefaultTableColumnModelExt fields; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
+    private DefaultTableColumnModelExt fields; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
 	private int rowsToLoad = -1; // der Loader liefert es
 	boolean m_virtual = false; // wie in GridTable TODO erklären
 	
@@ -41,7 +41,7 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 		this.windowNo = windowNo;
 		this.gridTab = gridTab;
 		if(this.gridTab==null) {  // das kann null sein in Subclass InfoDataModel
-			this.fields = new DefaultTableColumnModelExt();
+			this.fields = new GridFields();
 		} else {
 			this.fields = new GridFields(this.gridTab.getFields());
 			this.setName(gridTab.getName());
@@ -52,6 +52,10 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 
 	public String toString() {
 		return getClass().getName() +" windowNo="+windowNo + " gridTab:["+gridTab+"]" + " #fields="+fields.getColumnCount();		
+	}
+	
+	void addColumn(GridFieldBridge gfb) {
+		((GridFields)fields).addColumn(gfb);
 	}
 	
 	// name wie in DefaultTableModel, dort: public Vector getDataVector()
@@ -202,18 +206,21 @@ Exception in thread "AWT-EventQueue-0" java.lang.ClassCastException: [Ljava.lang
      */
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-    	GridFieldBridge field = (GridFieldBridge)this.fields.getColumn(columnIndex);
-    	int displayType = field.getDisplayType();
-    	if(logDisplayType.containsKey(field)) {
-    		// schon geloggt
-    	} else {
-        	LOG.config(field + " Storage Class:"+DisplayType.getClass(displayType, true));
-        	logDisplayType.put(field, displayType);
-    	}
-    	// Return Storage Class, (used for MiniTable) - ist aber nicht die DisplayClass
-    	// die ist nämlich VEditor oder so!
-    	return DisplayType.getClass(displayType, true); // true == nur für Boolean as CheckBox
-    	// TODO 
+    	LOG.config(""+columnIndex);
+		if(this.fields instanceof GridFields) {
+			GridFieldBridge field = (GridFieldBridge)fields.getColumn(columnIndex);
+	    	int displayType = field.getDisplayType();
+	    	if(logDisplayType.containsKey(field)) {
+	    		// schon geloggt
+	    	} else {
+	        	LOG.config(field + " Storage Class:"+DisplayType.getClass(displayType, true));
+	        	logDisplayType.put(field, displayType);
+	    	}
+	    	// Return Storage Class, (used for MiniTable) - ist aber nicht die DisplayClass
+	    	// die ist nämlich VEditor oder so!
+	    	return DisplayType.getClass(displayType, true); // true == nur für Boolean as CheckBox
+		}
+		return super.getColumnClass(columnIndex);
     }
     // wg. LOG
     private Map<GridFieldBridge, Integer> logDisplayType = new Hashtable<GridFieldBridge, Integer>();
