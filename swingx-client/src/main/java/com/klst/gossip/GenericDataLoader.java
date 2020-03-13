@@ -188,7 +188,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 				columnName = field.getColumnName(); // ? oder getIdentifier()
 				displayType = field.getDisplayType(); // aka AD_Reference_ID
 				if(row==0) {
-					LOG.config(f+"/"+size+": "+field); //SeqNoGrid="+field.getSeqNoGrid());
+					LOG.config(f+"/"+size+": "+columnName); //SeqNoGrid="+field.getSeqNoGrid());
 				}
 				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
 				if (displayType == DisplayType.Integer

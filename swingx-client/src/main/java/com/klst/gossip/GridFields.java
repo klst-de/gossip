@@ -87,11 +87,18 @@ public class GridFields extends DefaultTableColumnModelExt // extends DefaultTab
 
 // wg. implements TableColumnModel
 	
-//	@Override
-//	public void addColumn(TableColumn aColumn) {
-//		LOG.config("TableColumn "+aColumn);
-//		super.addColumn(aColumn);
-//	}
+	@Override
+	public void addColumn(TableColumn aColumn) {
+		LOG.config("TableColumn "+aColumn);
+		if (aColumn instanceof GridFieldBridge) {
+			TableColumnExt eColumn = (TableColumnExt)aColumn;
+			GridFieldBridge gColumn = (GridFieldBridge)aColumn;
+			eColumn.setToolTipText(gColumn.getDescription()); // TODO funktioniert nicht
+			super.addColumn(eColumn);
+			return;
+		} 
+		super.addColumn(aColumn);
+	}
 
 //	@Override
 //	public void removeColumn(TableColumn column) {

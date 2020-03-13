@@ -57,8 +57,8 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
 			                                 // in den props steht aber #AD_Client_ID=11 - als interimsLösung gut genug
 			if(v!=null) value = v;
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// das kommt bei Minitable aka InfoPanel vor
+			//e.printStackTrace();
 			return value;
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
@@ -88,7 +88,7 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
 		return value;
     }
     
-    @Override
+    @Override // method in DefaultTableRenderer
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
     	Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 //    	LOG.config(table 
@@ -98,7 +98,10 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
 		if(table instanceof MuliRowPanel) {
 			GenericDataModel dataModel = (GenericDataModel)table.getModel();
 			if(dataModel.isCellEditable(row, column)) {
-				// TODO dann sollten sie einen Editor haben
+				// TODO dann sollten sie einen Editor haben, wie bekomme ich den hier?
+//				if(value instanceof X_AD_Org) {
+					LOG.config("Editable X_AD_Org column="+column + " row="+row + " value:"+value);
+//				}
 			} else {
 				value = getObject(dataModel.getColumnName(column), value);
 				component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

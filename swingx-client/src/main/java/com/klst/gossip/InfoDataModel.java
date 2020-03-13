@@ -104,7 +104,9 @@ LEFT OUTER JOIN (SELECT mpp.M_Product_ID, mpp.M_PriceList_Version_id, mpp.IsActi
 
  */
 			// 101 ist pr.M_PriceList_Version_ID dh M_ProductPrice.M_PriceList_Version_id für GardenWorld
-			addColumn("101 as M_PriceList_Version_ID", Msg.translate(Env.getCtx(), "PriceList_Version"), DisplayType.ID);
+// die nachfolgende Zeile fürrt zu exception, aber Info Produkt lädt dadurch !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			addColumn("101_as_M_PriceList_Version_ID", Msg.translate(Env.getCtx(), "PriceList_Version"), DisplayType.ID);
+//			addColumn("M_PriceList_Version_ID", Msg.translate(Env.getCtx(), "PriceList_Version"), DisplayType.ID);
 			// bomPriceList ist sql-Function: bompricelist(numeric, numeric)
 			addColumn("bomPriceList(M_Product_ID, 101) AS PriceList", Msg.translate(Env.getCtx(), "PriceList"), DisplayType.Amount);
 			

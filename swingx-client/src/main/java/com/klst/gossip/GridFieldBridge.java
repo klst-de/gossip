@@ -54,7 +54,7 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
 	}
 	
 	void setValue(Object newValue, boolean inserting) {
-		field.setValue(newValue, inserting);
+		if(field!=null) field.setValue(newValue, inserting);
 	}
 	
 	public int getAD_Column_ID() {
@@ -112,6 +112,7 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     }
 	
     public String getDescription() {
+    	if(field==null) return (String)getIdentifier();
         return field.getDescription();
     }
 	
@@ -239,12 +240,13 @@ public class GridFieldBridge extends TableColumnExt { // TableColumnExt extends 
     public String toString() {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("GridFieldBridge[");
+//		stringBuilder.append("Value=").append(getValue()); 
 		if(field==null) {
 			stringBuilder.append("ColumnName=").append(getColumnName()); 
 			stringBuilder.append(", DisplayType=").append(getDisplayType()); 
 			stringBuilder.append("] ");		
 		} else {
-			stringBuilder.append("Field_IDe=").append(getAD_Field_ID()); 
+			stringBuilder.append("Field_ID=").append(getAD_Field_ID()); 
 			stringBuilder.append(", isDisplayed=").append(isDisplayed()); 
 			stringBuilder.append(", isDisplayedGrid=").append(isDisplayedGrid()); 
 			stringBuilder.append("] ");
