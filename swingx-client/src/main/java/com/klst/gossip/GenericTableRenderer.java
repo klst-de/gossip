@@ -26,17 +26,47 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
     	super();
     }
 
+/*
+
+in package org.jdesktop.swingx.renderer gibt es folgende renderer
+-                 abstract class ComponentProvider<T extends JComponent>
+- class LabelProvider    extends ComponentProvider<JLabel> : A component provider which uses a JLabel as rendering component.
+- class CheckBoxProvider extends ComponentProvider<AbstractButton>: A component provider which uses a JCheckBox. Nicht nur für Boolean! 
+- public class HyperlinkProvider extends ComponentProvider<JXHyperlink> implements RolloverRenderer
+... dann gibt es noch die Klassen in package org.jdesktop.swingx.rollover
+
+ */
     public GenericTableRenderer(StringValue converter) {
     	super(new LabelProvider(converter));
     }
 
     public GenericTableRenderer(StringValue converter, int alignment) {
-        super(new LabelProvider(converter, alignment));
+        super(new LabelProvider(converter, alignment)); // org.jdesktop.swingx.renderer.LabelProvider.LabelProvider(StringValue converter, int alignment)
     }
     
     public GenericTableRenderer(ComponentProvider<?> componentProvider) {
         super(componentProvider);
     }
+
+    @Override // method in DefaultTableRenderer
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    	Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    	LOG.config(table 
+    			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass())
+    			+ "\ncomponent:"+component);
+    	if(table instanceof MuliRowPanel) {
+    		GenericDataModel dataModel = (GenericDataModel)table.getModel(); // dataModel in MuliRowPanel ist immer GenericDataModel!
+    		if(dataModel.isCellEditable(row, column)) {
+    			LOG.config("Cell is Editable value="+value + " TODO Cell-Editor");
+    		} else {
+    			value = getObject(dataModel.getColumnName(column), value);
+				component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				((JComponent)component).setForeground(Color.GRAY);
+    		}
+    	}
+    	return component;
+    }
+
 
     Object getObject(String columnName, Object value) { // eine interimsLösung
     	if(value==null || !columnName.endsWith("_ID")) {
@@ -53,9 +83,10 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
 			
 			//Object obj = classClass.cast(object); // cast möglich, aber nicht: classClass.cast(object).getValue();
 			PO po = (PO)object;
-			Object v = po.get_Value("Name"); // für AD_Org_ID=0 bekomme ich nicht "*" das ist bei AD_Client_ID=0 definiert, 
-			                                 // in den props steht aber #AD_Client_ID=11 - als interimsLösung gut genug
-			if(v!=null) value = v;
+			LOG.config(columnName + " object:"+object);
+//			Object v = po.get_Value("Name"); // für AD_Org_ID=0 bekomme ich nicht "*" das ist bei AD_Client_ID=0 definiert, 
+//			                                 // in den props steht aber #AD_Client_ID=11 - als interimsLösung gut genug
+			value = po.getDisplayValue();
 		} catch (ClassNotFoundException e) {
 			// das kommt bei Minitable aka InfoPanel vor
 			//e.printStackTrace();
@@ -86,33 +117,5 @@ public class GenericTableRenderer extends DefaultTableRenderer { // extends Abst
 			return value;
 		}
 		return value;
-    }
-    
-    @Override // method in DefaultTableRenderer
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-    	Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-//    	LOG.config(table 
-//    			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass())
-//    			+ "\ncomponent:"+component);
-    	
-		if(table instanceof MuliRowPanel) {
-			GenericDataModel dataModel = (GenericDataModel)table.getModel();
-			if(dataModel.isCellEditable(row, column)) {
-				// TODO dann sollten sie einen Editor haben, wie bekomme ich den hier?
-//				if(value instanceof X_AD_Org) {
-					LOG.config("Editable X_AD_Org column="+column + " row="+row + " value:"+value);
-//				}
-			} else {
-				value = getObject(dataModel.getColumnName(column), value);
-				component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				((JComponent)component).setForeground(Color.GRAY);
-			}
-		}
-		
-//		if(component instanceof JLabel) {
-//			((JLabel)component).setForeground(Color.LIGHT_GRAY);
-//		}
-		
-    	return component;
     }
 }
