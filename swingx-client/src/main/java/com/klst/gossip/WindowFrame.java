@@ -229,8 +229,10 @@ public class WindowFrame extends JFrame implements WindowListener {
             	} else if(c instanceof InfoPanel) {
             		InfoPanel i = (InfoPanel)c;
             		i.refresh();
+            	} else if(c==null && this instanceof RootFrame) {
+            		this.refresh();
             	} else {
-            		LOG.warning("refresh on Component "+c);
+            		LOG.warning("refresh on SelectedTab Component "+c+ " , "+this);
             	}
             });
             mEdit.add(refreshItem);

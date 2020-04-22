@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
@@ -33,7 +31,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.model.MMenu;
 import org.compiere.util.Env;
-import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
@@ -82,14 +79,9 @@ public class MenuPanel extends JXPanel implements ActionListener {
     private TreeTableModel treeTableModel;
     private MTree vTree;
     private JXTreeMenuTable tree;
-    private JXButton refreshButton;
-    private JXButton expandButton;
-    private JXButton collapseButton;
-    
-    private MouseListener mouseListener = new MenuPanelMouseAdapter(); // TODO kann weg
-    private TreeSelectionListener treeSelectionListener = new SelectionListener(); // TODO kann weg ==> Lambda
-    private TreeWillExpandListener treeWillExpandListener = new WillExpandListener(); // TODO kann weg
-    private TreeExpansionListener treeExpansionListener = new ExpansionListener(); // TODO kann weg
+//    private JXButton refreshButton;
+//    private JXButton expandButton;
+//    private JXButton collapseButton;
     
     private class JXTreeMenuTable extends JXTreeTable {
 
@@ -123,20 +115,20 @@ public class MenuPanel extends JXPanel implements ActionListener {
         add(new JScrollPane(tree), BorderLayout.CENTER);
 
         // TODO buttons raus
-		JComponent control = new JXPanel();
-		refreshButton = new JXButton("Refresh");
-		refreshButton.setName("refreshButton");
+//		JComponent control = new JXPanel();
+//		refreshButton = new JXButton("Refresh");
+//		refreshButton.setName("refreshButton");
+//
+//		expandButton = new JXButton("Expand All Nodes");
+//		expandButton.setName("expandButton");
+//
+//		collapseButton = new JXButton("Collapse All Nodes");
+//		collapseButton.setName("collapseButton");
 
-		expandButton = new JXButton("Expand All Nodes");
-		expandButton.setName("expandButton");
-
-		collapseButton = new JXButton("Collapse All Nodes");
-		collapseButton.setName("collapseButton");
-
-        control.add(refreshButton);
-		control.add(expandButton);
-		control.add(collapseButton);
-		add(control, BorderLayout.PAGE_END);
+//        control.add(refreshButton);
+//		control.add(expandButton);
+//		control.add(collapseButton);
+//		add(control, BorderLayout.PAGE_END);
 	}
 
     /**
@@ -251,18 +243,18 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         tree.addHighlighter(createRolloverIconHighlighter(iv));
         // </snip>
         	
-        refreshButton.addActionListener(event -> {
-        	LOG.config("event "+event); // TODO initial size merken
-        	rootFrame.refresh();
-        });
-
-        expandButton.addActionListener(event -> {
-        	tree.expandAll();
-        });
-
-        collapseButton.addActionListener(event -> {
-        	tree.collapseAll();
-        });
+//        refreshButton.addActionListener(event -> {
+//        	LOG.config("event "+event); // TODO initial size merken
+//        	rootFrame.refresh();  // =======================> WindowFrame.refreshItem
+//        });
+//
+//        expandButton.addActionListener(event -> {
+//        	tree.expandAll();
+//        });
+//
+//        collapseButton.addActionListener(event -> {
+//        	tree.collapseAll();
+//        });
         
         LOG.config("isRootVisible:"+tree.isRootVisible());
         tree.setRootVisible(true); // default is false
