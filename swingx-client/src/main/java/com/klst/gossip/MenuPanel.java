@@ -21,8 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.ExpandVetoException;
@@ -30,6 +28,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.model.MMenu;
+import org.compiere.model.MProcess;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTree;
@@ -263,20 +262,41 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         tree.sizeColumnsToFit(2); // tut nicht
         
 //        tree.addMouseListener(mouseListener);
-        tree.addTreeSelectionListener(event -> {
+        tree.addTreeSelectionListener(event -> { // implements TreeSelectionListener
 			if(event.getSource() instanceof JXTree) {
 				JXTree tree = (JXTree)event.getSource();
 				TreePath treePath = event.getPath(); // first path element
 				MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
-//				LOG.config("treePath:"+treePath 
-//				+ "\n NewLeadSelectionPath"+event.getNewLeadSelectionPath()		
-//				+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandsSelectedPaths:"+tree.getExpandsSelectedPaths());
 				
 				if(node.isWindow()) {
+					MMenu mMenu = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+//					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
+//					LOG.config(mm + "=?=" + mMenu);
+					rootFrame.openNewFrame(mMenu.getAD_Window_ID());
+				} else if(node.isProcess()) {
 					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
-					rootFrame.openNewFrame(mm.getAD_Window_ID());
-				//} else if(...)
-				// TODO Process, ...
+					MProcess mp = MProcess.get(Env.getCtx(), node.getNode_ID());
+/* in (client) org.compiere.apps.AMenuStartItem extends Thread
+		private void startProcess (int AD_Process_ID, boolean isSOTrx) {
+			SwingUtilities.invokeLater(updateProgressBar);			//	1
+			timer.stop();
+			ProcessDialog pd = new ProcessDialog (menu.getGraphicsConfiguration(), AD_Process_ID, isSOTrx);
+			    // ProcessDialog extends (base)CFrame extends JFrame implements IProcessDialog, ASyncProcess
+			if (!pd.init())
+				return;
+			timer.start();
+			menu.getWindowManager().add(pd);
+
+			SwingUtilities.invokeLater(updateProgressBar);			//	2
+			pd.getContentPane().invalidate();
+			pd.getContentPane().validate();
+			pd.pack();
+			//	Center the window
+			SwingUtilities.invokeLater(updateProgressBar);			//	3
+			AEnv.showCenterScreen(pd);
+		}
+ */
+					LOG.config("TODO Process "+node.getNode_ID());// TODO Process, siehe AMenuStartItem.startProcess
 				} else {
 					if(tree.getExpandsSelectedPaths()) {
 						if(!tree.isExpanded(treePath)) {
@@ -408,38 +428,6 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		LOG.config("ActionCommand:"+e.getActionCommand() + " " + e.toString());	
 	}
 	
-	@Deprecated // als Lambda implementiert
-	class SelectionListener implements TreeSelectionListener {
-
-		@Override
-		public void valueChanged(TreeSelectionEvent e) {
-			LOG.config("TreeSelectionEvent:" +e);
-			if (e.getSource() instanceof JXTree) {
-				JXTree tree = (JXTree)e.getSource();
-				TreePath treePath = e.getPath(); // first path element
-//				TreePath op = e.getOldLeadSelectionPath();
-				MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
-				LOG.config("treePath:"+treePath 
-				+ "\n NewLeadSelectionPath"+e.getNewLeadSelectionPath()		
-				+ "\n isExpanded="+tree.isExpanded(treePath) + " ExpandsSelectedPaths:"+tree.getExpandsSelectedPaths());
-				if(node.isWindow()) {
-					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
-					rootFrame.openNewFrame(mm.getAD_Window_ID());
-				} else {
-					if (tree.getExpandsSelectedPaths()) {
-						if (tree.isExpanded(treePath))
-							tree.collapsePath(treePath);
-						else {
-							tree.expandPath(treePath);
-						}
-					}
-//					tree.setLeadSelectionPath(op);
-				}
-			}
-		}
-		
-	}
-		
 	// to prevent expanding
 	class WillExpandListener implements TreeWillExpandListener {
 
