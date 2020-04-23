@@ -270,12 +270,18 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				
 				if(node.isWindow()) {
 					MMenu mMenu = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
-//					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
-//					LOG.config(mm + "=?=" + mMenu);
 					rootFrame.openNewFrame(mMenu.getAD_Window_ID());
 				} else if(node.isProcess()) {
-					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null);
+					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null); // gleichwertig zu MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					// mm.getAD_Window_ID()==0
 					MProcess mp = MProcess.get(Env.getCtx(), node.getNode_ID());
+					LOG.config("TODO Process Node_ID="+node.getNode_ID() + " AD_Window_ID="+mm.getAD_Window_ID());// TODO Process, siehe AMenuStartItem.startProcess
+					WindowFrame pd = rootFrame.openNewFrame(mp);
+					pd.getContentPane().invalidate();
+					pd.getContentPane().validate();
+					pd.pack();
+					pd.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
+					pd.setVisible(true);
 /* in (client) org.compiere.apps.AMenuStartItem extends Thread
 		private void startProcess (int AD_Process_ID, boolean isSOTrx) {
 			SwingUtilities.invokeLater(updateProgressBar);			//	1
@@ -296,7 +302,6 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			AEnv.showCenterScreen(pd);
 		}
  */
-					LOG.config("TODO Process "+node.getNode_ID());// TODO Process, siehe AMenuStartItem.startProcess
 				} else {
 					if(tree.getExpandsSelectedPaths()) {
 						if(!tree.isExpanded(treePath)) {

@@ -26,6 +26,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.compiere.Adempiere;
 import org.compiere.model.GridWindow;
+import org.compiere.model.PO;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -148,6 +149,10 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		loginPanel.setVisible(true);
 	}
 	
+	WindowFrame openNewFrame(PO po) { // zB MProcess po
+		WindowFrame frame = makeWindow(0, po);
+		return frame;
+	}
 	void openNewFrame(int window_ID) {
 		openNewFrame(window_ID, null);
 	}
