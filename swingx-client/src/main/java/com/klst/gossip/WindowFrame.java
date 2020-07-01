@@ -6,12 +6,17 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,15 +25,23 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.SwingWorker.StateValue;
 
+import org.compiere.apps.form.FormPanel;
+import org.compiere.apps.form.WorkflowActivities;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
+import org.compiere.model.MProcess;
 import org.compiere.model.MWindow;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
+import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXStatusBar;
 
 import com.klst.icon.AbstractImageTranscoder;
@@ -38,11 +51,14 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 /*
  - visualisiert MWindow mWindow
  - es ist ein Top Level Component 
- - enthält JPanel im Borderlayout im ContentPane 
- - das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
+ - enthält JPanel im Borderlayout im ContentPane, das wiederum besteht aus tabPane : HidableTabbedPane ; // hierin die AD tabs
+   - also List<Tab> Tab aka JPanel
+   - oder InfoPanel aka JPanel 
+   - oder ProcessPanel aka JPanel
+   - auch MenuPanel ist ein JPanel -> extends JXPanel
  */
 // ersetzt (AD client) APanel
-public class WindowFrame extends JFrame implements WindowListener {
+public class WindowFrame extends JXFrame implements WindowListener {
 	
 	private static final long serialVersionUID = 5098403364836474988L;
 
@@ -62,15 +78,16 @@ public class WindowFrame extends JFrame implements WindowListener {
 	private int window_ID;
 	private Properties ctx = null;
 	private String trxName;
-	private MWindow mWindow; // eigentlich sollten allen mWindow Daten aus gridWindow kommen
+	private MWindow mWindow; // eigentlich sollten alle mWindow Daten aus gridWindow kommen
 	// GridWindow is ein wrapper für MWindow
 	protected GridWindow gridWindow; // (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
 	protected InfoPanel infoWindow; 
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
-	private List<GridTab> gridTabs; // TODO verschieben nach WindowPame - wieso List statt Set
+	private List<GridTab> gridTabs; // TODO verschieben nach WindowPane - wieso List statt Set
 	private List<Tab> tabs;
 //	Tab currentTab; // nur eine Tab kann es sein, die bekommen wir aus tabPane => getSelectedTab
+	protected ProcessPanel processWindow; 
 	
 	/* ui:
 	 * WindowFrame aka (swing) Frames:
@@ -82,7 +99,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	 * this ContentPane contains:
 	 * - jPanel
 	 *   - at PAGE_START: toolBar
-	 *   - at CENTER    : tabPane
+	 *   - at CENTER    : tabPane              or processPane
 	 *   - at PAGE_END  : statusBar mit progressBar
 	 */
 	RootFrame rootFrame; // mit FrameManager
@@ -92,8 +109,9 @@ public class WindowFrame extends JFrame implements WindowListener {
 	JMenu mInfo = new JMenu(); // Infofenster
 	JMenu mSetup = new JMenu(); // ...
 	JMenu mHelp = new JMenu(); // ...
-	JPanel jPanel = new JPanel(new BorderLayout());
+	JPanel jPanel = new JPanel(new BorderLayout()); // TODO JXPanel
 	HidableTabbedPane tabPane;
+	JXButton runProcessButton;
 	// statusBar:
 	JComponent statusBarLeft;
 	JLabel actionStatus;
@@ -133,7 +151,91 @@ public class WindowFrame extends JFrame implements WindowListener {
 		} else if(object instanceof GenericDataModel) {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
+		} else if(object instanceof MProcess) {
+/* Allgemein: MProcess extends X_AD_Process extends PO implements I_AD_Process, I_Persistent
+                                                                  I_AD_Process.Table_Name = "AD_Process" 
+in AD 3.9.3 gibt es #580 (#11 inaktive #569 aktive) Berichte (#156 aktive) und Prozesse
+- von den #413 aktiven Prozessen haben 71 keine Klassenimplementiertung, 
+-- die #71 sind entweder
+--     #02 DB Procedure : AD_Process.procedurename <>null
+--     #38 workflows : AD_Process.ad_workflow_id <>null
+--     #05 special form : AD_Process.ad_form_id <>null
+--     #25 smart browse : AD_Process.ad_browse_id <>null
+--     #01 nix von den oberen: AD_Workflow DocValue / Auf Belegwert basierende Workflows
+select * from ad_process 
+where isactive='Y' and isreport='N' 
+and classname is null 
+order by procedurename
+        ,ad_workflow_id
+        ,ad_form_id
+        ,ad_browse_id
+-- für #342 gibt es eine klasse z.B. Classname=org.compiere.process.CacheReset die den Prozess implementiert
+(base) public class org.compiere.process.CacheReset extends SvrProcess / abstract class SvrProcess implements ProcessCall.startProcess(Properties ctx, ProcessInfo pi, Trx trx)
+implements ClientProcess
+
+Zum Ausführen einer Prozessklasse procCla gibt es in AD ProcessCtl implements Runnable mit run(). Das ist sehr allgemein, 
+aber since 1.6 gibt es SwingWorker, die besser wären. Besonders für die Prozesse die im swing client ausgeführt werden.
+- es gibt nur zwei Prozesse, die NUR im swing laufen, dh "implements ClientProcess" haben:
+-- [205-Cache Reset] Classname=org.compiere.process.CacheReset
+-- und 53008 org.eevolution.process.CompletePrintOrder
+
+
+am Beispiel von MProcess:MProcess[205-Cache Reset] Classname=org.compiere.process.CacheReset
+
+          abstract class SvrProcess implements ProcessCall // Server Process Template
+                                               ProcessCall.startProcess(Properties ctx, ProcessInfo pi, Trx trx);
+class CacheReset extends SvrProcess implements ClientProcess // process can only be run on the client
+d.h. nirgends wird die swing worker funktionalotät erwartet:
+ - protected abstract T doInBackground() throws Exception
+ - protected void process(List<V> chunks) 
+ - protected void done()
+
+ */
+			initProcessWindow((MProcess)object);
+			// TODO process icon statt java + this.processWindow.getName() liefert null
+			setTitle("["+this.windowNo+"] Process " + this.processWindow.getName());
+			pack();
+			
+/*			MProcess mProcess = (MProcess)object;
+			LOG.config("object/MProcess:"+mProcess + " Classname="+mProcess.getClassname());
+			ProcessInfo pi = new ProcessInfo(null, mProcess.getAD_Process_ID());
+			pi.setAD_User_ID (Env.getAD_User_ID(Env.getCtx()));
+			pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
+			pi.setInterfaceType(ProcessInfo.INTERFACE_TYPE_SWING);
+			// this ist der parameterPanel bzw. processDialog, zum Prozessstart braucht es einen Start-Buttom und den Listener dazu
+			m_textArea = new JTextArea(); // Results (wg. Demo PrimeNumbersTask), sichtbar erst nach dem Start 
+//			m_textArea.setRows(30);
+			m_textArea.setVisible(false);
+			jPanel.add( new JScrollPane(m_textArea), BorderLayout.CENTER );
+			//jPanel.add(m_textArea, BorderLayout.CENTER);
+			runProcessButton = new JXButton("Start Prozess", AIT.getImageIcon(AIT.PROCESS, SMALL_ICON_SIZE));
+			runProcessButton.setName("runProcessButton");
+	        runProcessButton.addActionListener(event -> {
+	        	// TODO ....  ein Objekt/Task bereitstellen ähnlich zu GenericDataLoader, das man starten kann
+	        	//ProcessCtl xxx; //.process(parent.getParentProcess(), getWindowNo(), this, getProcessInfo(), null);
+	        	SwingWorker task = new PrimeNumbersTask(10,1000); // nur zur Demo
+	    		BindingGroup group = new BindingGroup();
+	            group.addBinding(Bindings.createAutoBinding(READ, task, BeanProperty.create("progress"), this.progressBar, BeanProperty.create("value")));
+	            group.addBinding(Bindings.createAutoBinding(READ, task, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+	            group.bind();
+	            m_textArea.setRows(30);
+	            m_textArea.setVisible(true);
+//	            task.addPropertyChangeListener(event2 -> {
+//	            	if ("state".equals(event2.getPropertyName())) {
+//	            		setLoadState((StateValue)event2.getNewValue());
+//	            	}
+//	            });
+	        	task.execute();		
+	        });
+			jPanel.add(runProcessButton, BorderLayout.LINE_END); // für Demo EAST
+			if(statusToTrafficlights.isEmpty()) {
+				statusToTrafficlights.put(StateValue.PENDING, AIT.getImageIcon(AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
+				statusToTrafficlights.put(StateValue.STARTED, AIT.getImageIcon(AIT.YLI, WindowFrame.SMALL_ICON_SIZE));
+				statusToTrafficlights.put(StateValue.DONE   , AIT.getImageIcon(AIT.GLI, WindowFrame.SMALL_ICON_SIZE));
+			}
+------------- */
 		} else {
+			LOG.config("object:"+object);
 			assert(window_ID==-1);
 			setTitle(title); 
 		}
@@ -142,9 +244,21 @@ public class WindowFrame extends JFrame implements WindowListener {
 		jPanel.add(createStatusBar(), BorderLayout.PAGE_END);
 		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
-		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}
 
+//	public MenuBar getMenuBar() {
+	// Ergebnis: sollte immer JMenuBar sein 
+//		return super.getMenuBar();
+//	}
+	
+	@Override // javax.swing.JFrame wg.LOG
+	public Container getContentPane() {
+		// Ergebnis: Container sollte immer JXPanel sein 
+		Container contentPane = super.getContentPane();
+		LOG.config("contentPane:"+contentPane);
+		return contentPane;
+	}
+	
 	private void initMenuBar() {
 		LOG.config(menuBar.toString());
 		this.setJMenuBar(menuBar);
@@ -199,6 +313,32 @@ public class WindowFrame extends JFrame implements WindowListener {
 				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
             });
             mInfo.add(infoBPartnerItem);
+// TEST TODO muss raus            
+            JMenuItem infoWFActivItem = new JMenuItem("WorkflowActivities TEST Info", AIT.getImageIcon(AIT.TASK, SMALL_ICON_SIZE));
+            infoWFActivItem.setName("infoWFActiv");
+            infoWFActivItem.setActionCommand("infoWFActiv");
+            infoWFActivItem.addActionListener(event -> {
+            	LOG.config("item:"+infoWFActivItem);
+            	// aus FormFrame.openForm: AD_Form_ID=1000000 - Class=org.compiere.apps.form.UnprocessedDocuments
+            	int AD_Form_ID = 1000000; 
+            	String className = "org.compiere.apps.form.WorkflowActivities";
+//            	String name;
+            	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
+            	FormPanel m_panel;
+        		try
+        		{
+        			//	Create instance w/o parameters
+        			m_panel = (FormPanel)Class.forName(className).newInstance(); // === new WorkflowActivities()
+        			FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+        			m_panel.init(frame.getWindowNo(), frame);
+        		}
+        		catch (Exception e)
+        		{
+        			LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+        			//return false;
+        		}
+            });
+            mInfo.add(infoWFActivItem);
             
             JMenuItem cancelItem = new JMenuItem("Cancel", AIT.getImageIcon(AIT.CANCEL, SMALL_ICON_SIZE));
             cancelItem.setName("cancel");
@@ -319,7 +459,7 @@ public class WindowFrame extends JFrame implements WindowListener {
 	// can make window?
 	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein!
 	static GridWindow getGridWindow(int window_ID) {
-		// das statische GridWindow.get erstellte eine window value object instanz GridWindowVO.create (Env.getCtx(), WindowNo, AD_Window_ID)
+		// das statische GridWindow.get erstellt eine window value object instanz GridWindowVO.create (Env.getCtx(), WindowNo, AD_Window_ID)
 		// static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID = 0)
 		// GridWindowVO.create: #1 - AD_Window_ID=304; AD_Menu_ID=0
 /* statt
@@ -379,6 +519,9 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 		return GridWindowVO.create(ctx, WindowNo, AD_Window_ID, AD_Menu_ID);
 	}
 
+	private void initProcessWindow(MProcess process) {
+		this.processWindow = new ProcessPanel(this, process);	
+	}
 	private void initInfoWindow(GenericDataModel gdm) {
 		this.infoWindow = new InfoPanel(this, gdm);
 	}
@@ -560,4 +703,75 @@ JFrame f5 = (JFrame) SwingUtilities.getRootPane(comp).getParent();
 		// TODO Auto-generated method stub
 		
 	}
+	
+// inner
+	private JTextArea m_textArea;
+	private static EnumMap<StateValue, Icon> statusToTrafficlights = new EnumMap<>(StateValue.class);
+	public void setLoadState(StateValue state) { // ähnlich zu Tab.setLoadState()
+		LOG.config(this.getName()+" StateValue:"+state);
+		this.actionStatus.setIcon(statusToTrafficlights.get(state));
+		if(state.equals(StateValue.STARTED)) {
+			this.setVisible(true);		
+			updateStatusBar();
+		} else if(state.equals(StateValue.DONE)) {
+			this.setVisible(true);	
+			updateStatusBar();
+		}
+	}
+	private void updateStatusBar() {
+//		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(dataModel.getRowCount());
+//		if(dataModel.getRowCount()==dataModel.getRowsToLoad()) {
+//			// OK alles geladen
+//		} else {
+//			text.append("/").append(dataModel.getRowsToLoad());
+//		}
+//		this.tableRows.setText(text.toString());
+	}
+	class PrimeNumbersTask extends SwingWorker<List<BigInteger>, BigInteger> {
+		
+	    private final int m_bitCount;
+	    private final int m_primeCount;
+	    private ArrayList<BigInteger> m_numbers = new ArrayList<BigInteger>();
+	    private Random m_randomGenerator = new Random(0);
+	    
+	    PrimeNumbersTask(int bitCount, int primeCount)
+	    {
+	      m_bitCount = bitCount;
+	      m_primeCount = primeCount;
+	    }
+
+	    @Override
+		public List<BigInteger> doInBackground() {
+	    	LOG.config("m_bitCount="+m_bitCount + " m_primeCount="+m_primeCount);
+			while ((m_numbers.size() < m_primeCount) && !isCancelled()) {
+				BigInteger number = nextPrimeNumber();
+				m_numbers.add(number);
+				super.publish(number);
+				setProgress(100 * m_numbers.size() / m_primeCount);
+			}
+			return m_numbers;
+		}
+
+		private BigInteger nextPrimeNumber() {
+			return BigInteger.probablePrime(100, m_randomGenerator);
+		}
+
+		@Override
+		protected void process(List<BigInteger> chunks) {
+			LOG.config("chunks#:"+chunks.size());
+			for (BigInteger number : chunks) {
+				m_textArea.append(number + "\n");
+			}
+		}
+
+		@Override
+		protected void done() {
+			m_textArea.append("Generated total of " + m_numbers.size() + " primes of size " + m_bitCount + " bits.\n");
+			// Reset state of buttons.
+//			m_startButton.setEnabled(true);
+//			m_cancelButton.setEnabled(false);
+		}
+
+}
+
 }
