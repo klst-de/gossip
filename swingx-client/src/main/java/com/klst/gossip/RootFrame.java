@@ -51,6 +51,16 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	// frame mgt
 	List<JFrame> frames;
 	private static final int FRAMES_INITIAL_CAPACITY = 10;
+	private FormFrame makeFormFrame(int frameNumber, RootFrame rootFrame, int window_ID, Object object) {
+		FormFrame frame = new FormFrame("Frame number " + frameNumber, rootFrame, window_ID, object);
+		frame.setDefaultCloseOperation(frames.isEmpty() ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
+		frames.add(frame);
+		return frame;
+	}
+	FormFrame makeFormFrame(int window_ID, Object object) {
+		int frameNumber = frames.size();
+		return makeFormFrame(frameNumber, this, window_ID, object);
+	}
 	private WindowFrame makeFrame(int frameNumber, RootFrame rootFrame, int window_ID, Object object) {
 		WindowFrame frame = new WindowFrame("Frame number " + frameNumber, rootFrame, window_ID, object);
 		frame.setDefaultCloseOperation(frames.isEmpty() ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
