@@ -16,6 +16,7 @@ public class FormFrame extends WindowFrame {
 
 	FormFrame(String title, RootFrame rootFrame, int window_ID, Object object) {
 		super(title, rootFrame, window_ID, object);
+		// exception in super com.klst.gossip.WindowFrame.<init>(WindowFrame.java:156)
 		// TODO Auto-generated constructor stub
 	}
 

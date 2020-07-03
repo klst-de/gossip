@@ -31,7 +31,6 @@ import javax.swing.SwingWorker;
 import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.apps.form.FormPanel;
-import org.compiere.apps.form.WorkflowActivities;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
@@ -151,6 +150,12 @@ public class WindowFrame extends JXFrame implements WindowListener {
 		} else if(object instanceof GenericDataModel) {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
+		} else if(object instanceof GenericFormPanel && object.getClass() != GenericFormPanel.class) {
+			LOG.config(">>>>>>>>>>>>>>>>>>> object inSUBCLASSof GenericFormPanel "+object);
+			GenericFormPanel formPanel = (GenericFormPanel)object;
+			setTitle("["+this.windowNo+"] formPanel WindowId=" + formPanel.getWindowId());
+		} else if(object instanceof GenericFormPanel) {
+			LOG.config(">>>>>>>>>>>>>>>>>>> object instanceof GenericFormPanel "+object);
 		} else if(object instanceof MProcess) {
 /* Allgemein: MProcess extends X_AD_Process extends PO implements I_AD_Process, I_Persistent
                                                                   I_AD_Process.Table_Name = "AD_Process" 
