@@ -2,6 +2,7 @@ package com.klst.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,15 +18,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import org.compiere.apps.form.FormPanel;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
-import org.compiere.model.GridWindow;
 import org.compiere.model.MQuery;
-import org.compiere.util.DisplayType;
+import org.compiere.model.WindowModel;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.jdesktop.swingx.JXLabel;
@@ -57,10 +60,11 @@ public class GenericFormPanel implements FormPanel {
 		try {
 			jbInit();
 			
-			LOG.config("ContentPane:"+formFrame.getContentPane());
-			formFrame.getContentPane().add(selectionPanel, BorderLayout.PAGE_START);
-			formFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
-//			formFrame.getContentPane().add(statusBar, BorderLayout.PAGE_END);
+			Container contentPane = formFrame.getContentPane();
+			LOG.config("ContentPane:"+contentPane);
+			contentPane.add(selectionPanel, BorderLayout.PAGE_START);
+			contentPane.add(mainPanel, BorderLayout.CENTER);
+//			contentPane.add(statusBar, BorderLayout.PAGE_END);
 			
 			formFrame.pack(); // Causes this Window to be sized to fit the preferred size and layouts of its subcomponents
 			formFrame.setVisible(true);
@@ -108,7 +112,10 @@ public class GenericFormPanel implements FormPanel {
 	//                   (base)CTable extends JTable
 	// TODO aus MiniTable ==> MXTable, später wird aus MXTable ===> MuliRowPanel
 	// MuliRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
-	MXTable miniTable = new MXTable();
+	MXTable miniTable; // = MXTable.createXTable(TableModel dataModel);
+	protected JTable getTable() {
+		return miniTable;
+	}
 	
 	// selectionPanel:
 	protected List<JComponent> selections = new ArrayList<JComponent>();
@@ -179,11 +186,32 @@ Parameters:
 					new GridBagConstraints(i, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0)
 					);
 		}
+		
+//		mainPanel.add(new JScrollPane(miniTable), BorderLayout.CENTER);
+		initMainPanel(mainPanel, miniTable);
+		
+		registerTableSelectionListener();
 	}
 
-	protected GridWindow getGridWindow() {
-		// (base)org.compiere.model.GridWindow
-		return GridWindow.get(Env.getCtx(), this.getWindowNo(), this.getWindowId());
+	/*
+	 * default:
+	 * at CENTER     a mainPanel with scrollable miniTable
+	 * 
+	 * expl in subclass InfoBP:
+	 * additional subPanel with Contacts + Addresses
+	 */
+	protected void initMainPanel(JPanel mainPanel, Component miniTable) {
+		mainPanel.add(new JScrollPane(miniTable), BorderLayout.CENTER);
+	}
+
+	// MiniTableSelectionListener muss in Unterklasse implementiert werden
+	protected void registerTableSelectionListener() throws Exception {
+		LOG.warning("TO BE IMPEMENTED in Subclass");
+	}
+	
+	protected WindowModel getGridWindow() {
+		// wrapped (base)org.compiere.model.GridWindow
+		return WindowModel.get(Env.getCtx(), this.getWindowNo(), this.getWindowId());
 	}
 
 	private final static boolean finalCall = false;
@@ -257,9 +285,11 @@ Parameters:
 		
 		setSelectWhereClause();
 		
+		miniTable = MXTable.createXTable(gridTableModel);
 		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
-		Vector<Vector<Object>> data = getData(gridTableModel);
-		DefaultTableModel tablemodel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
+		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
+		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
+		miniTable.setModel(dataModel);
 
 //// ----------------
 //			boolean success = gridTableModel.open(0);
@@ -295,7 +325,7 @@ Parameters:
 //			
 //			statusBar.setStatusLine(gridTableModel.getSelectWhereClause());
 	//// <<<<<<<<<<<	
-			miniTable.setModel(tablemodel);
+//			miniTable.setModel(tablemodel);
 
 			GridField[] fields = gridTableModel.getFields();
 // Umgehung für BUG in MiniTable : an Pos 0 (FIRST) darf kein Boolean feld stehen, indem ich versuche heuristisch eine KeyColumn zu setzten
@@ -312,7 +342,7 @@ Parameters:
 //			}
 
 			assert(gridTableModel.getRowCount()==miniTable.getRowCount());
-			formatTableFields(gridTableModel, miniTable);
+//			formatTableFields(gridTableModel, miniTable);
 			
 			for(int f = 0; f < miniTable.getColumnCount(); f++) {	
 				GridField field = fields[f];
@@ -377,8 +407,9 @@ Parameters:
 	
 	private GridTable gridTableModel;
 	private GridTable getGridTableModel() {
-		GridWindow gridWindow = getGridWindow();
+		WindowModel gridWindow = getGridWindow();
 		if(gridWindow==null) return null; // kann null sein, wenn Berechtigung fehlt, ===========> GridWindowVO.create: No Window - AD_Window_ID=1000001
+//		gridWindow.dispose(); // nur zum Test
 		assert(gridWindow.getTabCount()>=1);
 		// (base)GridTab hat einen Loader
 		GridTab tab = gridWindow.getTab(0); // es gibt mindestens einen Tab
@@ -402,7 +433,7 @@ Parameters:
 	
 	private void initTableModelAndControler() {
 		getGridTableModel();		
-//		setModelAndControler(true); // requery - beim ersten mal ist requery nicht notwendig --------------- DOCH!!!!
+//		XetModelAndControler(true); // requery - beim ersten mal ist requery nicht notwendig --------------- DOCH!!!!
 		setModelAndControler();
 //		setPreferredSize();
 	}
