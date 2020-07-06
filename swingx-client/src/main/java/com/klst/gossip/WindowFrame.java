@@ -137,6 +137,7 @@ public class WindowFrame extends JXFrame implements WindowListener {
 		this.window_ID = window_ID;
 		
 		initMenuBar();
+		Container statusBar = createStatusBar();
 
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
@@ -151,9 +152,10 @@ public class WindowFrame extends JXFrame implements WindowListener {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
 		} else if(object instanceof GenericFormPanel && object.getClass() != GenericFormPanel.class) {
-			LOG.config(">>>>>>>>>>>>>>>>>>> object inSUBCLASSof GenericFormPanel "+object);
+			LOG.config(">>>>>>>>>>>>>>>>>>> object isSUBCLASSof GenericFormPanel "+object);
 			GenericFormPanel formPanel = (GenericFormPanel)object;
 			setTitle("["+this.windowNo+"] formPanel WindowId=" + formPanel.getWindowId());
+			formPanel.setStatusBar(statusBar);
 		} else if(object instanceof GenericFormPanel) {
 			LOG.config(">>>>>>>>>>>>>>>>>>> object instanceof GenericFormPanel "+object);
 		} else if(object instanceof MProcess) {
@@ -245,8 +247,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 			setTitle(title); 
 		}
 		getContentPane().add(jPanel);
-		
-		jPanel.add(createStatusBar(), BorderLayout.PAGE_END);
+		jPanel.add(statusBar, BorderLayout.PAGE_END);
 		
 		addWindowListener(this); // wg. - JFrame.DISPOSE_ON_CLOSE
 	}
