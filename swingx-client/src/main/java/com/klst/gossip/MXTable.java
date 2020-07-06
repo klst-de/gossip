@@ -1,6 +1,5 @@
 package com.klst.gossip;
 
-import java.awt.AWTEvent;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
@@ -9,7 +8,6 @@ import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -18,7 +16,6 @@ import org.compiere.model.GridTable;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
-import org.jdesktop.swingx.renderer.CheckBoxProvider;
 import org.jdesktop.swingx.table.ColumnFactory;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -41,12 +38,17 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 	//   SimpleStriping, AlternateStriping, ... siehe dort
 	private static Highlighter highlighter = HighlighterFactory.createAlternateStriping();
 			
-	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo , erweitert, wird in Tab gebraucht
-	// dataModel ist GenericDataModel
-	// ohne gridTab - es ist in GenericDataModel gekapselt
+	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo, erweitert, wird in GenericFormPanel verwendet
 	protected static MXTable createXTable(TableModel dataModel) {
 		if(dataModel instanceof GridTable) {
-			return new MXTable((GridTable)dataModel, true);
+			// Ansatz 1:
+			// - OK Header und Spalten synchron
+			// - OK Splatenbreite berechnet, aber nicht aus den Zellen
+			// - OK einige Spalten ausgeblendet
+			// - NOK Zellen nur teilweise gerendert TODO
+			return new MXTable((GridTable)dataModel);
+			// dieser Ansastz ist NOK:
+//			return new MXTable((GridTable)dataModel, true);
 		}
 		return new MXTable(dataModel);
 	}
@@ -77,7 +79,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 	}
 
 //	ColumnFactory columnFactory = GridFieldFactory.getInstance(); // a singleton
-	ColumnFactory columnFactory = ColumnFactory.getInstance(); 
+	ColumnFactory columnFactory = ColumnFactory.getInstance(); // Creates and configures (swingx)TableColumnExt extends (swing)TableColumn
 	// public TableColumnExt createAndConfigureTableColumn(TableModel model, int modelIndex)
 	DefaultTableColumnModelExt tcme; // = new DefaultTableColumnModelExt(); // der einzige ctor
 	
@@ -110,10 +112,12 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 					": fields["+f+"].ColumnName="+columnName + "/" + columnClass);
 			
 			int width = calculateWidth(field);
-			TableCellRenderer cellRenderer = new MXTableRenderer();
+			TableCellRenderer cellRenderer = new MXTableRenderer(dataModel);
+				//= new DefaultTableRenderer();
 			TableCellEditor cellEditor = null;
 			TableColumnExt aColumn = new TableColumnExt(f, width, cellRenderer, cellEditor);
 			aColumn.setHeaderValue(field.getHeader()); // TODO es gibt TableColumn.sizeWidthToFit()
+			aColumn.setIdentifier(field); // Object Identifier
 			
 			switch(displayType) {
 //			case DisplayType.Date: // 15 Date
@@ -153,7 +157,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 		return tcme;
 	}
 	
-	private MXTable(GridTable dataModel, boolean deprecated) {
+	private MXTable(GridTable dataModel) {
 		super(dataModel, initTableColumnModel(dataModel)); // TableModel dm, TableColumnModel cm
 		tcme = (DefaultTableColumnModelExt)columnModel; // protected TableModel in super.columnModel
 		LOG.config("columnModel ColumnCount="+tcme.getColumnCount());
@@ -166,9 +170,9 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 		addHighlighter(highlighter);
 
 		// JXTable uses instances of this as per-class default renderers:
-		setDefaultRenderer(Object.class, new MXTableRenderer());
+		setDefaultRenderer(Object.class, new MXTableRenderer(dataModel));
 		// use a CheckBoxProvider for booleans
-		setDefaultRenderer(Boolean.class, new MXTableRenderer(new CheckBoxProvider()));
+//		setDefaultRenderer(Boolean.class, new MXTableRenderer(new CheckBoxProvider()));
 		
 //		List<TableColumn> cols = tcme.getColumns(true); // includeHidden
 //		for (int f = 0; f < cols.size(); f++) {
@@ -201,17 +205,32 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 //			}
 //		}
 //		tableHeader.setTable(this);
-		LOG.config("tableHeader ColumnCount="+tableHeader.getComponentCount());
-//		super.tableHeader
-		
+		LOG.config("tableHeader ColumnCount="+tableHeader.getColumnModel().getColumnCount());
 	}
 	// ein Ansatz wie in MuliRowPanel: zuerst nur super() , dann setColumnFactory
-	private MXTable(GridTable dataModel) {
+	@Deprecated
+	private MXTable(GridTable dataModel, boolean deprecated) {
 		super();
 		
+		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
+		setColumnControlVisible(isColumnControlVisible); // column control to the trailing corner of the scroll pane 
+
+		// replace grid lines with striping 
+		setShowGrid(showHorizontalLines, showVerticalLines);
+		addHighlighter(highlighter);
+
+		// JXTable uses instances of this as per-class default renderers:
+//		setDefaultRenderer(Object.class, new MXTableRenderer(dataModel));
+		// use a CheckBoxProvider for booleans
+//		setDefaultRenderer(Boolean.class, new MXTableRenderer(new CheckBoxProvider()));
+
 		// A ColumnFactory is used by JXTable to create and configure all columns. It can be set per-application or per-table (before setting the model)
 		super.setColumnFactory(columnFactory);	
-		super.setModel(dataModel); // setting the model
+		TableColumnModel tableColumnModel = initTableColumnModel(dataModel);
+		setModel(dataModel); // setting the model
+		columnModel = tableColumnModel;
+		tcme = (DefaultTableColumnModelExt)columnModel; // protected TableModel in super.columnModel
+		LOG.config("columnModel ColumnCount="+tcme.getColumnCount());
 		
 		super.createDefaultColumnsFromModel(); // a final method, do getColumnFactory().createAndConfigureTableColumn(getModel(), i);
 	}
