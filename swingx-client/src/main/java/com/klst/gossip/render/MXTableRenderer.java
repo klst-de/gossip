@@ -87,24 +87,12 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     		int displayType = field.getDisplayType();
         	
 			switch(displayType) {
-//			case DisplayType.Date: // 15 Date
-//				field.setDisplayType(DisplayType.Date); // ohne Time
-//				minitable.setColumnClass(f, field);
-//				break;
-			case DisplayType.DateTime: // 16 Created, DateDoc
-				if(value!=null) {
-					JRendererLabel dateTime = new JRendererLabel();
-					Timestamp ts = (Timestamp)value;
-					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 					
-					dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
-					cellRendererComponent = dateTime;
-				}
+			case DisplayType.String:   // 10 DocumentNo	==> Implementierung in Oberklasse			
 				break;
-			case DisplayType.String:   // 10 DocumentNo
-				
+			case DisplayType.Integer:  // 11 Priority ==> Implementierung in Oberklasse				
 				break;
 			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID ===> Kombination aus Button+TableDir TODO Lookup anders holen
-				LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
 						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				JRendererCheckBox id = new JRendererCheckBox();	
 				Integer idkey = (Integer)value; 
@@ -114,6 +102,23 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				id.setText(idkey.toString());
 				id.setIcon(null);
 				cellRendererComponent = id;
+				break;
+//				case DisplayType.Date: // 15 Date
+//				field.setDisplayType(DisplayType.Date); // ohne Time
+//				minitable.setColumnClass(f, field);
+//				break;
+			case DisplayType.Text:     // 14 Text Message AD_Column_ID=10808 ==> Implementierung in Oberklasse
+				break;
+			case DisplayType.Date:     // 15 TODO
+				break;
+			case DisplayType.DateTime: // 16 Created, DateDoc
+				if(value!=null) {
+					JRendererLabel dateTime = new JRendererLabel();
+					Timestamp ts = (Timestamp)value;
+					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 					
+					dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
+					cellRendererComponent = dateTime;
+				}
 				break;
 			case DisplayType.List:     // 17 DocStatus
 //				boolean optional = false; //field.isMandatory(checkContext); // auch ein leerer Eintrag ist dabei
@@ -126,18 +131,16 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				break;
 //			case DisplayType.Table:    // 18 CreatedBy, UpdatedBy
 			case DisplayType.TableDir: // 19 AD_Client_ID, ...
-				LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
-						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
+				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.TableDir value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+						+ " Header="+field.getHeader() + " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				if(value!=null) {
-					JRendererLabel tdLabel = new JRendererLabel();
-					Integer key = (Integer)value; 
-					Lookup lookup = field.getLookup(); // MutableComboBoxModel
-					LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
-							+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+lookup );
-					NamePair np = lookup.get(key);
-					//np.getID(); np.getName()
-					tdLabel.setText(np.getName()); // ==.toString()
-					cellRendererComponent = tdLabel; // TODO: Spaltenbreite und editor wenn selektiert
+//					JRendererLabel tdLabel = new JRendererLabel();
+//					Integer key = (Integer)value; 
+//					Lookup lookup = field.getLookup(); // MutableComboBoxModel
+//					NamePair np = lookup.get(key);
+//					tdLabel.setText(np.getName()); // ==.toString()
+//					cellRendererComponent = tdLabel; // TODO: Spaltenbreite und editor wenn selektiert
+					cellRendererComponent = getLabelRenderer(value, field);
 				}
 				break;
 			case DisplayType.YesNo:    // 20
@@ -155,9 +158,27 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				button.setIcon(null);
 				cellRendererComponent = button; // TODO ist noch linksbündig
 				break;
+			case DisplayType.Search:    // 30 Table oder User/Contact AD_Column_ID=10443 TODO
+				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.Search value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+						+ " Header="+field.getHeader() + " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
+				if (value != null) {
+					JRendererLabel tdLabel = new JRendererLabel();
+					Integer key = (Integer) value;
+					Lookup lookup = field.getLookup(); // MutableComboBoxModel
+					NamePair np = lookup.getDirect(value, true, true); // nut used: boolean saveInCache, boolean
+																		// cacheLocal
+					LOG.config("Lookup:" + lookup + "NamePair:" + np);
+					tdLabel.setText(np == null ? "<" + key + ">" : np.getName()); // ==.toString()
+					cellRendererComponent = tdLabel; // TODO: Spaltenbreite und editor wenn selektiert
+
+//					cellRendererComponent = getLabelRenderer(value, field);
+				}
+				break;
 			default:
 	        	LOG.config(table 
-	        			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) + " Reference_Value_ID:" + field.getAD_Reference_Value_ID()+ " displayType:" + displayType
+	        			+ "\nR/C:"+row+"/"+column + " Header="+field.getHeader() + " AD_Column_ID="+field.getAD_Column_ID() 
+	        			+ " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+	        			+ " displayType:" + displayType + " Lookup:"+field.getLookup()
 //	        			+ "\ncomponent:"+component
 	        			);
 			}
@@ -165,4 +186,13 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     	return cellRendererComponent;
     }
 
+    private Component getLabelRenderer(Object value, GridField field) {
+		JRendererLabel tdLabel = new JRendererLabel();
+//		Integer key = (Integer)value; 
+		Lookup lookup = field.getLookup(); // MutableComboBoxModel
+//		NamePair np = lookup.get(key);
+		NamePair np = lookup.getDirect(value, true, true); // nut used: boolean saveInCache, boolean cacheLocal
+		tdLabel.setText(np.getName()); // ==.toString()
+		return tdLabel; // TODO: Spaltenbreite und editor wenn selektiert 	
+    }
 }

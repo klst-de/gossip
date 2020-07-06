@@ -47,8 +47,6 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 			// - OK einige Spalten ausgeblendet
 			// - NOK Zellen nur teilweise gerendert TODO
 			return new MXTable((GridTable)dataModel);
-			// dieser Ansastz ist NOK:
-//			return new MXTable((GridTable)dataModel, true);
 		}
 		return new MXTable(dataModel);
 	}
@@ -96,7 +94,6 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 		int min = Math.min(Math.min(Math.min(75, field.getDisplayLength()), field.getFieldLength()), GridField.MAXDISPLAY_LENGTH);
 		return Math.max(min, header.length());
 	}
-//	static private TableColumnModel initTableColumnModel(GridField[] fields) {
 	static private TableColumnModel initTableColumnModel(GridTable dataModel) {
 		DefaultTableColumnModelExt tcme = new DefaultTableColumnModelExt();
 		GridField[] fields = dataModel.getFields();
@@ -118,38 +115,10 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 			TableColumnExt aColumn = new TableColumnExt(f, width, cellRenderer, cellEditor);
 			aColumn.setHeaderValue(field.getHeader()); // TODO es gibt TableColumn.sizeWidthToFit()
 			aColumn.setIdentifier(field); // Object Identifier
-			
-			switch(displayType) {
-//			case DisplayType.Date: // 15 Date
-//				field.setDisplayType(DisplayType.Date); // ohne Time
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.DateTime: // 16 DateDoc
-//				field.setDisplayType(DisplayType.DateTime);
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.String:   // 10 DocumentNo
-//				
-//				break;
-//			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID
-//			case DisplayType.List:     // 17 DocStatus
-//			case DisplayType.Table:    // 18 CreatedBy, UpdatedBy
-//			case DisplayType.TableDir: // 19 AD_Client_ID, ...
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.Location: // 21 Location TODO
-//				field.setDisplayType(DisplayType.TableDir);
-//				minitable.setColumnClass(f, field);
-//				break;
-			default:
-//				minitable.setColumnClass(f, columnClass, displayType, readOnly, header);
-			}
-			
+						
 			if(isDisplayed) {
 				// Both isDisplayed() and isDisplayedGrid() should be true
 			} else {
-				// TODO
-//				minitable.setColumnVisibility(minitable.getColumn(f), false);
 				aColumn.setVisible(false);
 			}	
 			tcme.addColumn(aColumn);
@@ -171,68 +140,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 
 		// JXTable uses instances of this as per-class default renderers:
 		setDefaultRenderer(Object.class, new MXTableRenderer(dataModel));
-		// use a CheckBoxProvider for booleans
-//		setDefaultRenderer(Boolean.class, new MXTableRenderer(new CheckBoxProvider()));
-		
-//		List<TableColumn> cols = tcme.getColumns(true); // includeHidden
-//		for (int f = 0; f < cols.size(); f++) {
-//			TableColumnExt cole = (TableColumnExt)(cols.get(f));
-//			LOG.config("col "+f + ": isVisible="+cole.isVisible());
-//		}
-//		cols.forEach((TableColumn col, int i) -> {
-//			TableColumnExt cole = (TableColumnExt)col;
-//			cole.isVisible();
-//		});
-		
-/* das ist bereits in static private TableColumnModel initTableColumnModel 
-		GridField[] fields = dataModel.getFields();
-		for (int f = 0; f < tcme.getColumnCount(); f++) {
-			GridField field = fields[f];
-			TableColumn tc = tcme.getColumn(f);
-			tc.setHeaderValue(field.getHeader());
-		}
-*/		
-		// public class JXTableHeader extends JTableHeader implements TableColumnModelExtListener
-//		tableHeader = new JXTableHeader(tcme);
-//		GridField[] fields = dataModel.getFields();
-//		for (int f = 0; f < fields.length; f++) {
-//			GridField field = fields[f];
-//			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid();
-//			if(isDisplayed) {
-//				tableHeader.add(new JXLabel(field.getHeader()), f); // IllegalArgumentException: illegal component position
-//			} else {
-//				LOG.config("field "+f + " isDisplayed="+isDisplayed);
-//			}
-//		}
-//		tableHeader.setTable(this);
 		LOG.config("tableHeader ColumnCount="+tableHeader.getColumnModel().getColumnCount());
-	}
-	// ein Ansatz wie in MuliRowPanel: zuerst nur super() , dann setColumnFactory
-	@Deprecated
-	private MXTable(GridTable dataModel, boolean deprecated) {
-		super();
-		
-		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
-		setColumnControlVisible(isColumnControlVisible); // column control to the trailing corner of the scroll pane 
-
-		// replace grid lines with striping 
-		setShowGrid(showHorizontalLines, showVerticalLines);
-		addHighlighter(highlighter);
-
-		// JXTable uses instances of this as per-class default renderers:
-//		setDefaultRenderer(Object.class, new MXTableRenderer(dataModel));
-		// use a CheckBoxProvider for booleans
-//		setDefaultRenderer(Boolean.class, new MXTableRenderer(new CheckBoxProvider()));
-
-		// A ColumnFactory is used by JXTable to create and configure all columns. It can be set per-application or per-table (before setting the model)
-		super.setColumnFactory(columnFactory);	
-		TableColumnModel tableColumnModel = initTableColumnModel(dataModel);
-		setModel(dataModel); // setting the model
-		columnModel = tableColumnModel;
-		tcme = (DefaultTableColumnModelExt)columnModel; // protected TableModel in super.columnModel
-		LOG.config("columnModel ColumnCount="+tcme.getColumnCount());
-		
-		super.createDefaultColumnsFromModel(); // a final method, do getColumnFactory().createAndConfigureTableColumn(getModel(), i);
 	}
 	private MXTable(TableModel dataModel) {
 		super(dataModel); // es gibt noch ctor in super mit TableColumnModel: 
