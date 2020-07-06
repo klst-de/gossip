@@ -9,9 +9,11 @@ import javax.swing.JTable;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
+import org.compiere.model.Lookup;
 import org.compiere.model.MRefList;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.NamePair;
 import org.jdesktop.swingx.renderer.ComponentProvider;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
@@ -83,10 +85,6 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     		DefaultTableColumnModelExt tcme = (DefaultTableColumnModelExt)(table.getColumnModel());
     		GridField field = (GridField)(tcme.getColumn(column).getIdentifier());
     		int displayType = field.getDisplayType();
-        	LOG.config(table 
-        			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) + " Reference_Value_ID:" + field.getAD_Reference_Value_ID()+ " displayType:" + displayType
-//        			+ "\ncomponent:"+component
-        			);
         	
 			switch(displayType) {
 //			case DisplayType.Date: // 15 Date
@@ -116,9 +114,21 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				cellRendererComponent = label;
 				break;
 //			case DisplayType.Table:    // 18 CreatedBy, UpdatedBy
-//			case DisplayType.TableDir: // 19 AD_Client_ID, ...
-//				minitable.setColumnClass(f, field);
-//				break;
+			case DisplayType.TableDir: // 19 AD_Client_ID, ...
+				LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
+				if(value!=null) {
+					JRendererLabel tdLabel = new JRendererLabel();
+					Integer key = (Integer)value; 
+					Lookup lookup = field.getLookup(); // MutableComboBoxModel
+					LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+							+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+lookup );
+					NamePair np = lookup.get(key);
+					//np.getID(); np.getName()
+					tdLabel.setText(np.getName()); // ==.toString()
+					cellRendererComponent = tdLabel; // TODO: Spaltenbreite und editor wenn selektiert
+				}
+				break;
 			case DisplayType.YesNo:    // 20
 				JRendererCheckBox checkbox = new JRendererCheckBox();				
 				checkbox.setSelected((Boolean)value);
@@ -129,7 +139,10 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 //				minitable.setColumnClass(f, field);
 //				break;
 			default:
-//				minitable.setColumnClass(f, columnClass, displayType, readOnly, header);
+	        	LOG.config(table 
+	        			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) + " Reference_Value_ID:" + field.getAD_Reference_Value_ID()+ " displayType:" + displayType
+//	        			+ "\ncomponent:"+component
+	        			);
 			}
     	}
     	return cellRendererComponent;
