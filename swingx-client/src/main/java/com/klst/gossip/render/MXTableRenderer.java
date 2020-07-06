@@ -97,8 +97,8 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				if(value!=null) {
 					JRendererLabel dateTime = new JRendererLabel();
 					Timestamp ts = (Timestamp)value;
-					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 
-					dateTime.setText(ts.toLocalDateTime().toString()); // TODO I18N und Spaltenbreite
+					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 					
+					dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
 					cellRendererComponent = dateTime;
 				}
 				break;
