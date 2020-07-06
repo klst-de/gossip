@@ -103,7 +103,18 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 			case DisplayType.String:   // 10 DocumentNo
 				
 				break;
-//			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID
+			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID ===> Kombination aus Button+TableDir TODO Lookup anders holen
+				LOG.config("\nTableDir C/R:"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
+				JRendererCheckBox id = new JRendererCheckBox();	
+				Integer idkey = (Integer)value; 
+//				Lookup idlookup = field.getLookup(); // MutableComboBoxModel Lookup==null!
+//				NamePair namePair = idlookup.get(idkey);
+//				id.setText(namePair.getName());
+				id.setText(idkey.toString());
+				id.setIcon(null);
+				cellRendererComponent = id;
+				break;
 			case DisplayType.List:     // 17 DocStatus
 //				boolean optional = false; //field.isMandatory(checkContext); // auch ein leerer Eintrag ist dabei
 //				ValueNamePair[] valueName = MRefList.getList(Env.getCtx(), field.getAD_Reference_Value_ID(), optional);
@@ -131,13 +142,19 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				break;
 			case DisplayType.YesNo:    // 20
 				JRendererCheckBox checkbox = new JRendererCheckBox();				
-				checkbox.setSelected((Boolean)value);
+				checkbox.setSelected((Boolean)value); // AbstractButton.setSelected(boolean b)
 				cellRendererComponent = checkbox; // TODO ist noch linksbündig
 				break;
 //			case DisplayType.Location: // 21 Location TODO
 //				field.setDisplayType(DisplayType.TableDir);
 //				minitable.setColumnClass(f, field);
 //				break;
+			case DisplayType.Button:    // 28
+				JRendererCheckBox button = new JRendererCheckBox();				
+				button.setText((String)value);
+				button.setIcon(null);
+				cellRendererComponent = button; // TODO ist noch linksbündig
+				break;
 			default:
 	        	LOG.config(table 
 	        			+ "\n"+column+"/"+row + " value:" + value + " of type " + (value==null ? "null" : value.getClass()) + " Reference_Value_ID:" + field.getAD_Reference_Value_ID()+ " displayType:" + displayType
