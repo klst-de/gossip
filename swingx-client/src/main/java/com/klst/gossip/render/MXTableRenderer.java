@@ -1,11 +1,14 @@
 package com.klst.gossip.render;
 
 import java.awt.Component;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
 
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
@@ -91,6 +94,11 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				break;
 			case DisplayType.Integer:  // 11 Priority ==> Implementierung in Oberklasse				
 				break;
+			case DisplayType.Amount:   // 12 Credit Limit AD_Column_ID=2920		
+				if(value!=null) {
+					cellRendererComponent = getRenderer_Amount(value, field);
+				}
+				break;
 			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID ===> Kombination aus Button+TableDir TODO Lookup anders holen
 //				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
 //						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
@@ -103,21 +111,18 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				id.setIcon(null);
 				cellRendererComponent = id;
 				break;
-//				case DisplayType.Date: // 15 Date
-//				field.setDisplayType(DisplayType.Date); // ohne Time
-//				minitable.setColumnClass(f, field);
-//				break;
 			case DisplayType.Text:     // 14 Text Message AD_Column_ID=10808 ==> Implementierung in Oberklasse
 				break;
-			case DisplayType.Date:     // 15 TODO
+			case DisplayType.Date:     // 15 TODO // ohne Time
 				break;
 			case DisplayType.DateTime: // 16 Created, DateDoc
 				if(value!=null) {
-					JRendererLabel dateTime = new JRendererLabel();
-					Timestamp ts = (Timestamp)value;
-					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 					
-					dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
-					cellRendererComponent = dateTime;
+//					JRendererLabel dateTime = new JRendererLabel();
+//					Timestamp ts = (Timestamp)value;
+//					SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(displayType); // wg. I18N 					
+//					dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
+//					cellRendererComponent = dateTime;
+					cellRendererComponent = getRenderer_DateTime(value, field);
 				}
 				break;
 			case DisplayType.List:     // 17 DocStatus
@@ -140,7 +145,8 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 			case DisplayType.YesNo:    // 20
 				JRendererCheckBox checkbox = new JRendererCheckBox();				
 				checkbox.setSelected((Boolean)value); // AbstractButton.setSelected(boolean b)
-				cellRendererComponent = checkbox; // TODO ist noch linksbündig
+				checkbox.setHorizontalAlignment(SwingConstants.CENTER);
+				cellRendererComponent = checkbox;
 				break;
 //			case DisplayType.Location: // 21 Location TODO
 //				field.setDisplayType(DisplayType.TableDir);
@@ -171,6 +177,21 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     	return cellRendererComponent;
     }
 
+    private Component getRenderer_Amount(Object value, GridField field) {
+		JRendererLabel rLabel = new JRendererLabel();
+		BigDecimal amount = (BigDecimal)value;
+		DecimalFormat decimalFormat = DisplayType.getNumberFormat(field.getDisplayType()); // wg. I18N 					
+		rLabel.setText(decimalFormat.format(amount));
+		rLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		return rLabel;
+    }
+    private Component getRenderer_DateTime(Object value, GridField field) {
+		JRendererLabel dateTime = new JRendererLabel();
+		Timestamp ts = (Timestamp)value;
+		SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(field.getDisplayType()); // wg. I18N 					
+		dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
+		return dateTime;
+    }
     private Component getRenderer_TableDir(Object value, GridField field) {
     	return getRendererLabel(value, field);
     }
