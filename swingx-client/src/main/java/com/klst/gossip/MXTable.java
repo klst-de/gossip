@@ -19,6 +19,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.table.ColumnFactory;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.render.MXTableRenderer;
 import com.klst.icon.TableColumnControlButton;
@@ -79,7 +80,10 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 //	ColumnFactory columnFactory = GridFieldFactory.getInstance(); // a singleton
 	ColumnFactory columnFactory = ColumnFactory.getInstance(); // Creates and configures (swingx)TableColumnExt extends (swing)TableColumn
 	// public TableColumnExt createAndConfigureTableColumn(TableModel model, int modelIndex)
-	DefaultTableColumnModelExt tcme; // = new DefaultTableColumnModelExt(); // der einzige ctor
+	TableColumnModelExt tcme; // = new DefaultTableColumnModelExt(); // der einzige ctor
+	TableColumnModelExt getTableColumnModelExt() {
+		return tcme;
+	}
 	
 	/* calculate width: min of
 	 * 75	// default width taken from javax.swing.table.TableColumn
@@ -95,7 +99,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 		return Math.max(min, header.length());
 	}
 	static private TableColumnModel initTableColumnModel(GridTable dataModel) {
-		DefaultTableColumnModelExt tcme = new DefaultTableColumnModelExt();
+		TableColumnModelExt tcme = new DefaultTableColumnModelExt();
 		GridField[] fields = dataModel.getFields();
 		boolean readOnly = true; // alle sind RO
 		for (int f = 0; f < fields.length; f++) {	
@@ -123,12 +127,13 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 			}	
 			tcme.addColumn(aColumn);
 		}
+		LOG.config("GridField.length="+fields.length + " TableColumnModelExt="+tcme.getColumnCount(true));
 		return tcme;
 	}
 	
 	private MXTable(GridTable dataModel) {
 		super(dataModel, initTableColumnModel(dataModel)); // TableModel dm, TableColumnModel cm
-		tcme = (DefaultTableColumnModelExt)columnModel; // protected TableModel in super.columnModel
+		tcme = (TableColumnModelExt)columnModel; // protected TableModel in super.columnModel
 		LOG.config("columnModel ColumnCount="+tcme.getColumnCount());
 		
 		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
@@ -169,6 +174,14 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 	public void setModel(TableModel dataModel) {
 		LOG.config("dataModel:"+dataModel);
 		super.setModel(dataModel);
+	}
+	
+	GridTable getGridModel() {
+		TableModel tm = super.getModel();
+		if(tm instanceof GridTable) {
+			return (GridTable)tm;
+		}
+		return null;
 	}
 	
     // A list of event listeners for this component

@@ -24,13 +24,17 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import org.compiere.apps.form.FormPanel;
+import org.compiere.grid.ed.VComboBox;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.MQuery;
+import org.compiere.model.MRefList;
 import org.compiere.model.WindowModel;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.ValueNamePair;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
@@ -64,7 +68,7 @@ public class GenericFormPanel implements FormPanel {
 			LOG.config("ContentPane:"+contentPane);
 			contentPane.add(selectionPanel, BorderLayout.PAGE_START);
 			contentPane.add(mainPanel, BorderLayout.CENTER);
-//			contentPane.add(statusBar, BorderLayout.PAGE_END);
+			contentPane.add(statusBar, BorderLayout.PAGE_END);
 			
 			formFrame.pack(); // Causes this Window to be sized to fit the preferred size and layouts of its subcomponents
 			formFrame.setVisible(true);
@@ -108,11 +112,12 @@ public class GenericFormPanel implements FormPanel {
 	 */
 	private JXPanel selectionPanel = new JXPanel(); // (swingx)JXPanel extends (swing)JPanel implements AlphaPaintable, BackgroundPaintable, Scrollable
 	private JXPanel mainPanel = new JXPanel();
+	private Container statusBar = null; // JXStatusBar
 	// class MiniTable extends CTable implements IMiniTable
 	//                   (base)CTable extends JTable
 	// TODO aus MiniTable ==> MXTable, später wird aus MXTable ===> MuliRowPanel
 	// MuliRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
-	MXTable miniTable; // = MXTable.createXTable(TableModel dataModel);
+	MXTable miniTable = null; // = MXTable.createXTable(TableModel dataModel);
 	protected JTable getTable() {
 		return miniTable;
 	}
@@ -149,6 +154,10 @@ public class GenericFormPanel implements FormPanel {
 	}
 	int getWindowId() {
 		return window_ID;
+	}
+
+	void setStatusBar(Container statusBar) {
+		this.statusBar = statusBar;
 	}
 
 	// some kind of "init()" method to initialize the user interface (the main frame, and all it's menus, buttons, textedit boxes, etc).
@@ -283,9 +292,12 @@ Parameters:
 		// getData für DefaultTableModel als Vector mittels Loader in gridTableModel
 		// dann miniTable und selections controler definieren
 		
+		if(miniTable==null) {
+			miniTable = MXTable.createXTable(gridTableModel);
+		}
+		
 		setSelectWhereClause();
 		
-		miniTable = MXTable.createXTable(gridTableModel);
 		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
 		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
 		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
@@ -327,83 +339,100 @@ Parameters:
 	//// <<<<<<<<<<<	
 //			miniTable.setModel(tablemodel);
 
-			GridField[] fields = gridTableModel.getFields();
-// Umgehung für BUG in MiniTable : an Pos 0 (FIRST) darf kein Boolean feld stehen, indem ich versuche heuristisch eine KeyColumn zu setzten
-//			boolean keyFound = false;
-//			for(int f = 0; f < miniTable.getColumnCount(); f++) {
-//				if(fields[f].isKey() && fields[f].getColumnName().endsWith("_ID")) {
-//					miniTable.setKeyColumnIndex(f);
-//					keyFound = true;
-//					break;
-//				}
-//			}
-//			if(!keyFound) {
-//				LOG.warning("Probably no key in miniTable!");
-//			}
-
-			assert(gridTableModel.getRowCount()==miniTable.getRowCount());
-//			formatTableFields(gridTableModel, miniTable);
-			
-			for(int f = 0; f < miniTable.getColumnCount(); f++) {	
-				GridField field = fields[f];
-				if(field.isSelectionColumn()) {
-					addSelection(field); 
-				}								
-			}
-			setPreferredSize();
-	}
-
-//	protected void formatTableFields(GridTable gridTableModel, MiniTable minitable) {
-	protected void formatTableFields(GridTable gridTableModel, MXTable minitable) {
 		GridField[] fields = gridTableModel.getFields();
-		boolean readOnly = true; // alle sind RO
-		for (int f = 0; f < minitable.getColumnCount(); f++) {	
+		assert(gridTableModel.getRowCount()==miniTable.getRowCount());
+//		LOG.config("gridTableModel.getColumnCount()="+gridTableModel.getColumnCount()
+//			+ "=?= miniTable.getColumnCount(includeHidden)="+miniTable.getTableColumnModelExt().getColumnCount(true) // boolean includeHidden
+//			+ "=?= miniTable.getColumnCount()="+miniTable.getColumnCount());
+			
+		for(int f = 0; f < fields.length; f++) {
 			GridField field = fields[f];
-			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
-			int displayType = field.getDisplayType();
-			String header = field.getHeader();
-			String columnName = field.getColumnName();
-			Class<?> columnClass = gridTableModel.getColumnClass(f);
-			LOG.config("displayType="+displayType + " isKey="+field.isKey() + " isDisplayed="+isDisplayed + " isSelectionColumn="+field.isSelectionColumn() + 
-					": fields["+f+"].ColumnName="+columnName + " =?= " + minitable.getColumnName(f) + 
-					" ColumnClass:"+minitable.getColumnClass(f) + "/" + columnClass);
-			assert(columnName.equals(minitable.getColumnName(f)));
-// TODO:			
-//			switch(displayType) {
-//			case DisplayType.Date: // 15 Date
-//				field.setDisplayType(DisplayType.Date); // ohne Time
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.DateTime: // 16 DateDoc
-//				field.setDisplayType(DisplayType.DateTime);
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.String:   // 10 DocumentNo
-//			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID
-//			case DisplayType.List:     // 17 DocStatus
-//			case DisplayType.Table:    // 18 CreatedBy, UpdatedBy
-//			case DisplayType.TableDir: // 19 AD_Client_ID, ...
-//				minitable.setColumnClass(f, field);
-//				break;
-//			case DisplayType.Location: // 21 Location TODO
-//				field.setDisplayType(DisplayType.TableDir);
-//				minitable.setColumnClass(f, field);
-//				break;
-//			default:
-//				minitable.setColumnClass(f, columnClass, displayType, readOnly, header);
-//			}
-//			
-//			if(isDisplayed) {
-//				// Both isDisplayed() and isDisplayedGrid() should be true
-//			} else {
-//				minitable.setColumnVisibility(minitable.getColumn(f), false);
-//			}
+//			LOG.config("field "+f + " isSelectionColumn="+field.isSelectionColumn() + " "+field.getColumnName());
+			if(field.isSelectionColumn()) {
+				addSelection(field); 
+			}								
 		}
+		setPreferredSize();
 	}
+
+//	protected void formatTableFields(GridTable gridTableModel, MXTable minitable) {
+//		GridField[] fields = gridTableModel.getFields();
+//		boolean readOnly = true; // alle sind RO
+//		for (int f = 0; f < minitable.getColumnCount(); f++) {	
+//			GridField field = fields[f];
+//			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
+//			int displayType = field.getDisplayType();
+//			String header = field.getHeader();
+//			String columnName = field.getColumnName();
+//			Class<?> columnClass = gridTableModel.getColumnClass(f);
+//			LOG.config("displayType="+displayType + " isKey="+field.isKey() + " isDisplayed="+isDisplayed + " isSelectionColumn="+field.isSelectionColumn() + 
+//					": fields["+f+"].ColumnName="+columnName + " =?= " + minitable.getColumnName(f) + 
+//					" ColumnClass:"+minitable.getColumnClass(f) + "/" + columnClass);
+//			assert(columnName.equals(minitable.getColumnName(f)));
+//		}
+//	}
 	
 	void addSelection(GridField field) {
-		// TODO selections controler definieren			
+		String header = field.getHeader();
+		JXLabel label = new JXLabel(header);
+		
+		Component selection = null;
+		int displayType = field.getDisplayType();
+		switch (displayType) {
+//		case DisplayType.String:
+//		case DisplayType.Text:
+//			log.config(
+//					header + " DisplayLength=" + field.getDisplayLength() + " FieldLength=" + field.getFieldLength()); // beide
+//																														// 60
+//			selectionFld = makeSelectionTextField(field);
+//			break;
+		case DisplayType.YesNo:
+			selection = makeSelectionComboBox(319, field); // 319 _YesNo / 53365:Yes-No-Unknown
+			break;
+//		case DisplayType.List:
+//			selectionFld = makeSelectionComboBox(field.getAD_Reference_Value_ID(), field);
+//			break;
+//		case DisplayType.Table:
+//		case DisplayType.TableDir:
+//			selectionFld = makeSelectionTableDir(field);
+//			break;
+//		case DisplayType.DateTime:
+//			selectionFld = makeSelectionDate(field);
+//			break;
+		default:
+			LOG.warning("kein WHERE für displayType=" + displayType);
+			return;
+		}
+		
+		addSelection(label, selection);
 	}
+	private Component makeSelectionComboBox(int reference_Value_ID, GridField field) {
+		String header = field.getHeader();
+		boolean optional = true; // auch ein leerer Eintrag ist dabei
+		ValueNamePair[] valueName = MRefList.getList(Env.getCtx(), reference_Value_ID, optional);
+		for (int i = 0; i < valueName.length; i++) {
+			LOG.config("valueName:"+valueName[i].getID()+"/"+valueName[i].getName()+"/"+valueName[i].getValue());
+		}
+//		JXComboBox selectionFld = new JXComboBox(valueName); // hasChanged() fehlt
+		VComboBox selectionFld = new VComboBox(valueName);
+		selectionFld.setEditable(false); // keine freie Texteingabe! 1 aus n
+		selectionFld.addActionListener(event -> {
+			LOG.config(header+" event:"+event);
+			LOG.config(header + " SelectedIndex:"+selectionFld.getSelectedIndex() + " SelectedItem:"+selectionFld.getSelectedItem());
+			String emptyYorN = valueName[selectionFld.getSelectedIndex()].getID();
+			if(emptyYorN.isEmpty()) {
+				LOG.config(header+" kein where Zusatz");
+				removeRestriction(field.getColumnName());
+			} else {
+				addRestriction(field.getColumnName(), MQuery.EQUAL, emptyYorN);
+			}
+			if(selectionFld.hasChanged()) { // hasChanged() ist Eigenschaft von VComboBox extends CComboBox
+				setModelAndControler();
+			}
+		});
+		return selectionFld;
+	}
+
 	
 	private GridTable gridTableModel;
 	private GridTable getGridTableModel() {
