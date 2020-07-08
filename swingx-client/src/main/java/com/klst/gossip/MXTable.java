@@ -5,7 +5,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
 import java.util.logging.Logger;
 
-import javax.swing.ListSelectionModel;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableCellEditor;
@@ -214,23 +213,26 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 		super.valueChanged(e);
 		// es gibt zwei events : mouse down (e.getValueIsAdjusting()==true) + mouse up (e.getValueIsAdjusting()==false)
 		// @see void javax.swing.ListSelectionModel.setValueIsAdjusting(boolean valueIsAdjusting)
-		LOG.config(">>>>>>>>>>>>>>>>>>>>>>>"+ e);
+		fireRowSelectionEvent(e);
 	}
 	
     // A list of event listeners for this component
 	private EventListenerList listenerList = new EventListenerList();
 
-    public void fireRowSelectionEvent() {
+	private void fireRowSelectionEvent(ListSelectionEvent e) {
+		if(e.getValueIsAdjusting()) {
+			// TODD bei SINGLE_SELECTION ignorieren
+			return;
+		}
+		
         // Guaranteed to return a non-null array
         Object[] listeners = listenerList.getListenerList();
 
         // Lazily create the event:
 //        RowSelectionEvent rowSelectionEvent = new RowSelectionEvent(this, RowSelectionEvent.ROW_TOGGLED);
-        //                 (Object source, int id, String command)
+        // ctor            (Object source, int id, String command)
         // oder ActionEvent(Object source, int id, String command, int modifiers)
-        ActionEvent rowSelectionEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "???");
-		ListSelectionModel rowSM = this.getSelectionModel();
-		//setStatusDB(1+rowSM.getAnchorSelectionIndex());
+        ActionEvent rowSelectionEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, Integer.toString(e.getLastIndex()));
 
 
         // Process the listeners last to first, notifying

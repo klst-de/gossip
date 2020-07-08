@@ -3,12 +3,13 @@ package org.compiere.apps.form;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
@@ -76,6 +77,23 @@ public class InfoBP extends GenericFormPanel {
 		GridTab locationTab = gridWindow.getTab(2);
 		locationTableModel = locationTab.getTableModel();
 		
+		if(miniTable instanceof MXTable) {
+			MXTable mxTable = (MXTable)miniTable;
+			LOG.config("miniTable.ColumnCount="+mxTable.getColumnCount() + ", SelectedRow="+mxTable.getSelectedRow());
+			for (int i = 0; i < mxTable.getColumnCount(); i++) {
+				String columnName = mxTable.getColumnName(i);
+				if(I_C_BPartner.COLUMNNAME_C_BPartner_ID.equals(columnName)) {
+					column_index_Record_ID = i;
+				}
+				if(I_C_BPartner.COLUMNNAME_C_BP_Group_ID.equals(columnName)) {
+					column_index_C_BP_Group_ID = i;
+				}
+				if(I_C_BPartner.COLUMNNAME_Name.equals(columnName)) {
+					column_index_NAME = i;
+				}
+			}	
+		}
+		
 		LOG.config("contactTableModel:"+contactTableModel);
 		LOG.config("locationTableModel:"+locationTableModel);
 		setSelectWhereClause();
@@ -116,6 +134,7 @@ public class InfoBP extends GenericFormPanel {
 		}
 		gridTableModel.close(finalCall);
 		gridTableModel.setSelectWhereClause(newWhereClause , isOnlyCurrentRows, onlyCurrentDays);
+		LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause());
 		return valueAtName;
 	}
 
@@ -123,64 +142,36 @@ public class InfoBP extends GenericFormPanel {
 	private int column_index_C_BP_Group_ID = -1;
 	private int column_index_NAME = -1;
 	// Location
-	private int column_index_C_Location_ID = 10;
+	private int column_index_C_Location_ID = -1;
 
 	protected void registerTableSelectionListener() throws Exception {
 		MXTable miniTable = (MXTable)getTable(); // returns JTable, but instance is 
-		LOG.config("ColumnCount="+miniTable.getColumnCount());
-		for (int i = 0; i < miniTable.getColumnCount(); i++) {
-			String columnName = miniTable.getColumnName(i);
-			if(I_C_BPartner.COLUMNNAME_C_BPartner_ID.equals(columnName)) {
-				column_index_Record_ID = i;
-			}
-			if(I_C_BPartner.COLUMNNAME_C_BP_Group_ID.equals(columnName)) {
-				column_index_C_BP_Group_ID = i;
-			}
-			if(I_C_BPartner.COLUMNNAME_Name.equals(columnName)) {
-				column_index_NAME = i;
-			}
-		}
 		
+		LOG.config("TableSelectionListener registriert!!!!!");
 		miniTable.addMiniTableSelectionListener(event -> {
 			Object source = event.getSource();
 			if(source instanceof JTable) {
 				JTable jTable = (JTable)source;
-				LOG.config("TableSelectionListener event.Source:"+(JTable)source);
-				ListSelectionModel columnSM = jTable.getColumnModel().getSelectionModel();
-				if(columnSM.getAnchorSelectionIndex()==column_index_Record_ID) {
-					// TODO
-				} else {
-				}
-					
+				LOG.config("TableSelectionListener event.Source:"+(JTable)source 
+					+ "\n SelectedRow="+miniTable.getSelectedRow()
+					+ ", ID (erwartet ACTION_PERFORMED : 1001)="+event.getID()
+					+ ", ActionCommand="+event.getActionCommand()
+					);
+				Object bpValueAtName = setSelectWhereClause();
+				subPane.setTitle(Msg.translate(Env.getCtx(), "ContactAndAddress") + (bpValueAtName==null ? ":" : " for "+bpValueAtName));
+
+				Vector<Vector<Object>> data = super.getData(contactTableModel);
+				DefaultTableModel dataModel = new DefaultTableModel(data, super.getFieldsNames(contactTableModel));
+				contactTbl.setModel(dataModel);
+				
+				DefaultTableModel locModel = new DefaultTableModel(super.getData(locationTableModel), super.getFieldsNames(locationTableModel));
+				addressTbl.setModel(locModel);
+				
 			} else {
 				LOG.config("source NOT JTable:"+source);		
 			}
 		});
 		
-//		miniTable.addMiniTableSelectionListener(event -> {
-//			Object source = event.getSource();
-//			if(source instanceof CTable) {
-////				log.config("TableSelectionListener event.Source:"+(CTable)source);
-//				MiniTable miniTable = (MiniTable)source;
-//				ListSelectionModel columnSM = miniTable.getColumnModel().getSelectionModel();
-////				log.config("columnSM.getAnchorSelectionIndex():"+columnSM.getAnchorSelectionIndex());
-//				if(columnSM.getAnchorSelectionIndex()==column_index_AD_User_ID) {
-//					// zoom to AD_User_ID
-//					zoom(I_AD_User.Table_ID, miniTable, column_index_AD_User_ID );
-//				} else if(columnSM.getAnchorSelectionIndex()==column_index_AD_Table_ID) {
-//					// zoom to AD_Table_ID.Record_ID when klick on AD_Table_ID
-//					columnSM.setAnchorSelectionIndex(column_index_Record_ID);
-//					columnSM.setLeadSelectionIndex(column_index_Record_ID);
-//					zoom(miniTable, column_index_AD_Table_ID, column_index_Record_ID);
-//				} else {
-//					// zoom to AD_Table_ID.Record_ID when klick on Record_ID
-//					zoom(miniTable, column_index_AD_Table_ID, column_index_Record_ID);
-//				}
-//
-//			} else {
-//				log.config("source NOT CTable:"+source);
-//			}
-//		});
 	}
 
 }
