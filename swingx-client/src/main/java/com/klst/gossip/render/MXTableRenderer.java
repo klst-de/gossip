@@ -100,6 +100,13 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				}
 				break;
 			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID ===> Kombination aus Button+TableDir TODO Lookup anders holen
+				if(field.getLookup()==null) {
+//					LOG.config("R/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
+//					+ " AD_Column_ID/Name="+field.getAD_Column_ID()+"/"+field.getColumnName() + " Lookup:"+field.getLookup() );
+//					field.loadLookup();
+//					new Lookup(int displayType, int windowNo)
+//					VLookup.createBPartner(1); // VLookup extends JComponent
+				}
 //				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
 //						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				JRendererCheckBox id = new JRendererCheckBox();	
@@ -107,7 +114,7 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 //				Lookup idlookup = field.getLookup(); // MutableComboBoxModel Lookup==null!
 //				NamePair namePair = idlookup.get(idkey);
 //				id.setText(namePair.getName());
-				id.setText(idkey.toString());
+				id.setText("#"+idkey.toString()+"#");
 				id.setIcon(null);
 				cellRendererComponent = id;
 				break;
