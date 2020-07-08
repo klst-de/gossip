@@ -21,16 +21,19 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VComboBox;
+import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
 import org.compiere.model.WindowModel;
+import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -99,13 +102,19 @@ public class GenericFormPanel implements FormPanel {
 		LOG.config("ctor window_ID="+window_ID + " showWhere="+showWhere);
 		this.window_ID = window_ID;
 		this.showWhere = showWhere;
+		this.listSelectionMode = ListSelectionModel.SINGLE_SELECTION;
 	}
 
+	// @see interface ListSelectionModel
+    // SINGLE_SELECTION = 0;
+    // SINGLE_INTERVAL_SELECTION = 1;
+    // MULTIPLE_INTERVAL_SELECTION = 2;	
+	private int listSelectionMode = -1; // undefined
 	private int windowNo = 0;
 	private FormFrame formFrame;
 	private int window_ID = -1; // window_ID the miniTable is from
 
-	/* selectionPanel : dynamisch erstellt
+	/* data selectionPanel : dynamisch erstellt
 	 * mit controlern für die where clause in selections.
 	 * Die controler werden dynamisch für Felder erstellt mit isSelectionColumn()
 	 * Jeder UI-controler ist wiederum ein JPanel mit selectionLabel + selectionFld (TextField oder CHeckbox oder ... )
@@ -117,7 +126,7 @@ public class GenericFormPanel implements FormPanel {
 	//                   (base)CTable extends JTable
 	// TODO aus MiniTable ==> MXTable, später wird aus MXTable ===> MuliRowPanel
 	// MuliRowPanel extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
-	MXTable miniTable = null; // = MXTable.createXTable(TableModel dataModel);
+	protected MXTable miniTable = null; // = MXTable.createXTable(TableModel dataModel);
 	protected JTable getTable() {
 		return miniTable;
 	}
@@ -172,8 +181,10 @@ public class GenericFormPanel implements FormPanel {
 		mainPanel.setLayout(new BorderLayout());
 		//miniTable.setMultiSelection(true);  // (default false) Should be performed before the class is set.
 		initTableModelAndControler(); // macht getColumnNames + loadData + miniTable.setModel(tablemodel) + selections controler definieren
+
+		LOG.config("selections.size="+selections.size() + " MXTable.SelectionMode="+miniTable.getSelectionMode() + " / set it to "+listSelectionMode);
+		miniTable.setSelectionMode(listSelectionMode);
 		
-		LOG.config("selections.size="+selections.size());
 		int i=0;
 		for( Iterator<JComponent> iterator = selections.iterator(); iterator.hasNext(); i++ ) {
 			JComponent component = iterator.next();
@@ -200,6 +211,11 @@ Parameters:
 		initMainPanel(mainPanel, miniTable);
 		
 		registerTableSelectionListener();
+	}
+
+	private void initTableModelAndControler() {
+		getGridTableModel();		
+		setModelAndControler();
 	}
 
 	/*
@@ -352,7 +368,15 @@ Parameters:
 				addSelection(field); 
 			}								
 		}
+//		addSelection(fields); // additional selectionFields TODO
+		if(gridTableModel.getRowCount()>0) {
+			// JTable.changeSelection(rowIndex, columnIndex, toggle, extend);
+			miniTable.changeSelection(0, -1, false, false);
+//			setStatusDB(1+miniTable.getSelectedRow());
+		}
+		
 		setPreferredSize();
+		
 	}
 
 //	protected void formatTableFields(GridTable gridTableModel, MXTable minitable) {
@@ -372,6 +396,10 @@ Parameters:
 //		}
 //	}
 	
+	protected void addSelection(GridField[] fields) {
+		LOG.config("additional selectionFields"); // TODO brauche ich das??????
+	}
+
 	void addSelection(GridField field) {
 		String header = field.getHeader();
 		JXLabel label = new JXLabel(header);
@@ -379,33 +407,54 @@ Parameters:
 		Component selection = null;
 		int displayType = field.getDisplayType();
 		switch (displayType) {
-//		case DisplayType.String:
-//		case DisplayType.Text:
-//			log.config(
-//					header + " DisplayLength=" + field.getDisplayLength() + " FieldLength=" + field.getFieldLength()); // beide
-//																														// 60
-//			selectionFld = makeSelectionTextField(field);
-//			break;
-		case DisplayType.YesNo:
+		case DisplayType.String: // 10
+		case DisplayType.Text:   // 14
+			LOG.config(header + " DisplayLength=" + field.getDisplayLength() + " FieldLength=" + field.getFieldLength()); // beide60
+			selection = makeSelectionTextField(field);
+			break;
+		case DisplayType.YesNo:  // 20
 			selection = makeSelectionComboBox(319, field); // 319 _YesNo / 53365:Yes-No-Unknown
 			break;
-//		case DisplayType.List:
-//			selectionFld = makeSelectionComboBox(field.getAD_Reference_Value_ID(), field);
-//			break;
-//		case DisplayType.Table:
-//		case DisplayType.TableDir:
-//			selectionFld = makeSelectionTableDir(field);
-//			break;
+		case DisplayType.List:   // 17
+			selection = makeSelectionComboBox(field.getAD_Reference_Value_ID(), field);
+			break;
+		case DisplayType.Table:
+		case DisplayType.TableDir: // 19
+			selection = makeSelectionTableDir(field);
+			break;
 //		case DisplayType.DateTime:
 //			selectionFld = makeSelectionDate(field);
 //			break;
 		default:
-			LOG.warning("kein WHERE für displayType=" + displayType);
+			LOG.warning("kein WHERE für "+header+" displayType=" + displayType);
 			return;
 		}
 		
 		addSelection(label, selection);
 	}
+	
+	private Component makeSelectionTextField(GridField field) {
+		String header = field.getHeader();
+		CTextField selectionFld = new CTextField(MXTable.calculateWidth(field)); // (base)CTextField extends JTextField 
+		selectionFld.addActionListener(event -> {
+			LOG.config(header+" event:"+event);
+			LOG.config(header+" hasChanged="+selectionFld.hasChanged() + " Value:"+selectionFld.getValue() + " oldValue:"+selectionFld.get_oldValue());
+			String value = (String)(selectionFld.getValue());
+			if(value.isEmpty()) {
+				LOG.config(header+" kein where Zusatz");
+				removeRestriction(field.getColumnName());
+			} else {
+//				log.config(header+" where Zusatz: " + field.getColumnName()+" LIKE '"+value+"%'");
+				addRestriction(field.getColumnName(), MQuery.LIKE, value+"%");
+			}
+			if(selectionFld.hasChanged()) {
+				selectionFld.set_oldValue();
+				setModelAndControler();
+			}
+		});
+		return selectionFld;
+	}
+
 	private Component makeSelectionComboBox(int reference_Value_ID, GridField field) {
 		String header = field.getHeader();
 		boolean optional = true; // auch ein leerer Eintrag ist dabei
@@ -427,12 +476,44 @@ Parameters:
 				addRestriction(field.getColumnName(), MQuery.EQUAL, emptyYorN);
 			}
 			if(selectionFld.hasChanged()) { // hasChanged() ist Eigenschaft von VComboBox extends CComboBox
+				selectionFld.set_oldValue();
 				setModelAndControler();
 			}
 		});
 		return selectionFld;
 	}
 
+	private Component makeSelectionTableDir(GridField field) {
+		String header = field.getHeader();
+		String columnName = field.getColumnSQL(false); // withAS=false
+		// wie in Find.addSelectionColumn
+		// VLookup(String columnName, boolean mandatory, boolean isReadOnly, boolean isUpdateable, Lookup lookup)
+		VLookup selectionFld = new VLookup(columnName, false, false, true, field.getLookup());
+		selectionFld.addActionListener(event -> {
+			Object value = selectionFld.getValue();
+			LOG.config(header+"makeSelectionTableDir event:"+event);
+			LOG.config(header+" hasChanged="+selectionFld.hasChanged() + " Value:"+value + " oldValue:"+selectionFld.get_oldValue());
+			if(value==null) {
+				LOG.config(header+" kein where Zusatz value:"+value);
+				removeRestriction(columnName);
+			} else if(value instanceof Integer) {
+//				log.config(header+" where Zusatz: " + columnName+" = "+value);
+				addRestriction(columnName, MQuery.EQUAL, value);
+			} else {
+				LOG.config(header+" kann nix anfangen mit "+value);
+			}
+			if(selectionFld.hasChanged()) {
+				selectionFld.set_oldValue();
+				setModelAndControler();
+			}
+		});
+		return selectionFld;
+	}
+
+//	private void setStatusDB(int current) { // TODO
+//		String text = " " + current + " / " + miniTable.getRowCount() + " ";
+//		statusBar.setStatusDB(text);
+//	}
 	
 	private GridTable gridTableModel;
 	private GridTable getGridTableModel() {
@@ -460,10 +541,4 @@ Parameters:
 		return gridTableModel;
 	}
 	
-	private void initTableModelAndControler() {
-		getGridTableModel();		
-//		XetModelAndControler(true); // requery - beim ersten mal ist requery nicht notwendig --------------- DOCH!!!!
-		setModelAndControler();
-//		setPreferredSize();
-	}
 }
