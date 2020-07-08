@@ -314,9 +314,21 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             infoBPartnerItem.setActionCommand("infoBPartner");
             infoBPartnerItem.addActionListener(event -> {
             	LOG.config("item:"+infoBPartnerItem);
-				LOG.config("canAccessInfo:"+InfoDataModel.canAccessInfo("BPartner"));
-				GenericDataModel tm = new InfoDataModel("BPartner", INFO_WINDOW_ID);
-				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
+//				LOG.config("canAccessInfo:"+InfoDataModel.canAccessInfo("BPartner"));
+//				GenericDataModel tm = new InfoDataModel("BPartner", INFO_WINDOW_ID);
+//				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
+            	int AD_Form_ID = 1000001; 
+            	String className = "org.compiere.apps.form.InfoBP";
+            	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
+            	FormPanel m_panel;
+				try {
+					// Create instance w/o parameters
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // === new className()
+					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+					m_panel.init(frame.getWindowNo(), frame);
+				} catch (Exception e) {
+					LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+				}
             });
             mInfo.add(infoBPartnerItem);
 // TEST TODO muss raus            
@@ -331,18 +343,14 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 //            	String name;
             	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
             	FormPanel m_panel;
-        		try
-        		{
-        			//	Create instance w/o parameters
-        			m_panel = (FormPanel)Class.forName(className).newInstance(); // === new WorkflowActivities()
-        			FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
-        			m_panel.init(frame.getWindowNo(), frame);
-        		}
-        		catch (Exception e)
-        		{
-        			LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
-        			//return false;
-        		}
+				try {
+					// Create instance w/o parameters
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // === new WorkflowActivities()
+					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+					m_panel.init(frame.getWindowNo(), frame);
+				} catch (Exception e) {
+					LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+				}
             });
             mInfo.add(infoWFActivItem);
             

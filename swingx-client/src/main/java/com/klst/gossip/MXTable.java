@@ -5,7 +5,9 @@ import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
 import java.util.logging.Logger;
 
+import javax.swing.ListSelectionModel;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -40,7 +42,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 	private static Highlighter highlighter = HighlighterFactory.createAlternateStriping();
 			
 	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo, erweitert, wird in GenericFormPanel verwendet
-	protected static MXTable createXTable(TableModel dataModel) {
+	public static MXTable createXTable(TableModel dataModel) {
 		if(dataModel instanceof GridTable) {
 			// Ansatz 1:
 			// - OK Header und Spalten synchron
@@ -92,7 +94,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 	 * field.MAXDISPLAY_LENGTH
 	 * result is max(min, header.length())
 	 */
-	static private int calculateWidth(GridField field) {
+	static public int calculateWidth(GridField field) {
 		String header = field.getHeader();
 		LOG.config("field "+field.getColumnName() + "/"+header+": minOf 75, DisplayLength()="+field.getDisplayLength() + ", FieldLength()="+field.getFieldLength() + ", MAXDISPLAY_LENGTH="+GridField.MAXDISPLAY_LENGTH);
 		int min = Math.min(Math.min(Math.min(75, field.getDisplayLength()), field.getFieldLength()), GridField.MAXDISPLAY_LENGTH);
@@ -114,7 +116,6 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 			
 			int width = calculateWidth(field);
 			TableCellRenderer cellRenderer = new MXTableRenderer(dataModel);
-				//= new DefaultTableRenderer();
 			TableCellEditor cellEditor = null;
 			TableColumnExt aColumn = new TableColumnExt(f, width, cellRenderer, cellEditor);
 			aColumn.setHeaderValue(field.getHeader()); // TODO es gibt TableColumn.sizeWidthToFit()
@@ -184,8 +185,62 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 		return null;
 	}
 	
+    /**
+     * {@inheritDoc}
+     * 
+     */
+//	@Override // implemeted in JTable
+//	public Object getValueAt(int row, int column) {
+//		Object o = super.getValueAt(row, column);
+//		LOG.config("(row "+row+", column "+column+"):"+o);
+//		return o;
+//	}
+	
+    /**
+     * {@inheritDoc}
+     * 
+     */
+	@Override // implemeted in JTable
+	public int getSelectedRow() {
+		return super.getSelectedRow();
+	}
+	
+    /**
+     * {@inheritDoc}
+     * 
+     */
+	@Override // implemeted in JTable
+	public void valueChanged(ListSelectionEvent e) {
+		super.valueChanged(e);
+		// es gibt zwei events : mouse down (e.getValueIsAdjusting()==true) + mouse up (e.getValueIsAdjusting()==false)
+		// @see void javax.swing.ListSelectionModel.setValueIsAdjusting(boolean valueIsAdjusting)
+		LOG.config(">>>>>>>>>>>>>>>>>>>>>>>"+ e);
+	}
+	
     // A list of event listeners for this component
 	private EventListenerList listenerList = new EventListenerList();
+
+    public void fireRowSelectionEvent() {
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+
+        // Lazily create the event:
+//        RowSelectionEvent rowSelectionEvent = new RowSelectionEvent(this, RowSelectionEvent.ROW_TOGGLED);
+        //                 (Object source, int id, String command)
+        // oder ActionEvent(Object source, int id, String command, int modifiers)
+        ActionEvent rowSelectionEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "???");
+		ListSelectionModel rowSM = this.getSelectionModel();
+		//setStatusDB(1+rowSM.getAnchorSelectionIndex());
+
+
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==TableSelectionListener.class) {
+                ((TableSelectionListener)listeners[i+1]).rowSelected(rowSelectionEvent);
+            }          
+        }
+    }    
 
 	public interface TableSelectionListener extends EventListener {
 		public abstract void rowSelected(ActionEvent e);
