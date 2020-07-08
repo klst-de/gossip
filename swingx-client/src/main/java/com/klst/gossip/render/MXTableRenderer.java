@@ -155,15 +155,17 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				checkbox.setHorizontalAlignment(SwingConstants.CENTER);
 				cellRendererComponent = checkbox;
 				break;
-//			case DisplayType.Location: // 21 Location TODO
-//				field.setDisplayType(DisplayType.TableDir);
-//				minitable.setColumnClass(f, field);
-//				break;
+			case DisplayType.Location: // 21 Location
+				field.setDisplayType(DisplayType.TableDir); // TODO zoom
+				if(value!=null) {
+					cellRendererComponent = getRenderer_TableDir(value, field);
+				}
+				break;
 			case DisplayType.Button:    // 28
 				JRendererCheckBox button = new JRendererCheckBox();				
 				button.setText((String)value);
 				button.setIcon(null);
-				cellRendererComponent = button; // TODO ist noch linksbündig
+				cellRendererComponent = button; // TODO Button ist linksbündig, rechts der Text
 				break;
 			case DisplayType.Search:    // 30 Table oder User/Contact AD_Column_ID=10443
 //				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.Search value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
