@@ -9,13 +9,17 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.MLocation;
 import org.compiere.model.WindowModel;
 import org.compiere.swing.CTabbedPane;
+import org.compiere.util.DefaultContextProvider;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.jdesktop.swingx.JXPanel;
@@ -107,6 +111,17 @@ public class InfoBP extends GenericFormPanel {
 		//subPanel.setCollapsed(false);
 		subPane.add(tabbedPane, BorderLayout.CENTER);
 		mainPanel.add(subPane, BorderLayout.PAGE_END);
+		
+		registerTableSelectionListener(contactTbl);
+		
+		LOG.config("addressTbl.ColumnCount="+addressTbl.getColumnCount() + ", SelectedRow="+addressTbl.getSelectedRow());
+		for (int i = 0; i < addressTbl.getColumnCount(); i++) {
+			String columnName = addressTbl.getColumnName(i);
+			if(I_C_Location.COLUMNNAME_C_Location_ID.equals(columnName)) {
+				column_index_C_Location_ID = i;
+			}
+		}	
+		registerTableSelectionListener(addressTbl);
 	}
 	
 	private final static boolean finalCall = false;
@@ -144,7 +159,45 @@ public class InfoBP extends GenericFormPanel {
 	// Location
 	private int column_index_C_Location_ID = -1;
 
-	protected void registerTableSelectionListener() throws Exception {
+	protected void registerTableSelectionListener(MXTable miniTable) {
+		LOG.config("TableSelectionListener for "+miniTable);		
+		miniTable.addMiniTableSelectionListener(event -> {
+			Object source = event.getSource();
+			if(source instanceof JTable) {
+				JTable jTable = (JTable)source;
+				ListSelectionModel columnSM = miniTable.getColumnModel().getSelectionModel();
+				LOG.config("TableSelectionListener event.Source:"+(JTable)source 
+					+ "\n SelectedRow="+miniTable.getSelectedRow()
+					+ ", ID (erwartet ACTION_PERFORMED : 1001)="+event.getID()
+					+ ", ActionCommand="+event.getActionCommand()
+					+ ", SelectionMode="+miniTable.getSelectionMode()
+					+ ", AnchorSelectionIndex="+columnSM.getAnchorSelectionIndex()
+					+ ", LeadSelectionIndex="+columnSM.getLeadSelectionIndex()
+					+ ", ColumnSelectionAllowed="+miniTable.getColumnModel().getColumnSelectionAllowed()
+					);
+				
+				if(column_index_C_Location_ID==columnSM.getAnchorSelectionIndex()) {
+					// eigentlich sollte der ActionListener dran kommen. ABER das tut nicht! Untersuchen TODO
+					int selectedRow = miniTable.getSelectedRow();
+					Object value = miniTable.getValueAt(selectedRow, column_index_C_Location_ID);
+					if(value!=null) {
+						
+						Integer key = (Integer) value;
+						MLocation mLocation = new MLocation(Env.getCtx(), key.intValue(), null); // String trxName
+						// Das Öffnen von Window kann ich nocht nciht implementieren, aber GOOGLE_MAPS
+						LOG.config("MapsLocation:"+mLocation.getMapsLocation());
+						Env.startBrowser(DefaultContextProvider.GOOGLE_MAPS_URL_PREFIX + mLocation.getMapsLocation());
+					}
+				} else {
+					LOG.warning("AnchorSelectionIndex="+columnSM.getAnchorSelectionIndex() + " NOT (expected) "+column_index_C_Location_ID);
+				}
+			} else {
+				LOG.config("source NOT JTable:"+source);		
+			}
+		});
+	}
+	
+	protected void registerTableSelectionListener() {
 		MXTable miniTable = (MXTable)getTable(); // returns JTable, but instance is 
 		
 		LOG.config("TableSelectionListener registriert!!!!!");
@@ -152,10 +205,18 @@ public class InfoBP extends GenericFormPanel {
 			Object source = event.getSource();
 			if(source instanceof JTable) {
 				JTable jTable = (JTable)source;
+				ListSelectionModel columnSM = miniTable.getColumnModel().getSelectionModel();
+//				columnSM.getAnchorSelectionIndex();
+//				columnSM.getLeadSelectionIndex();
+//				miniTable.getColumnModel().getColumnSelectionAllowed();
 				LOG.config("TableSelectionListener event.Source:"+(JTable)source 
 					+ "\n SelectedRow="+miniTable.getSelectedRow()
 					+ ", ID (erwartet ACTION_PERFORMED : 1001)="+event.getID()
 					+ ", ActionCommand="+event.getActionCommand()
+					+ ", SelectionMode="+miniTable.getSelectionMode()
+					+ ", AnchorSelectionIndex="+columnSM.getAnchorSelectionIndex()
+					+ ", LeadSelectionIndex="+columnSM.getLeadSelectionIndex()
+					+ ", ColumnSelectionAllowed="+miniTable.getColumnModel().getColumnSelectionAllowed()
 					);
 				Object bpValueAtName = setSelectWhereClause();
 				subPane.setTitle(Msg.translate(Env.getCtx(), "ContactAndAddress") + (bpValueAtName==null ? ":" : " for "+bpValueAtName));

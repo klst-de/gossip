@@ -213,6 +213,7 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 		super.valueChanged(e);
 		// es gibt zwei events : mouse down (e.getValueIsAdjusting()==true) + mouse up (e.getValueIsAdjusting()==false)
 		// @see void javax.swing.ListSelectionModel.setValueIsAdjusting(boolean valueIsAdjusting)
+//		LOG.config(">>>>>>>>>>>>>>>>>>>>>>>"+ e);
 		fireRowSelectionEvent(e);
 	}
 	

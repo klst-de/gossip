@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
@@ -17,6 +18,7 @@ import org.compiere.model.MRefList;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
+import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.renderer.ComponentProvider;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
@@ -26,6 +28,7 @@ import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 
 import com.klst.gossip.MXTable;
+import com.klst.icon.AbstractImageTranscoder;
 
 public class MXTableRenderer extends DefaultTableRenderer { // extends (swingx)AbstractRenderer implements (swing)TableCellRenderer
 
@@ -57,6 +60,9 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
     public MXTableRenderer(ComponentProvider<?> componentProvider) {
         super(componentProvider);
     }
+
+	static final int SMALL_ICON_SIZE = 16;
+	static AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
     /**
      * {@inheritDoc}
@@ -155,11 +161,69 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				checkbox.setHorizontalAlignment(SwingConstants.CENTER);
 				cellRendererComponent = checkbox;
 				break;
-			case DisplayType.Location: // 21 Location
-				field.setDisplayType(DisplayType.TableDir); // TODO zoom
+			case DisplayType.Location: // 21
+				// new GenericTableRenderer(StringValues.NUMBER_TO_STRING, JLabel.LEFT)
+				// MyLabelProvider(StringValue converter, int alignment)
+				//new MyLabelProvider(converter, alignment);
+//				field.setDisplayType(DisplayType.TableDir); // TODO zoom
 				if(value!=null) {
-					cellRendererComponent = getRenderer_TableDir(value, field);
+					
+					Lookup lookup = field.getLookup(); // MutableComboBoxModel
+					Integer key = (Integer) value;
+					NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
+					
+					Icon icon = AIT.getImageIcon(AIT.ZOOM, SMALL_ICON_SIZE);
+					JXButton ic = new JXButton((np == null ? "<" + key + ">" : np.getName()), icon);	
+
+//					ActionListener tut nicht! Untersuchen TODO
+					ic.addActionListener(event -> { 
+						LOG.config("Location key:"+key+" event:"+event);
+					});
+					
+					cellRendererComponent = ic;
 				}
+/*    ------------------------
+						StringValue stringValue = new StringValue() {
+							 
+						     public String getString(Object np) {
+						         if (!(np instanceof NamePair))
+						             return StringValues.TO_STRING.getString(np);
+						         NamePair namePair = (NamePair) value;
+						         return namePair.getID() + ", " + namePair.getName();
+						     }
+						 
+						 };
+
+						 //table.setDefaultRenderer(NamePair.class, new DefaultTableRenderer(stringValue));
+						 //list.setCellRenderer(new DefaultListRenderer(stringValue));
+						 //tree.setCellRenderer(new DefaultTreeRenderer(stringValue));
+
+						//StringValue sv = StringValues.NUMBER_TO_STRING;
+						StringValue converter = StringValues.TO_STRING;
+						MyLabelProvider mlp = new MyLabelProvider(converter, JLabel.LEFT);
+						StringValue sv = new StringValue() {
+							public String getString(Object value) {
+								if (value instanceof Icon) {
+									return "";
+								}
+								return StringValues.TO_STRING.getString(value);
+							}
+						};
+						MappedValue mv = MappedValues.STRING_OR_ICON_ONLY;
+						StringValue lv = new MappedValue(sv, IconValues.ICON);
+						DefaultListRenderer listRenderer = new DefaultListRenderer(lv, JLabel.LEFT);
+						// list The JList we're painting / the <code>JList</code> to render on
+						// value The value returned by list.getModel().getElementAt(index) / the value to assign to the cell 
+						// index the row index (in view coordinates) of the cell to render
+						// isSelected True if the specified cell was selected.
+						// cellHasFocus True if the specified cell has the focus.
+					    //Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus);
+						//listRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+//						List<TableColumn> ltc = tcme.getColumns(true);
+//						ComponentProvider<List> cp = listRenderer.getComponentProvider();
+//						return listRenderer.getListCellRendererComponent(table, value, row, false, false);
+ ---------------------------------
+ */
 				break;
 			case DisplayType.Button:    // 28
 				JRendererCheckBox button = new JRendererCheckBox();				
