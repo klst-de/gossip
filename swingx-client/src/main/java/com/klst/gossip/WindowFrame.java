@@ -36,6 +36,7 @@ import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.MProcess;
 import org.compiere.model.MWindow;
+import org.compiere.model.WindowModel;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
@@ -79,7 +80,8 @@ public class WindowFrame extends JXFrame implements WindowListener {
 	private String trxName;
 	private MWindow mWindow; // eigentlich sollten alle mWindow Daten aus gridWindow kommen
 	// GridWindow is ein wrapper für MWindow
-	protected GridWindow gridWindow; // (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
+	protected WindowModel windowModel; // WindowModel extends GridWindow
+//	protected GridWindow gridWindow; //                 (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
 	protected InfoPanel infoWindow; 
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
@@ -141,13 +143,18 @@ public class WindowFrame extends JXFrame implements WindowListener {
 
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
-		if(object instanceof GridWindow) {
-			initGridWindow((GridWindow)object);
-			// mWindow ==> gridWindow
+		if(object instanceof WindowModel) {
+			initWindow((WindowModel)object);
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
-//			setTitle();
-			setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
+			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
+//		} else if(object instanceof GenericDataModel) {
+//			initGridWindow((GridWindow)object);
+//			// mWindow ==> gridWindow
+//			mWindow = new MWindow(ctx, this.window_ID, trxName);
+//			LOG.config("mWindow:"+mWindow);
+////			setTitle();
+//			setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
 		} else if(object instanceof GenericDataModel) {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
@@ -471,15 +478,15 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 	}
 	
 	// can make window?
-	// GridWindow.get wirft keine exception, das Ergebnis kann aber null sein!
-	static GridWindow getGridWindow(int window_ID) {
+	// GridWindow.get/WindowModel.get wirft keine exception, das Ergebnis kann aber null sein!
+	static GridWindow getWindowModel(int window_ID) {
 		// das statische GridWindow.get erstellt eine window value object instanz GridWindowVO.create (Env.getCtx(), WindowNo, AD_Window_ID)
 		// static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID = 0)
 		// GridWindowVO.create: #1 - AD_Window_ID=304; AD_Menu_ID=0
 /* statt
-		return GridWindow.get(Env.getCtx(), windowCounter, window_ID);
+		return WindowModel.get(Env.getCtx(), windowCounter, window_ID);
 	überschreibe ich es hier
-	                     get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
+	                       get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
 */
 		LOG.config("windowCounter=" + windowCounter + ", AD_Window_ID=" + window_ID);
 		GridWindowVO mWindowVO = create(Env.getCtx(), windowCounter, window_ID, 0); // in APanel Zeile 731
@@ -502,7 +509,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 			LOG.info("ctx key:"+key + " : " + value.toString());
 		});
 		boolean virtual = false;
-		return new GridWindow(mWindowVO, virtual); // in APanel Zeile 738
+		return new WindowModel(mWindowVO, virtual); // in APanel Zeile 738
 
 	}
 	// == org.compiere.model.GridWindowVO ersetzen, dmit das sql angezeigt werden kann:
@@ -539,22 +546,12 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 	private void initInfoWindow(GenericDataModel gdm) {
 		this.infoWindow = new InfoPanel(this, gdm);
 	}
-	private void initGridWindow(GridWindow gridWindow) {
-//		if(gridWindow==null) {
-//			LOG.warning("gridWindow==null");
-//			this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5 , bleibt leer
-//			return;
-//		}
+	private void initWindow(WindowModel gridWindow) {
 		LOG.config(">>>>GridWindow.get ...");
-		this.gridWindow = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
+//		gridWindow.getAD_Window_ID()
+		this.windowModel = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
 		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
 		LOG.config("<<<<");
-/* WINDOWTYPEs: aus GridWindowVO		
-		public static final String	WINDOWTYPE_QUERY = "Q";
-		public static final String	WINDOWTYPE_TRX = "T";
-		public static final String	WINDOWTYPE_MMAINTAIN = "M";
-TODO Demo für jeden Typ
-*/
 		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
 		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
 		for (int i = 0; i < gridWindow.getTabCount(); i++) {
@@ -563,6 +560,31 @@ TODO Demo für jeden Typ
 			this.gridTabs.add(tab.getGridTab());
 		}
 	}
+//	@Deprecated
+//	private void initGridWindow(GridWindow gridWindow) {
+////		if(gridWindow==null) {
+////			LOG.warning("gridWindow==null");
+////			this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5 , bleibt leer
+////			return;
+////		}
+//		LOG.config(">>>>GridWindow.get ...  @Deprecated      ");
+//		this.gridWindow = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
+//		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
+//		LOG.config("<<<<");
+///* WINDOWTYPEs: aus GridWindowVO		
+//		public static final String	WINDOWTYPE_QUERY = "Q";
+//		public static final String	WINDOWTYPE_TRX = "T";
+//		public static final String	WINDOWTYPE_MMAINTAIN = "M";
+//TODO Demo für jeden Typ
+//*/
+//		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
+//		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
+//		for (int i = 0; i < gridWindow.getTabCount(); i++) {
+//			Tab tab = new Tab(this, i);
+//			this.tabs.add(tab); // gridTabs und tabs korrespondieren
+//			this.gridTabs.add(tab.getGridTab());
+//		}
+//	}
 	
 	public Component getSelectedTab() { // Component can be Tab
 		if(this.tabPane==null) {

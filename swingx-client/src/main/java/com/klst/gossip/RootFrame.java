@@ -27,6 +27,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.compiere.Adempiere;
 import org.compiere.model.GridWindow;
 import org.compiere.model.PO;
+import org.compiere.model.WindowModel;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -174,12 +175,17 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		});
 		
 		if(gdm==null) {
-			GridWindow gridWindow = getGridWindow(window_ID);
+			GridWindow gridWindow = getWindowModel(window_ID);
 			if(gridWindow==null) {
 				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
 				return;		
 			}
-			WindowFrame frame = makeWindow(window_ID, gridWindow);
+			WindowFrame frame;
+			if(gridWindow instanceof WindowModel) {
+				frame = makeWindow(window_ID, (WindowModel)gridWindow);
+			} else {
+				frame = makeWindow(window_ID, gridWindow);				
+			}
 			LOG.config("windowframe components#:"+frame.getComponentCount() + " WindowNo:"+frame.getWindowNo());
 			GenericDataLoader task = frame.getTabs().get(0).getDataLoader(); // first Tab direkt laden, das nur testweise, also ohne Auswahl 
 			// denn es gibt Window mit AuswahlSpalten, zB Business Partner

@@ -1,11 +1,12 @@
 package org.compiere.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import org.compiere.apps.form.WorkflowActivities;
 import org.compiere.util.Env;
 
 /*
@@ -16,6 +17,11 @@ kommt man an sie dran
 Aber                   private boolean loadTabData()
 GridWindow zuletzt vor 11 Jahren geändert
 GridTab            vor 1,5J
+
+ */
+/**
+ * wrapper subclass for org.compiere.model.GridWindow / Window Model
+ *
  */
 public class WindowModel extends GridWindow {
 
@@ -27,7 +33,7 @@ public class WindowModel extends GridWindow {
 	}
 	
 	public static WindowModel get(Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual) {
-//		log.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
+		LOG.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
 		GridWindowVO mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID);
 		if (mWindowVO == null)
 			return null;
@@ -39,29 +45,63 @@ public class WindowModel extends GridWindow {
 	}
 
 	public WindowModel(GridWindowVO vo, boolean virtual) {
-		super(vo, virtual); //macht
-//		m_vo = vo;			// private GridWindowVO   	m_vo;
-//		m_virtual = virtual;// private boolean m_virtual;
-//		if (loadTabData())  // private
-//			enableEvents(); // private
-// um statt m_tabs  ArrayList<TabModel> zu haben, muss ich beide selber implementieren
-// ODER nach dem diesem ctor m_tabs kopieren
+		super(vo, virtual); // exception:
+/*
+
+Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
+	at org.compiere.model.WindowModel.getTab(WindowModel.java:85)
+	at org.compiere.model.WindowModel.getTab(WindowModel.java:1)
+	at org.compiere.model.GridWindow.enableEvents(GridWindow.java:308) 	=====>	getTab(i).enableEvents();
+	at org.compiere.model.GridWindow.<init>(GridWindow.java:112)
+	at org.compiere.model.WindowModel.<init>(WindowModel.java:43)
+	at com.klst.gossip.WindowFrame.getGridWindow(WindowFrame.java:512)
+
+ */
+		m_vo = vo;
 		m_virtual = virtual;
-		copyGridTab();
-// GridTab hat inner class Loader extends Thread
+		if (loadTabData()) enableEvents();
+		LOG.config("TabCount:"+getTabCount());
 	}
 	
+	GridWindowVO m_vo;
 	boolean m_virtual; 	
-	List<TabModel>	m_tabs = new ArrayList<TabModel>();
-	void copyGridTab() {
-		LOG.config("WindowNo=" + this.getWindowNo() + ", AD_Window_ID=" + this.getAD_Window_ID() + " has "+getTabCount()+" tabs.");
-		for (int i = 0; i < getTabCount(); i++) {
-			GridTab gridTab = getTab(i);
-			TabModel tm = new TabModel(gridTab.getM_vo(), this, this.m_virtual);
-			m_tabs.add(tm);
-		}
-	}
+	List<TabModel> m_tabs = null;
+	Set<TabModel> initTabs = new HashSet<TabModel>();
 	
+	private boolean loadTabData()
+	{
+		LOG.config("m_vo:"+m_vo + " m_virtual:"+m_virtual + " m_tabs:"+m_tabs);
+
+		if (m_vo.Tabs == null)
+			return false;
+
+		m_tabs = new ArrayList<TabModel>();
+		for (int t = 0; t < m_vo.Tabs.size(); t++)
+		{
+			GridTabVO mTabVO = (GridTabVO)m_vo.Tabs.get(t);
+			if (mTabVO != null)
+			{
+				TabModel mTab = new TabModel(mTabVO, this, m_virtual);
+				m_tabs.add(mTab);
+			}
+		}	//  for all tabs
+		return true;
+	}
+
+	private void enableEvents() {
+		for (int i = 0; i < getTabCount(); i++) {
+			TabModel tabModel = getTab(i);
+//			getTab(i).enableEvents(); // wg. interface DataStatusListener extends EventListener method dataStatusChanged for MTable.
+			LOG.warning("NO DataStatusListener for ["+tabModel+"] of "+getTabCount());
+		}
+			
+	}
+
+	@Override
+	public int getTabCount() {
+		return m_tabs==null ? -1 : m_tabs.size();
+	}
+
 	@Override
 	public void dispose() {
 		super.dispose();
@@ -70,6 +110,71 @@ public class WindowModel extends GridWindow {
 		});
 		m_tabs.clear();
 		m_tabs = null;
+	}
+
+	@Override
+	public boolean isTabInitialized(int index) {
+		TabModel mTab = m_tabs.get(index);
+		return initTabs.contains(mTab);
+	}
+
+	@Override
+	public TabModel getTab(int i) {
+		if (i < 0 || i + 1 > m_tabs.size())
+			return null;
+		return m_tabs.get(i);
+	}
+
+	@Override
+	public void initTab(int index)
+	{
+		TabModel mTab = m_tabs.get(index);
+		if (initTabs.contains(mTab)) return;		
+		mTab.initTab(false);		
+		//		Set Link Column
+		if (mTab.getLinkColumnName().length() == 0)
+		{
+			ArrayList<String> parents = mTab.getParentColumnNames();
+			//	No Parent - no link
+			if (parents.size() == 0)
+				;
+			//	Standard case
+			else if (parents.size() == 1)
+				mTab.setLinkColumnName((String)parents.get(0));
+			else
+			{
+				//	More than one parent.
+				//	Search prior tabs for the "right parent"
+				//	for all previous tabs
+				for (int i = 0; i < index; i++)
+				{
+					//	we have a tab
+					TabModel tab = (TabModel)m_tabs.get(i);
+					String tabKey = tab.getKeyColumnName();		//	may be ""
+					//	look, if one of our parents is the key of that tab
+					for (int j = 0; j < parents.size(); j++)
+					{
+						String parent = (String)parents.get(j);
+						if (parent.equals(tabKey))
+						{
+							mTab.setLinkColumnName(parent);
+							break;
+						}
+						//	The tab could have more than one key, look into their parents
+						if (tabKey.equals(""))
+							for (int k = 0; k < tab.getParentColumnNames().size(); k++)
+								if (parent.equals(tab.getParentColumnNames().get(k)))
+								{
+									mTab.setLinkColumnName(parent);
+									break;
+								}
+					}	//	for all parents
+				}	//	for all previous tabs
+			}	//	parents.size > 1
+		}	//	set Link column
+		mTab.setLinkColumnName(null);	//	overwrites, if AD_Column_ID exists
+		//
+		initTabs.add(mTab);
 	}
 
 }
