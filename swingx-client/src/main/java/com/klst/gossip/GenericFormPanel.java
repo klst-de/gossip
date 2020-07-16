@@ -28,10 +28,10 @@ import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
+import org.compiere.model.TabModel;
 import org.compiere.model.WindowModel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
@@ -182,7 +182,7 @@ public class GenericFormPanel implements FormPanel {
 		//miniTable.setMultiSelection(true);  // (default false) Should be performed before the class is set.
 		initTableModelAndControler(); // macht getColumnNames + loadData + miniTable.setModel(tablemodel) + selections controler definieren
 
-		LOG.config("selections.size="+selections.size() + " MXTable.SelectionMode="+miniTable.getSelectionMode() + " / set it to "+listSelectionMode);
+		LOG.config("data selections.size="+selections.size() + " MXTable.SelectionMode="+miniTable.getSelectionMode() + " / set it to "+listSelectionMode);
 		miniTable.setSelectionMode(listSelectionMode);
 		
 		int i=0;
@@ -214,8 +214,12 @@ Parameters:
 	}
 
 	private void initTableModelAndControler() {
-		getGridTableModel();		
-		setModelAndControler();
+		if(getGridTableModel()) {
+			setModelAndControler();
+		} else {
+			// TODO
+			LOG.warning("TO BE IMPEMENTED no GridTableModel");
+		}
 	}
 
 	/*
@@ -234,7 +238,7 @@ Parameters:
 		LOG.warning("TO BE IMPEMENTED in Subclass");
 	}
 	
-	protected WindowModel getGridWindow() {
+	protected WindowModel getWindowModel() {
 		// wrapped (base)org.compiere.model.GridWindow
 		return WindowModel.get(Env.getCtx(), this.getWindowNo(), this.getWindowId());
 	}
@@ -313,7 +317,7 @@ Parameters:
 		}
 		
 		setSelectWhereClause();
-		
+
 		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
 		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
 		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
@@ -516,29 +520,31 @@ Parameters:
 //	}
 	
 	private GridTable gridTableModel;
-	private GridTable getGridTableModel() {
-		WindowModel gridWindow = getGridWindow();
-		if(gridWindow==null) return null; // kann null sein, wenn Berechtigung fehlt, ===========> GridWindowVO.create: No Window - AD_Window_ID=1000001
-//		gridWindow.dispose(); // nur zum Test
-		assert(gridWindow.getTabCount()>=1);
-		// (base)GridTab hat einen Loader
-		GridTab tab = gridWindow.getTab(0); // es gibt mindestens einen Tab
-		// (base)GridTable hat einen Loader / GridTable extends AbstractTableModel
-		gridTableModel = tab.getTableModel(); // macht boolean initTab(boolean synchron)
-		// nur so zur Info: in der DB steht WhereClause="RV_Unprocessed.CreatedBy=@#AD_User_ID@"
-		LOG.config("tab "+tab.get_TableName() + " AD_Tab_ID="+tab.getAD_Tab_ID());
-		LOG.config("tab.WhereClause:"+tab.getWhereClause());
-		LOG.config("tab.WhereExtended:"+tab.getWhereExtended()); // was ist der Unterschied zu getWhereClause() ?
-		LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause()); // ist leer!? !!!!!!!!!!!!!!!!! tatsächlich wird nicht selektiert
-		
-		assert(!tab.isOnlyCurrentRows());
-		int onlyCurrentDays = 0;
-		gridTableModel.setSelectWhereClause(tab.getWhereClause(), tab.isOnlyCurrentRows(), onlyCurrentDays);
-		
-		whereText.setText(gridTableModel.getSelectWhereClause());
-		LOG.config("OrderClause:"+gridTableModel.getOrderClause());
-		
-		return gridTableModel;
+	private boolean getGridTableModel() {
+		gridTableModel = null;
+		WindowModel windowModel = getWindowModel();
+		LOG.config("!!!!!!!!!!!!!!!! windowModel.TabCount="+(windowModel==null ? "-1" : windowModel.getTabCount()));
+		if(windowModel!=null && windowModel.getTabCount()>=1) {
+//			if(windowModel==null) return null; // kann null sein, wenn Berechtigung fehlt, ===========> GridWindowVO.create: No Window - AD_Window_ID=1000001
+			// (base)GridTab hat einen Loader
+			TabModel tabModel = windowModel.getTab(0); // es gibt mindestens einen Tab
+			// (base)GridTable hat einen Loader / GridTable extends AbstractTableModel
+			// nur so zur Info: in der DB steht WhereClause="RV_Unprocessed.CreatedBy=@#AD_User_ID@"
+			LOG.config("tab "+tabModel + " tab.TableName="+tabModel.get_TableName() + " AD_Tab_ID="+tabModel.getAD_Tab_ID());
+			LOG.config("tab.WhereClause:"+tabModel.getWhereClause());
+			LOG.config("tab.WhereExtended:"+tabModel.getWhereExtended()); // was ist der Unterschied zu getWhereClause() ?
+			
+			gridTableModel = tabModel.getTableModel(); // macht boolean initTab(boolean synchron)
+			LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause()); // ist leer!? !!!!!!!!!!!!!!!!! tatsächlich wird nicht selektiert
+			
+			assert(!tabModel.isOnlyCurrentRows());
+			int onlyCurrentDays = 0;
+			gridTableModel.setSelectWhereClause(tabModel.getWhereClause(), tabModel.isOnlyCurrentRows(), onlyCurrentDays);
+			
+			whereText.setText(gridTableModel.getSelectWhereClause());
+			LOG.config("OrderClause:"+gridTableModel.getOrderClause());
+		}
+		return (gridTableModel!=null);
 	}
 	
 }

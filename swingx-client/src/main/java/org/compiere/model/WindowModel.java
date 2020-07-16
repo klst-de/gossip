@@ -58,9 +58,13 @@ Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
 
  */
 		m_vo = vo;
+		LOG.config("m_vo.Tabs.size="+m_vo.Tabs.size());
+		m_vo.Tabs.forEach((GridTabVO tab) -> {
+			LOG.config(tab.toString());
+		});
 		m_virtual = virtual;
 		if (loadTabData()) enableEvents();
-		LOG.config("TabCount:"+getTabCount());
+		LOG.config("TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
 	}
 	
 	GridWindowVO m_vo;
@@ -118,6 +122,10 @@ Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
 		return initTabs.contains(mTab);
 	}
 
+    /**
+     * {@inheritDoc}
+     * 
+     */
 	@Override
 	public TabModel getTab(int i) {
 		if (i < 0 || i + 1 > m_tabs.size())
@@ -127,7 +135,7 @@ Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
 
 	@Override
 	public void initTab(int index)
-	{
+	{	LOG.config(" initTab for tab ["+index+"] of "+getTabCount());
 		TabModel mTab = m_tabs.get(index);
 		if (initTabs.contains(mTab)) return;		
 		mTab.initTab(false);		
@@ -175,6 +183,7 @@ Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
 		mTab.setLinkColumnName(null);	//	overwrites, if AD_Column_ID exists
 		//
 		initTabs.add(mTab);
+		LOG.config("TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
 	}
 
 }
