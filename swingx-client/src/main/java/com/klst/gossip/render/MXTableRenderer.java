@@ -124,8 +124,8 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 //    		} else {
 //    			LOG.warning("NOT GridField"+tc);
 //    		}
-    		LOG.config("\nR/C:"+row+"/"+column + " displayType:" + displayType + " >>>>>>>>>>>>>>> value:" + value + " " + (value==null ? "null" : value.getClass())
-            		);
+//    		LOG.config("\nR/C:"+row+"/"+column + " displayType:" + displayType + " >>>>>>>>>>>>>>> value:" + value + " " + (value==null ? "null" : value.getClass())
+//            		);
 // <<< TEST
         	
 			switch(displayType) {

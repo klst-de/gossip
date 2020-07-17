@@ -1,6 +1,5 @@
 package com.klst.gossip;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
@@ -9,8 +8,6 @@ import java.util.logging.Logger;
 
 import javax.swing.event.EventListenerList;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -196,33 +193,23 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 //	}
 	static private TableColumnModel initTableColumnModel(GridTableModel dataModel, TabModel tabModel) {  // OK ==> GridTableModel dataModel, TabModel tabModel
 		LOG.config("para GridTableModel dataModel:"+dataModel + " cols "+dataModel.getColumnCount());
-		Vector<?> dv =dataModel.getDataVector();
 		TableColumnModelExt tcme = dataModel.getFields();
 		FieldsModelExt fme = (FieldsModelExt)tcme;
 		
 		GridTableModel gtm = tabModel.getGridTableModel();
 		LOG.config("para TabModel tabModel:"+tabModel + " GridTableModel:"+gtm);
-//		tcme ist FieldsModelExt
-//		fme.getColumnCount(includeHidden)
-//		TableColumnExt tce = fme.getColumnExt(columnIndex);
 		
 		int cols = fme.getColumnCount(true);
 		LOG.config("FieldsModelExt.ColumnCount(includeHidden)="+cols); // boolean includeHidden
 		LOG.config("TableColumnModelExt.ColumnCount(visible)="+tcme.getColumnCount(false)); // boolean includeHidden
 		LOG.config("TableColumnModelExt.ColumnCount(includeHidden)="+tcme.getColumnCount(true)); // boolean includeHidden
 		for (int f = 0; f < cols; f++) { // ohne Hidden
-//			Object o = dv.get(f);
-//			LOG.config("o:"+o);;
-//			TableColumnExt tce = tcme.getColumnExt(f);
-//			TableColumnExt tce = fme.getColumnExt(f);
-//			GridField field = (GridField)(tce.getIdentifier());
 			GridField field = dataModel.getGridField(f);
 			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
 			int displayType = field.getDisplayType();
 			//String header = field.getHeader(); TODO
 			String columnName = field.getColumnName();
 			Class<?> columnClass = dataModel.getColumnClass(f);
-//	exception:		TableColumnExt tce = fme.getColumnExt(f); 
 			LOG.config("displayType="+displayType 
 //				+ " isKey="+field.isKey() 
 				+ " isDisplayed="+isDisplayed 
@@ -230,13 +217,8 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 				+ ": fields["+f+"].ColumnName="+columnName + "/" + columnClass);
 			
 			int width = calculateWidth(field);
-//			TableCellRenderer cellRenderer = new MXTableRenderer();
-//			TableCellEditor cellEditor = null;
-			
-//			tce.setCellRenderer(cellRenderer);
-//			tce.setVisible(isDisplayed);
-////			tce.setWidth(width);
-//			tce.setHeaderValue(field.getHeader());
+//			TableCellRenderer cellRenderer = new MXTableRenderer(); bereits da
+//			TableCellEditor cellEditor = null; TODO		
 		}
 		return tcme;
 	}
@@ -329,17 +311,17 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 //		tcme.addColumn(aColumn);
 	}
 	
-    /**
-     * {@inheritDoc}
-     * 
-     */
-	@Override // implemeted in JXTable
-    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-    	LOG.warning("renderer:"+renderer + " R/C:"+row+"/"+column);
-    	Component stamp = super.prepareRenderer(renderer, row, column);
-    	LOG.config("renderer:"+renderer + " R/C:"+row+"/"+column + " stamp:"+stamp);
-    	return stamp;
-    }
+//    /**
+//     * {@inheritDoc}
+//     * 
+//     */
+//	@Override // implemeted in JXTable
+//    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+//    	LOG.warning("renderer:"+renderer + " R/C:"+row+"/"+column);
+//    	Component stamp = super.prepareRenderer(renderer, row, column);
+//    	LOG.config("renderer:"+renderer + " R/C:"+row+"/"+column + " stamp:"+stamp);
+//    	return stamp;
+//    }
 
 	void setModel(GridTableModel dataModel) {
 		LOG.config("GridTableModel dataModel:"+dataModel);

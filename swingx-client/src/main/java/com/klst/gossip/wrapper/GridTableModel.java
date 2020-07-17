@@ -68,7 +68,7 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
         		LOG.config("Object:"+o + " R/C="+first+i+"/"+column);
         		//setValueAt(rowData[column], first+i, column);      		
         	}
-        	getDataVector().add(row);
+        	getDataVector().add(row); // References to generic type Vector<E>
         }
 //        chunks.get(index)
 //        chunks.forEach((Object[] row) -> {
@@ -102,11 +102,17 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 //    	Vector<Vector> rows = ((Vector)dataVector);
 //    	Vector<Object> rowCells = ((Vector)dataVector);
 //    }
-    public Object getValueAt(int row, int column) {
-    	Object o = super.getValueAt(row, column);
-    	LOG.config("row="+row + ", column="+column + ":"+o);
-       return o;
-    }
+    
+//    /**
+//     * {@inheritDoc}
+//     * 
+//     */
+//	@Override // implemeted in DefaultTableModel nur wg. LOG
+//    public Object getValueAt(int row, int column) {
+//    	Object o = super.getValueAt(row, column);
+//    	LOG.config("row="+row + ", column="+column + ":"+o);
+//       return o;
+//    }
     
     
 

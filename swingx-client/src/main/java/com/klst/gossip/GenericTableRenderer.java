@@ -41,12 +41,18 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
     }
 
     public GenericTableRenderer(StringValue converter, int alignment) {
-        super(new LabelProvider(converter, alignment)); // org.jdesktop.swingx.renderer.LabelProvider.LabelProvider(StringValue converter, int alignment)
+        super(new MyLabelProvider(converter, alignment)); // org.jdesktop.swingx.renderer.LabelProvider.LabelProvider(StringValue converter, int alignment)
     }
     
     public GenericTableRenderer(ComponentProvider<?> componentProvider) {
         super(componentProvider);
     }
+
+//    @Override
+//    public void doClick() { // nur bei RolloverRenderer
+//    	LOG.config("!!!!!!!!!!!!!!!");
+//    	super.doClick();
+//    }
 
     @Override // method in DefaultTableRenderer
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -81,12 +87,11 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
 			// in PO: static public List<?> getInstances(Integer tableId, List<Integer> recordIds, String trxName) throws AdempiereException
 			Object object = classClass.getConstructor(Properties.class, int.class, String.class).newInstance(Env.getCtx(), ((Integer)value).intValue(), null);
 			
-			//Object obj = classClass.cast(object); // cast möglich, aber nicht: classClass.cast(object).getValue();
-			PO po = (PO)object;
-			LOG.config(columnName + " object:"+object);
-//			Object v = po.get_Value("Name"); // für AD_Org_ID=0 bekomme ich nicht "*" das ist bei AD_Client_ID=0 definiert, 
-//			                                 // in den props steht aber #AD_Client_ID=11 - als interimsLösung gut genug
-			value = po.getDisplayValue();
+			if(object instanceof PO) {
+				PO po = (PO)object;
+				LOG.config(columnName + " object:"+object + " @" + Integer.toHexString(object.hashCode()));
+				value = po.getDisplayValue();
+			}
 		} catch (ClassNotFoundException e) {
 			// das kommt bei Minitable aka InfoPanel vor
 			//e.printStackTrace();
@@ -118,4 +123,5 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
 		}
 		return value;
     }
+    
 }
