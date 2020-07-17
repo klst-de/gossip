@@ -18,10 +18,20 @@ public class TabModel extends GridTab {
 		m_vo = vo;
 		//  Create MTable
 		m_mTable = new GridTable(vo.ctx, vo.AD_Table_ID, vo.TableName, vo.WindowNo, vo.TabNo, true, virtual);
-		m_mTable.setReadOnly(vo.IsReadOnly || vo.IsView);
+		m_mTable.setReadOnly(isReadOnly() || vo.IsView);
 		m_mTable.setDeleteable(vo.IsDeleteable);
 	}
-
+	
+	@Override
+	public String toString(){
+		String retValue = "TabModel aka MTab [TabNo=";
+		if (m_vo != null)
+			retValue += getTabNo() + ", Name=" + getName() + ", AD_Tab_ID=" + getAD_Tab_ID() + ", GridTable/MTable:" + getMTable() + "]";
+		else
+			retValue += "???";
+		return retValue;
+	}
+	
 	private GridTabVO m_vo;
 	private GridTable m_mTable;
 	private volatile boolean    m_loadComplete = false;
@@ -35,16 +45,16 @@ public class TabModel extends GridTab {
 //	private GridTable.Loader gridTableLoader;
 	
 	public GridTableModel getGridTableModel() {
-//		return new GridTableModel(this);
 		return new GridTableModel(getTableModel());
 	}
-	// fast alle methoden kann ich überschreiben, ABER m_mTable ist nur mit public GridTable getTableModel() erreichbar
+	
+	// fast alle methoden kann ich überschreiben, ABER super.m_mTable ist private nur mit public GridTable getTableModel() erreichbar
 	public GridTable getTableModel() {
-		LOG.config("m_mTable:"+m_mTable + " ColumnCount:"+m_mTable.getColumnCount() + " m_loadComplete="+m_loadComplete);
+		LOG.warning("m_mTable:"+m_mTable + " ColumnCount:"+m_mTable.getColumnCount() + " m_loadComplete="+m_loadComplete);
 		// in super:
 //		if (!m_loadComplete) initTab(false);
 		boolean inited = initTab(false);
-		LOG.config("inited="+inited);
+		LOG.warning("inited="+inited);
 		return m_mTable;
 //		GridTable gridTable = super.getTableModel();
 //		LOG.config("gridTable:"+gridTable + " ColumnCount:"+gridTable.getColumnCount());
