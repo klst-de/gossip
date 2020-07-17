@@ -38,7 +38,7 @@ public class MXTableRenderer extends DefaultTableRenderer { // extends (swingx)A
 
     public MXTableRenderer() {
     	super();
-    	LOG.warning(""+this.toString());
+//    	LOG.warning(""+this.toString());
     }
   
 /*

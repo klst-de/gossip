@@ -144,12 +144,10 @@ public class WindowFrame extends JXFrame implements WindowListener {
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
 		if(object instanceof GridWindow  && object.getClass() != GridWindow.class) {
-//		if(object instanceof GridWindow  && object.getClass() != GridWindow.class) {
 			initWindow((GridWindow)object);
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
 			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
-//		} else if(object instanceof WindowModel) {
 		} else if(object instanceof GridWindow) {
 			LOG.warning("DAS SOLL NICHT SEIN GridWindow object:"+object);
 			initWindow((WindowModel)object);
@@ -160,9 +158,9 @@ public class WindowFrame extends JXFrame implements WindowListener {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
 		} else if(object instanceof GenericFormPanel && object.getClass() != GenericFormPanel.class) {
-			LOG.config(">>>>>>>>>>>>>>>>>>> object isSUBCLASSof GenericFormPanel "+object);
+			// object is subclass of GenericFormPanel
 			GenericFormPanel formPanel = (GenericFormPanel)object;
-			setTitle("["+this.windowNo+"] formPanel WindowId=" + formPanel.getWindowId());
+			setTitle("["+this.windowNo+"] formPanel WindowId=" + formPanel.getWindowId()); // TODO name
 			formPanel.setStatusBar(statusBar);
 		} else if(object instanceof GenericFormPanel) {
 			LOG.config(">>>>>>>>>>>>>>>>>>> object instanceof GenericFormPanel "+object);
@@ -341,7 +339,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             mInfo.add(infoBPartnerItem);
 // TEST TODO muss raus            
             JMenuItem infoWFActivItem = new JMenuItem("WorkflowActivities TEST Info", AIT.getImageIcon(AIT.TASK, SMALL_ICON_SIZE));
-            infoWFActivItem.setName("infoWFActiv");
+            infoWFActivItem.setName("infoWFActiv"); // TODO dieser Name ist auch der Frame Name TODO
             infoWFActivItem.setActionCommand("infoWFActiv");
             infoWFActivItem.addActionListener(event -> {
             	LOG.config("item:"+infoWFActivItem);
@@ -353,7 +351,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             	FormPanel m_panel;
 				try {
 					// Create instance w/o parameters
-					m_panel = (FormPanel) Class.forName(className).newInstance(); // === new WorkflowActivities()
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // ctor new WorkflowActivities()
 					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
 					m_panel.init(frame.getWindowNo(), frame);
 				} catch (Exception e) {

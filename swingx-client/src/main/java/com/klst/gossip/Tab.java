@@ -49,7 +49,6 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private TabModel tabModel;
-//	private GenericDataModel dataModel;
 	private GridTableModel gtm;
 	private GenericDataLoader dataLoader;
 	int currentRow = -1;
@@ -79,18 +78,11 @@ public class Tab extends JPanel implements ComponentListener {
 		this.tabModel = new TabModel(frame.windowModel.getTab(tabIndex).getM_vo(), frame.windowModel);
 		this.tabModel.initTab(false);
 		
-//		LOG.config(" Fields# ======== vor loadGridTab() ============"+this.tabModel.getTableModel().getFields().length);
-////		this.tabModel.loadGridTab(); // wrapper auf boolean GridTab.loadTab(), der ist protected, macht private boolean GridTab.loadFields() 
-//// TODO wie viele Felder sind in getTableModel() aka this.tabModel.m_mTable
-//		LOG.config(" Fields# ========nach loadGridTab() ============"+this.tabModel.getTableModel().getFields().length);
-//		GridTable gridTable = this.tabModel.getTableModel(); // TODO =====> dataModel
-//		gtm = new GridTableModel(gridTable);
 		String tableName = this.tabModel.get_TableName(); 
 		GridField[] gFields = this.tabModel.getFields(); 
 		LOG.config(" tableName="+tableName+" gFields.length="+gFields.length);
 		
 		GridTable gridTable = this.tabModel.getTableModel();
-//		gtm = this.tabModel.getGridTableModel(); berschoben nach initModelAndTable
 		
 		this.addComponentListener(this);
 		this.setName(this.tabModel.getName());
@@ -269,8 +261,6 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-//		this.mrp = MuliRowPanel.createXTable(dataModel);
-//		mXTable = MXTable.createXTable(new GridTableModel(tabModel), tabModel); // TableModel dataModel
 		mXTable = MXTable.createXTable(this.gtm, tabModel); 
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test

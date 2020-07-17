@@ -17,7 +17,6 @@ import org.compiere.model.GridTable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MLocation;
-import org.compiere.model.WindowModel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.util.DefaultContextProvider;
 import org.compiere.util.Env;
@@ -27,6 +26,7 @@ import org.jdesktop.swingx.JXTaskPane;
 
 import com.klst.gossip.GenericFormPanel;
 import com.klst.gossip.MXTable;
+import com.klst.gossip.wrapper.WindowModel;
 
 /**
  *	subclasses Generic Form Panel
@@ -74,7 +74,7 @@ public class InfoBP extends GenericFormPanel {
 		bpPanel.add(new JScrollPane(miniTable), BorderLayout.CENTER);
 		mainPanel.add(bpPanel, BorderLayout.CENTER);
 		
-		WindowModel gridWindow = super.getGridWindow();
+		WindowModel gridWindow = super.getWindowModel();
 		assert(gridWindow.getTabCount()==2);
 		GridTab contactTab = gridWindow.getTab(1); // es gibt 3 Tabs : 0==>BP, 1==>Contact, 2==>Location
 		contactTableModel = contactTab.getTableModel(); // getTableModel() macht boolean initTab(boolean synchron)
@@ -198,17 +198,15 @@ public class InfoBP extends GenericFormPanel {
 	}
 	
 	protected void registerTableSelectionListener() {
-		MXTable miniTable = (MXTable)getTable(); // returns JTable, but instance is 
+		MXTable miniTable = (MXTable)getTable(); // getTable() returns JTable, but instance is MXTable
 		
 		LOG.config("TableSelectionListener registriert!!!!!");
 		miniTable.addMiniTableSelectionListener(event -> {
+			LOG.config("TableSelectionListener event:"+event);
 			Object source = event.getSource();
 			if(source instanceof JTable) {
 				JTable jTable = (JTable)source;
 				ListSelectionModel columnSM = miniTable.getColumnModel().getSelectionModel();
-//				columnSM.getAnchorSelectionIndex();
-//				columnSM.getLeadSelectionIndex();
-//				miniTable.getColumnModel().getColumnSelectionAllowed();
 				LOG.config("TableSelectionListener event.Source:"+(JTable)source 
 					+ "\n SelectedRow="+miniTable.getSelectedRow()
 					+ ", ID (erwartet ACTION_PERFORMED : 1001)="+event.getID()
@@ -221,12 +219,13 @@ public class InfoBP extends GenericFormPanel {
 				Object bpValueAtName = setSelectWhereClause();
 				subPane.setTitle(Msg.translate(Env.getCtx(), "ContactAndAddress") + (bpValueAtName==null ? ":" : " for "+bpValueAtName));
 
-				Vector<Vector<Object>> data = super.getData(contactTableModel);
-				DefaultTableModel dataModel = new DefaultTableModel(data, super.getFieldsNames(contactTableModel));
-				contactTbl.setModel(dataModel);
+//				Vector<Vector<Object>> data = null; //super.getData(contactTableModel);
+//				DefaultTableModel dataModel = new DefaultTableModel(data, super.getFieldsNames(contactTableModel));
+//				contactTbl.setModel(dataModel);
+				// TODO Laden
 				
-				DefaultTableModel locModel = new DefaultTableModel(super.getData(locationTableModel), super.getFieldsNames(locationTableModel));
-				addressTbl.setModel(locModel);
+//				DefaultTableModel locModel = new DefaultTableModel(super.getData(locationTableModel), super.getFieldsNames(locationTableModel));
+//				addressTbl.setModel(locModel);
 				
 			} else {
 				LOG.config("source NOT JTable:"+source);		

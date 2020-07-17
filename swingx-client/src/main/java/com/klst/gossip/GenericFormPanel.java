@@ -267,14 +267,11 @@ Parameters:
 		LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause());
 	}
 
-//	GenericDataLoader dataLoader;
+	GenericDataLoader dataLoader;
 	private GenericDataLoader initDataLoader() {
-		GenericDataLoader dataLoader = new GenericDataLoader(this.gridTableModel);
-        BindingGroup group = new BindingGroup();
-        //                        createAutoBinding(AutoBinding.UpdateStrategy strategy
-        //                                              , SS sourceObject, Property<SS, SV> sourceProperty
-        //                                                                                           , TS targetObject, Property<TS, TV> targetProperty)
-        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), this.formFrame.progressBar, BeanProperty.create("value")));
+		this.dataLoader = new GenericDataLoader(this.gridTableModel);
+        BindingGroup group = new BindingGroup(); 
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), formFrame.progressBar, BeanProperty.create("value")));
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
         group.bind();
         dataLoader.addPropertyChangeListener(event -> {
@@ -284,30 +281,15 @@ Parameters:
         		if(StateValue.DONE.equals(sv)) {
         			LOG.config("Alles geladen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DataVector().size()="+gridTableModel.getDataVector().size());
         		}
-//        		this.formFrame.setLoadState((StateValue)event.getNewValue());
-        	}
+       	}
         });
 		return dataLoader;		
 	}
-	private Vector<Vector<Object>> getData(GridTableModel gridTableModel) {
-		GenericDataLoader dataLoaderTask = initDataLoader();
-		dataLoaderTask.execute();
-		return null;
-	}
-//	static public Vector<Vector<Object>> getData(GridTable gridTableModel) {
-//		// mit boolean GridTable.open (int maxRows=0) wird alles geladen:
-//		boolean success = gridTableModel.open(0);
-//		LOG.config("load all data via GridTable.open success="+success + " RowCount="+gridTableModel.getRowCount());
-//		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-//		for (int row = 0; row < gridTableModel.getRowCount(); row++) {
-//			Vector<Object> rowVector = new Vector<Object>();
-//			for (int col = 0; col < gridTableModel.getColumnCount(); col++) {
-//				Object o = gridTableModel.getValueAt(row, col);
-//				rowVector.add(o); // bei RowCount=135039 exception
-//			}
-//			data.add(rowVector);
-//		}
-//		return data;
+	
+//	private Vector<Vector<Object>> getData(GridTableModel gridTableModel) {
+//		GenericDataLoader dataLoaderTask = initDataLoader();
+//		dataLoaderTask.execute();
+//		return null;
 //	}
 	
 	static public Vector<String> getFieldsNames(GridTable gridTableModel) {
@@ -347,52 +329,16 @@ Parameters:
 		// dann miniTable und selections controler definieren
 		
 		if(miniTable==null) {
-			miniTable = MXTable.createXTable(gridTableModel);
-//					MXTable.createXTable(gridTableModel, tabModel);
+			miniTable = //MXTable.createXTable(gridTableModel);
+					MXTable.createXTable(gridTableModel, tabModel);
 		}
 		
 		setSelectWhereClause();
 
 		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
-		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
-//		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
-//		miniTable.setModel(dataModel);
-
-//// ----------------
-//			boolean success = gridTableModel.open(0);
-//			log.config("load all data via GridTable.open success="+success + " RowCount="+gridTableModel.getRowCount());
-//			Vector<List<Object>> data = new Vector<List<Object>>(gridTableModel.getRowCount());
-//			
-//			GenericDataLoader dataLoader = new GenericDataLoader(gridTableModel, data);
-//	        dataLoader.addPropertyChangeListener(event -> {
-//	        	if ("state".equals(event.getPropertyName())) {
-//	        		//setLoadState((StateValue)event.getNewValue());
-//	        		log.config(" StateValue:"+(StateValue)event.getNewValue());
-//	        	}
-//	        });
-//			dataLoader.execute();
-	//
-//			try {
-////				Vector<List<Object>> 
-//				data = dataLoader.get(); // Waits if necessary for the computation to complete, and thenretrieves its result. 
-//				data = dataLoader.get(500L, TimeUnit.MILLISECONDS);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (ExecutionException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (TimeoutException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			log.config(" gewartet: dataLoader.isDone="+dataLoader.isDone());
-//			
-//			DefaultTableModel tablemodel = new DefaultTableModel(data, getFieldsNames());
-//			
-//			statusBar.setStatusLine(gridTableModel.getSelectWhereClause());
-	//// <<<<<<<<<<<	
-//			miniTable.setModel(tablemodel);
+//		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
+		this.dataLoader = initDataLoader();
+		this.dataLoader.execute();
 
 		for(int c = 0; c < gridTableModel.getColumnCount(); c++) {
 			GridField field = gridTableModel.getGridField(c);
@@ -400,16 +346,6 @@ Parameters:
 				addSelection(field); 
 			}								
 		}
-//		TableColumnModelExt tcme = gridTableModel.getFields(); // FieldsModelExt
-//		for(int f = 0; f < tcme.getColumnCount(false); f++) {
-//			TableColumnExt tce = tcme.getColumnExt(f);
-//			GridField field = (GridField)(tce.getIdentifier());
-////			GridField field = fields[f];
-////			LOG.config("field "+f + " isSelectionColumn="+field.isSelectionColumn() + " "+field.getColumnName());
-//			if(field.isSelectionColumn()) {
-//				addSelection(field); 
-//			}								
-//		}
 		
 //		addSelection(fields); // additional selectionFields TODO
 		if(gridTableModel.getRowCount()>0) {
