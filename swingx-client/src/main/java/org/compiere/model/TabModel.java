@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 import org.compiere.util.Env;
 
+import com.klst.gossip.wrapper.GridTableModel;
+
 public class TabModel extends GridTab {
 
 	private static final long serialVersionUID = -7644936025409068432L;
@@ -45,7 +47,10 @@ public class TabModel extends GridTab {
 //	private GridTable.Loader gridTableLoader;
 	
 	public GridTableModel getGridTableModel() {
-		return new GridTableModel(getTableModel());
+		LOG.warning(">>> wrap");
+		GridTable gt = getTableModel();
+		LOG.warning("<<< wrap done.");
+		return new GridTableModel(gt);
 	}
 	
 	// fast alle methoden kann ich überschreiben, ABER super.m_mTable ist private nur mit public GridTable getTableModel() erreichbar
