@@ -12,12 +12,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
+import org.compiere.model.GridField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
+
+import com.klst.gossip.wrapper.GridTableModel;
 
 /* 
 SwingWorker Workflow , @see javax.swing.SwingWorker<T, V>
@@ -60,7 +66,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 
 	private static final Logger LOG = Logger.getLogger(GenericDataLoader.class.getName());
 	
-	private GenericDataModel dataModel;
+	private DefaultTableModel dataModel;
 	
 	private String trxName;
 	// trxName ist in GridTable mit setter und getter, hat dort aber nix zu suchen
@@ -72,21 +78,48 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	private List<Object[]> dbResultRows;
 
 	// ctor
-	public GenericDataLoader(GenericDataModel dm) {
-		this.dataModel = dm;
+	public GenericDataLoader(GridTableModel gtm) { // GridTableModel extends DefaultTableModel extends AbstractTableModel implements Serializable
+		this.dataModel = gtm;
 		LOG.config("dataModel "+this.dataModel);
-// GridFieldVO hieß vormals / >13Jahre zurück MFieldVO	
-//		List<GridFieldVO> fieldModel = dataModel.getGridFieldVOList(); // seqno ist nicht zu bekommen, aber die Reihenfolge entspricht seqno
-//		fieldModel.forEach( field -> {
-//			LOG.config("Field_ID:"+field.AD_Field_ID + ", Column_ID:"+field.AD_Column_ID);
-//		});
-		
 		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
-//		trxName = dataModel.m_virtual ? Trx.createTrxName("Loader") : null;
-//		dataModel.setTrxName(trxName); // in swing dataModel hat trxName nix zu suchen
 		trx  = trxName != null ? Trx.get(trxName, true) : null;	
 	}
+//	public GenericDataLoader(GenericDataModel dm) {
+//		this.dataModel = dm;
+//		LOG.config("dataModel "+this.dataModel);
+//// GridFieldVO hieß vormals / >13Jahre zurück MFieldVO	
+////		List<GridFieldVO> fieldModel = dataModel.getGridFieldVOList(); // seqno ist nicht zu bekommen, aber die Reihenfolge entspricht seqno
+////		fieldModel.forEach( field -> {
+////			LOG.config("Field_ID:"+field.AD_Field_ID + ", Column_ID:"+field.AD_Column_ID);
+////		});
+//		
+//		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
+////		trxName = dataModel.m_virtual ? Trx.createTrxName("Loader") : null;
+////		dataModel.setTrxName(trxName); // in swing dataModel hat trxName nix zu suchen
+//		trx  = trxName != null ? Trx.get(trxName, true) : null;	
+//	}
 
+	// wrapper für dataModel:
+	private void setRowsToLoad(int expectedNumberofRows) {
+		if(dataModel instanceof GenericDataModel) {
+			((GenericDataModel)dataModel).setRowsToLoad(expectedNumberofRows);
+		}
+		((GridTableModel)dataModel).setRowsToLoad(expectedNumberofRows);
+	}
+	private void add(List<Object[]> chunks) {
+		if(dataModel instanceof GenericDataModel) {
+			((GenericDataModel)dataModel).add(chunks);
+		}
+		((GridTableModel)dataModel).add(chunks);
+	}
+	
+	private String getTableName() {
+		if(dataModel instanceof GenericDataModel) {
+			return ((GenericDataModel)dataModel).getTableName();
+		}
+		return ((GridTableModel)dataModel).getTableName();		
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see javax.swing.SwingWorker#doInBackground()
@@ -106,7 +139,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			throw ex;
 		}
 		int expectedNumberofRows = resultSet.getInt(1);	
-		dataModel.setRowsToLoad(expectedNumberofRows);
+		setRowsToLoad(expectedNumberofRows);
 		close();
 		
 		// jetzt die tatsächlichen Daten holen
@@ -118,6 +151,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		while(resultSet.next() && (dbResultRows.size() < expectedNumberofRows) && !super.isCancelled()) {
 			Object[] rowData = readData(resultSet, dbResultRows.size());
 			dbResultRows.add(rowData);
+			LOG.warning("vor publish "+dbResultRows.size());
 			super.publish(rowData);
 			super.setProgress(100 * dbResultRows.size() / expectedNumberofRows);
 		}
@@ -136,7 +170,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	@Override
 	protected void process(List<Object[]> chunks) {
 		LOG.config("chunks#:"+chunks.size());
-		dataModel.add(chunks);
+		add(chunks);
 	}
 
 	/*
@@ -156,18 +190,21 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	}
 	// SelectCountStar und SelectAll haben gemeinsame where clause, aus GridTable.m_whereClause und RO/RW Access TODO
     private String getSelectCountStar() {
-    	return "SELECT COUNT(*) FROM "+dataModel.getTableName();
+    	return "SELECT COUNT(*) FROM "+getTableName();
     }
     private String getSelectAll() {
     	LOG.config("dataModel.ColumnCount="+dataModel.getColumnCount());
 		StringBuffer select = new StringBuffer("SELECT ");
 		for(int f=0; f<dataModel.getColumnCount(); f++) {
 			if(f > 0) select.append(",");
-			GridFieldBridge field = dataModel.getFieldModel(f);
-			select.append(field.getColumnSQL()); // ColumnName or Virtual Column withAS
+//			GridFieldBridge field = dataModel.getFieldModel(f);
+			String columnExt = ((GridTableModel)dataModel).getColumnSQL(f, true);  // ColumnName or Virtual Column withAS
+//			GridField field = (GridField)(columnExt.getIdentifier());
+			select.append(columnExt);
 		}
 		select.append("\n FROM "); // new line macht sich im log gut
-		select.append(dataModel.getTableName());
+		select.append(getTableName());
+		LOG.config("select="+select);
 		return select.toString();
     }
     
@@ -184,13 +221,52 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 			for (int f = 0; f < size; f++) {
 				// field metadata aka Column Info, GridField field 
 //				LOG.config(f+"/"+fieldData.length+": row="+row);
-				GridFieldBridge field = dataModel.getFieldModel(f); // GridFieldBridge extends TableColumnExt
-				columnName = field.getColumnName(); // ? oder getIdentifier()
-				displayType = field.getDisplayType(); // aka AD_Reference_ID
+//				GridFieldBridge field = dataModel.getFieldModel(f); // GridFieldBridge extends TableColumnExt
+				columnName = ((GridTableModel)dataModel).getColumnSQL(f, false);  // ColumnName or Virtual Column withAS
+				displayType = ((GridTableModel)dataModel).getDisplayType(f);
+				GridField field = ((GridTableModel)dataModel).getGridField(f);
+				
+//				GridField field = (GridField)(columnExt.getIdentifier());
+//				columnName = field.getColumnName(); // ? oder getIdentifier()
+//				displayType = field.getDisplayType(); // aka AD_Reference_ID
 				if(row==0) {
-					LOG.config(f+"/"+size+": "+columnName); //SeqNoGrid="+field.getSeqNoGrid());
+					LOG.warning(f+"/"+size + " DT="+displayType + ": "+columnName); //SeqNoGrid="+field.getSeqNoGrid());
 				}
 				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
+/*
+17:46:41.094   GenericDataLoader.getSelectAll: select=
+
+
+
+
+SELECT
+ DynPriorityStart
+,IsActive
+,AD_Client_ID
+,AD_Org_ID
+,AD_WF_Process_ID
+,AD_WF_Node_ID
+,Priority
+,Created
+,WFState
+,EndWaitTime
+,AD_Workflow_ID
+,AD_WF_Responsible_ID
+,AD_User_ID
+,AD_Table_ID
+,Record_ID
+,AD_Message_ID
+,DateLastAlert
+,TextMsg
+,Processing
+,Processed
+,AD_WF_Activity_ID
+,CreatedBy
+,Updated
+,UpdatedBy
+ FROM AD_WF_Activity [31]
+
+ */
 				if (displayType == DisplayType.Integer
 					|| (DisplayType.isID(displayType) 
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
@@ -217,6 +293,11 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 					if (field.isEncryptedColumn())
 						str = (String)decrypt(str);
 					fieldData[f] = new Boolean ("Y".equals(str));	//	Boolean
+				}
+				else if (displayType == DisplayType.Button)
+				{
+					String str = rs.getString(f+1);
+					fieldData[f] = "Button "+str;
 				}
 				//	LOB
 				else if (DisplayType.isLOB(displayType))
@@ -249,9 +330,11 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 				if (field.isEncryptedColumn() && displayType != DisplayType.YesNo)
 					fieldData[f] = decrypt(fieldData[f]);
 
-				field.setValue(fieldData[f], false);
-//				LOG.config("next field "+f);			
+				//dataModel.setValueAt(fieldData[f], row, f);
+//				field.setValue(fieldData[f], false);
+//				LOG.warning("fieldData["+f+"]:"+fieldData[f]);			
 			}
+			LOG.warning("DB Zeile "+row+" hat Anzahl Spalten fieldData.length="+fieldData.length);
 		}
 		catch (SQLException e)
 		{

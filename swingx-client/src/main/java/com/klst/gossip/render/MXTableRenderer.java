@@ -12,7 +12,6 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
 import org.compiere.model.GridField;
-import org.compiere.model.GridTable;
 import org.compiere.model.Lookup;
 import org.compiere.model.MRefList;
 import org.compiere.util.DisplayType;
@@ -26,8 +25,10 @@ import org.jdesktop.swingx.renderer.JRendererLabel;
 import org.jdesktop.swingx.renderer.LabelProvider;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.MXTable;
+import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.icon.AbstractImageTranscoder;
 
 public class MXTableRenderer extends DefaultTableRenderer { // extends (swingx)AbstractRenderer implements (swing)TableCellRenderer
@@ -35,8 +36,9 @@ public class MXTableRenderer extends DefaultTableRenderer { // extends (swingx)A
 	private static final long serialVersionUID = -1911708055572460800L;
 	private static final Logger LOG = Logger.getLogger(MXTableRenderer.class.getName());
 
-    public MXTableRenderer(GridTable gtModel) {
+    public MXTableRenderer() {
     	super();
+    	LOG.warning(""+this.toString());
     }
   
 /*
@@ -49,6 +51,12 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
 ... dann gibt es noch die Klassen in package org.jdesktop.swingx.rollover
 
  */
+    private GridTableModel gridTableModel = null;
+    public MXTableRenderer(GridTableModel gtm) {
+       	this();
+       	gridTableModel = gtm;
+       	// bsp: GridField field = gridTableModel.getGridField(5);
+    }
     public MXTableRenderer(StringValue converter) {
     	super(new LabelProvider(converter));
     }
@@ -88,12 +96,37 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
  */
     	
     	// (swingx) implementation in org.jdesktop.swingx.renderer.DefaultTableRenderer:
+    	// Beispiele:
+    	// DisplayType.String/10 	any value
+    	// DisplayType.Integer/11	any value
+    	// DisplayType.Text/14  	any value
+    	// DisplayType.DateTime/16 	value==null
     	Component cellRendererComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     	
     	if(table instanceof MXTable) {
-    		DefaultTableColumnModelExt tcme = (DefaultTableColumnModelExt)(table.getColumnModel());
-    		GridField field = (GridField)(tcme.getColumn(column).getIdentifier());
-    		int displayType = field.getDisplayType();
+    		TableColumnModelExt tcme = (DefaultTableColumnModelExt)(table.getColumnModel());
+    		GridField field = null;
+    		if(gridTableModel==null) {
+    			field = (GridField)(tcme.getColumn(column).getIdentifier());
+    		} else {
+    			field = gridTableModel.getGridField(column);
+    		}
+     		int displayType = field.getDisplayType();
+// TEST    		
+//    		if(table.getColumnModel() instanceof DefaultTableColumnModelExt) {
+//    			// OK
+//    		} else {
+//    			LOG.warning("NOT DefaultTableColumnModelExt"+table.getColumnModel());
+//    		}
+//    		TableColumn tc = tcme.getColumn(column);
+//    		if(tc.getIdentifier() instanceof GridField) {
+//    			// OK
+//    		} else {
+//    			LOG.warning("NOT GridField"+tc);
+//    		}
+    		LOG.config("\nR/C:"+row+"/"+column + " displayType:" + displayType + " >>>>>>>>>>>>>>> value:" + value + " " + (value==null ? "null" : value.getClass())
+            		);
+// <<< TEST
         	
 			switch(displayType) {
 			case DisplayType.String:   // 10 DocumentNo	==> Implementierung in Oberklasse			
@@ -246,7 +279,11 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 //	        			+ "\ncomponent:"+component
 	        			);
 			}
-    	}
+    	} else {
+    		LOG.config(table
+        		+ "\nR/C:"+row+"/"+column + " value:" + value
+        		);
+   	}
     	return cellRendererComponent;
     }
 

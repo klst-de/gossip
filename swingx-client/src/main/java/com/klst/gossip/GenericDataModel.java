@@ -12,6 +12,7 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.util.DisplayType;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
@@ -33,6 +34,9 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
     
 	//private GridFieldBridge[] fields = null; // oder noch besser:
     private DefaultTableColumnModelExt fields; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
+//    TableColumnModelExt getTableColumnModelExt() { // existiert berets: public TableColumnModelExt getColumns()
+//    	return fields; // TODO fields umbenennen in columnModel
+//    }
 	private int rowsToLoad = -1; // der Loader liefert es
 	boolean m_virtual = false; // wie in GridTable TODO erklären
 	
@@ -58,9 +62,11 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 		((GridFields)fields).addColumn(gfb);
 	}
 	
-	// name wie in DefaultTableModel, dort: public Vector getDataVector()
-	@Override
+	// name wie in DefaultTableModel, dort: public Vector getDataVector() ( return dataVector; }
+	@Override // DefaultTableModel
 	public Vector<Object[]> getDataVector() {
+//		Vector dv = super.getDataVector();
+		LOG.config("dataVector.size="+dataVector.size() + " " + (dataVector.isEmpty() ? "empty" : dataVector.get(0)));
 		return (Vector<Object[]>) dataVector;
 	}
 
@@ -87,17 +93,19 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 	 * @see javax.swing.table.TableModel#getValueAt(int, int)
 	 */
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
+	public Object getValueAt(int row, int column) {
 		// in DefaultTableModel
 //        Vector rowVector = (Vector)dataVector.elementAt(row);
 //        return rowVector.elementAt(column);
 
-		if(rowIndex >= getRowCount()) {
+		if(row >= getRowCount()) {
 			return null;
 //			return new Object();
 		}
-		if(columnIndex < getColumnCount()) {
-			return getRow(rowIndex)[columnIndex];
+		if(column < getColumnCount()) {
+			Vector<Object[]> dv = this.getDataVector();
+			LOG.config("TEST ret:"+getRow(row)[column] + "================ dv:"+dv.get(row)[column]);
+			return getRow(row)[column];
 		}
         return null;
 	}
@@ -238,7 +246,11 @@ Exception in thread "AWT-EventQueue-0" java.lang.ClassCastException: [Ljava.lang
     	return gridTab.getM_vo().getFields(); 	
     }
     
-    GridFieldBridge getFieldModel(int columnIndex) {
+    TableColumnExt getColumnExt(int columnIndex) {
+    	return (GridFieldBridge)this.fields.getColumn(columnIndex);
+    }
+    @Deprecated
+    GridFieldBridge getFieldModel(int columnIndex) { // TODO raus, dafür getColumnExt
     	return (GridFieldBridge)this.fields.getColumn(columnIndex);
     }
     

@@ -17,10 +17,17 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 
+import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.GridTable;
+import org.compiere.model.GridWindow;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
+
+import com.klst.gossip.wrapper.GridTableModel;
+import com.klst.gossip.wrapper.TabModel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
@@ -41,13 +48,15 @@ public class Tab extends JPanel implements ComponentListener {
 	// rootFrame
 
 	private WindowFrame frame;
-	private GridTab gridTab;
-	private GenericDataModel dataModel;
+	private TabModel tabModel;
+//	private GenericDataModel dataModel;
+	private GridTableModel gtm;
 	private GenericDataLoader dataLoader;
 	int currentRow = -1;
 
 	// ui
-	MuliRowPanel mrp; // MuliRowPanel extendsJXTable extends JTable implements TableColumnModelExtListener
+//	MuliRowPanel mrp; // MuliRowPanel extends     JXTable extends JTable implements TableColumnModelExtListener
+	MXTable mXTable; // MXTable extends JXTable , JXTable extends JTable implements TableColumnModelExtListener
 	ListSelectionModel listSelectionModel; // the ListSelectionModel that is used to maintain rowselection state
 	SingleRowPanel srp = null; // SingleRowPanel extends JPanel , kapselt VPanel 
 	
@@ -61,13 +70,30 @@ public class Tab extends JPanel implements ComponentListener {
 		super(new BorderLayout());
 		LOG.config("tabIndex:"+tabIndex + ", WindowFrame frame:"+frame);
 		this.frame = frame;
-		if(frame.gridWindow.isTabInitialized(tabIndex)==false) {
-			LOG.config("gridTab "+tabIndex+" not initialized. Do it now ...");
-			frame.gridWindow.initTab(tabIndex);
+		if(frame.windowModel.isTabInitialized(tabIndex)==false) {
+			LOG.config("tabModel "+tabIndex+" not initialized. Do it now ...");
+			frame.windowModel.initTab(tabIndex); // (base)GridWindow.initTab
 		}
-		this.gridTab = frame.gridWindow.getTab(tabIndex);
+//		this.tabModel = frame.windowModel.getTab(tabIndex);
+//		GridTabVO vo = this.tabModel.getM_vo();
+		this.tabModel = new TabModel(frame.windowModel.getTab(tabIndex).getM_vo(), frame.windowModel);
+		this.tabModel.initTab(false);
+		
+//		LOG.config(" Fields# ======== vor loadGridTab() ============"+this.tabModel.getTableModel().getFields().length);
+////		this.tabModel.loadGridTab(); // wrapper auf boolean GridTab.loadTab(), der ist protected, macht private boolean GridTab.loadFields() 
+//// TODO wie viele Felder sind in getTableModel() aka this.tabModel.m_mTable
+//		LOG.config(" Fields# ========nach loadGridTab() ============"+this.tabModel.getTableModel().getFields().length);
+//		GridTable gridTable = this.tabModel.getTableModel(); // TODO =====> dataModel
+//		gtm = new GridTableModel(gridTable);
+		String tableName = this.tabModel.get_TableName(); 
+		GridField[] gFields = this.tabModel.getFields(); 
+		LOG.config(" tableName="+tableName+" gFields.length="+gFields.length);
+		
+		GridTable gridTable = this.tabModel.getTableModel();
+//		gtm = this.tabModel.getGridTableModel(); berschoben nach initModelAndTable
+		
 		this.addComponentListener(this);
-		this.setName(this.gridTab.getName());
+		this.setName(this.tabModel.getName());
 		
 /* TODO GridTab Bridge
  in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
@@ -86,8 +112,8 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}
 
-	public GridTab getGridTab() {
-		return this.gridTab;
+	public TabModel getTabModel() {
+		return this.tabModel;
 	}
 	
 	void cancel() {
@@ -99,18 +125,20 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void refresh() {
-		this.dataModel.clear(); // remove all elements
+//		this.dataModel.clear(); // remove all elements
+		gtm.getDataVector().clear();
 		frame.tableStatus.setText(""); // cancelled Status
 		this.dataLoader = initDataLoader();
 		this.dataLoader.execute();
 	}
 	
 	private void updateStatusBar() {
-		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(dataModel.getRowCount());
-		if(dataModel.getRowCount()==dataModel.getRowsToLoad()) {
+//		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(dataModel.getRowCount());
+		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(gtm.getRowCount());
+		if(gtm.getRowCount()==gtm.getRowsToLoad()) {
 			// OK alles geladen
 		} else {
-			text.append("/").append(dataModel.getRowsToLoad());
+			text.append("/").append(gtm.getRowsToLoad());
 		}
 		frame.tableRows.setText(text.toString());
 	}
@@ -121,8 +149,8 @@ public class Tab extends JPanel implements ComponentListener {
 	private void setRowSelection(int rowIndex) {
 		// includeSpacing if false, return the true cell bounds -computed by subtracting 
 		//  the intercellspacing from the height and widths ofthe column and row models
-		mrp.scrollRectToVisible(mrp.getCellRect(rowIndex, 0, true)); // includeSpacing:true
-		mrp.setRowSelectionInterval(rowIndex, rowIndex);
+		mXTable.scrollRectToVisible(mXTable.getCellRect(rowIndex, 0, true)); // includeSpacing:true
+		mXTable.setRowSelectionInterval(rowIndex, rowIndex);
 		currentRow = rowIndex;
 		updateStatusBar();	
 	}
@@ -138,10 +166,10 @@ public class Tab extends JPanel implements ComponentListener {
 		// welches ist die currentRow im MultiRowModus?
 		// - die kleinste selektierte!
 		int currentRow = -1;
-		int[] selected = mrp.getSelectedRows(); // can be empty
+		int[] selected = mXTable.getSelectedRows(); // can be empty
 		if(selected.length==0) {
 			// und nun? wrap around
-			currentRow = mrp.getRowCount();
+			currentRow = mXTable.getRowCount();
 		} else {
 			currentRow = selected[0];
 		}
@@ -155,22 +183,22 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void next() {
-		int[] selected = mrp.getSelectedRows(); // can be empty
+		int[] selected = mXTable.getSelectedRows(); // can be empty
 		int currentRow = selected.length==0 ? -1 : selected[selected.length-1];
 		LOG.config("currentRow:"+currentRow);
 		currentRow++;
-		setRowSelection( currentRow<mrp.getRowCount() ? currentRow : 0 );
+		setRowSelection( currentRow<mXTable.getRowCount() ? currentRow : 0 );
 	}
 
 	public void last() {
-		setRowSelection(mrp.getRowCount()-1);
+		setRowSelection(mXTable.getRowCount()-1);
 	}
 	
 	private int getWindowNo() {
 		return frame.getWindowNo();
 	}
-	private List<GridTab> getGridTabs() {
-		return frame.getGridTabs();
+	private List<TabModel> getTabModels() {
+		return frame.getTabModels();
 	}
 	private List<Tab> getTabs() {
 		return frame.getTabs();
@@ -196,9 +224,9 @@ public class Tab extends JPanel implements ComponentListener {
 //		Tab tab = getTabs().get(0); 
 		Dimension preferredDim = initModelAndTable(null); // null == calculate preferredDim 
 		LOG.config("'"+this.getName()+"' preferredDim:"+preferredDim);
-        frame.tabPane = new HidableTabbedPane(gridTab.getName(), this);
-        for (int i = 1; i < getGridTabs().size(); i++) { // ohne first
-        	GridTab gt = getGridTabs().get(i);
+        frame.tabPane = new HidableTabbedPane(tabModel.getName(), this);
+        for (int i = 1; i < getTabModels().size(); i++) { // ohne first
+        	GridTab gt = getTabModels().get(i);
         	Tab t = getTabs().get(i); 
         	frame.tabPane.addTab(gt.getName(), t);
         	t.initModelAndTable(preferredDim);
@@ -216,12 +244,13 @@ public class Tab extends JPanel implements ComponentListener {
 //			LOG.warning("----------------const Patch für AD_OrgType == "+dataModel.getDbTableName());
 //			return new Dimension(523, 125);
 //		}
-		srp = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
+		srp = new SingleRowPanel(this.gtm); // darin VPanel gekapselt!
 		return srp.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-		this.dataModel = new GenericDataModel(this.gridTab, getWindowNo());
+//		this.dataModel = new GenericDataModel(this.tabModel, getWindowNo());
+		gtm = this.tabModel.getGridTableModel();
 //		dataModel.addTableModelListener(event -> {
 //			LOG.warning("event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
 //			if(event.getFirstRow()==TableModelEvent.HEADER_ROW && this.currentRow<0) {
@@ -229,7 +258,7 @@ public class Tab extends JPanel implements ComponentListener {
 //			}
 //		});
 
-		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+gridTab.isSingleRow());
+		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+tabModel.isSingleRow());
 		Dimension preferredDim = useDim;
 		if(preferredDim==null) {
 			preferredDim = getSingleRowPanelSize();
@@ -240,10 +269,12 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		this.mrp = MuliRowPanel.createXTable(dataModel);
+//		this.mrp = MuliRowPanel.createXTable(dataModel);
+//		mXTable = MXTable.createXTable(new GridTableModel(tabModel), tabModel); // TableModel dataModel
+		mXTable = MXTable.createXTable(this.gtm, tabModel); 
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
-		if(gridTab.isSingleRow()) {	
+		if(tabModel.isSingleRow()) {	
 			if(this.srp==null) {
 				add(new JLabel("Platzhalter"), BorderLayout.CENTER); // diesen lazy berechnen
 			} else {
@@ -251,16 +282,44 @@ public class Tab extends JPanel implements ComponentListener {
 			} 
 		} else {
 			this.setPreferredSize(preferredDim);
-	        JScrollPane scrollpane = new JScrollPane(this.mrp);
+	        JScrollPane scrollpane = new JScrollPane(mXTable);
 //	        Stacker stacker = new Stacker(scrollpane);
-	        mrp.setName(gridTab.getName());
+	        mXTable.setName(tabModel.getName());
 //	        add(stacker, BorderLayout.CENTER);
 	        add(scrollpane, BorderLayout.CENTER);
 	        
 //	        CustomColumnFactory factory = new CustomColumnFactory();
-	        
-	        LOG.config("CellSelectionEnabled:"+mrp.getCellSelectionEnabled()); // sollte true sein!? TODO ist aber false
-			this.listSelectionModel = mrp.getSelectionModel();
+//-----------
+	        //aus GenericFormPanel:
+//			setSelectWhereClause(); // where clause für den Loader
+			
+			// javax.swing.table.DefaultTableModel erwartet raw type Vector data
+//TODO:	        
+//			Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
+//			DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
+			
+			//miniTable.setModel(dataModel);
+			mXTable.setModel(gtm); // bereits in MXTable.createXTable(gtm)
+			
+//			GridField[] fields = gridTableModel.getFields();
+//			assert(gridTableModel.getRowCount()==miniTable.getRowCount());
+//			for(int f = 0; f < fields.length; f++) {
+//				GridField field = fields[f];
+//				if(field.isSelectionColumn()) {
+//					addSelection(field); 
+//				}								
+//			}
+			//			addSelection(fields); // additional selectionFields
+//			if(gridTableModel.getRowCount()>0) {
+//				// JTable.changeSelection(rowIndex, columnIndex, toggle, extend);
+//				miniTable.changeSelection(0, -1, false, false);
+//			}
+//			
+//			setPreferredSize();
+
+//------------
+	        LOG.config("CellSelectionEnabled:"+mXTable.getCellSelectionEnabled()); // sollte true sein!? TODO ist aber false
+			this.listSelectionModel = mXTable.getSelectionModel();
 	        listSelectionModel.addListSelectionListener(event -> {
 	        	currentRow = event.getFirstIndex();
 	            updateStatusBar();
@@ -274,31 +333,44 @@ public class Tab extends JPanel implements ComponentListener {
 	
 
 	private GenericDataLoader initDataLoader() {
- 		this.dataLoader = new GenericDataLoader(this.dataModel);
- 		
+		this.dataLoader = new GenericDataLoader(this.gtm);
         BindingGroup group = new BindingGroup();
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
-//      group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("cancelled"), frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
         group.bind();
-
-//		setVisible(true); // in setLoadState
-        
         dataLoader.addPropertyChangeListener(event -> {
-        	//LOG.config("event.getPropertyName() =============== event:"+event);
-//        	if ("cancelled".equals(event.getPropertyName())) { // ist gar nicht gebunden ==> also raus/auskommentieren
-//        		if(dataLoader.isCancelled()) {
-//        			frame.tableStatus.setText("cancelled ");
-//        			setLoadState(StateValue.PENDING);
-//        		}
-//        	}
         	if ("state".equals(event.getPropertyName())) {
-//        		if(event.getNewValue()==StateValue.DONE) ...
         		setLoadState((StateValue)event.getNewValue());
         	}
         });
 		return dataLoader;		
 	}
+//	private GenericDataLoader initDataLoaderXXX() {
+// 		this.dataLoader = new GenericDataLoader(this.dataModel);
+// 		
+//        BindingGroup group = new BindingGroup();
+//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
+//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+////      group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("cancelled"), frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
+//        group.bind();
+//
+////		setVisible(true); // in setLoadState
+//        
+//        dataLoader.addPropertyChangeListener(event -> {
+//        	//LOG.config("event.getPropertyName() =============== event:"+event);
+////        	if ("cancelled".equals(event.getPropertyName())) { // ist gar nicht gebunden ==> also raus/auskommentieren
+////        		if(dataLoader.isCancelled()) {
+////        			frame.tableStatus.setText("cancelled ");
+////        			setLoadState(StateValue.PENDING);
+////        		}
+////        	}
+//        	if ("state".equals(event.getPropertyName())) {
+////        		if(event.getNewValue()==StateValue.DONE) ...
+//        		setLoadState((StateValue)event.getNewValue());
+//        	}
+//        });
+//		return dataLoader;		
+//	}
 
 	public void setLoadState(StateValue state) {
 		LOG.config(this.getName()+" StateValue:"+state);
@@ -329,7 +401,7 @@ public class Tab extends JPanel implements ComponentListener {
 		LOG.warning(""+e.getComponent());
 		if(e.getComponent() instanceof Tab) {
 			Tab tab = (Tab)e.getComponent();
-			LOG.config("ParentTab:"+gridTab.getParentTab());
+			LOG.config("ParentTab:"+tabModel.getParentTab());
 			this.dataLoader.execute();
 		}
 	}

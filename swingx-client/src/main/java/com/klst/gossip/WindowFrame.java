@@ -31,12 +31,10 @@ import javax.swing.SwingWorker;
 import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.apps.form.FormPanel;
-import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.MProcess;
 import org.compiere.model.MWindow;
-import org.compiere.model.WindowModel;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
@@ -44,6 +42,8 @@ import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXStatusBar;
 
+import com.klst.gossip.wrapper.TabModel;
+import com.klst.gossip.wrapper.WindowModel;
 import com.klst.icon.AbstractImageTranscoder;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
@@ -80,12 +80,12 @@ public class WindowFrame extends JXFrame implements WindowListener {
 	private String trxName;
 	private MWindow mWindow; // eigentlich sollten alle mWindow Daten aus gridWindow kommen
 	// GridWindow is ein wrapper für MWindow
-	protected WindowModel windowModel; // WindowModel extends GridWindow
+	protected GridWindow windowModel; // WindowModel extends GridWindow
 //	protected GridWindow gridWindow; //                 (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
 	protected InfoPanel infoWindow; 
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
-	private List<GridTab> gridTabs; // TODO verschieben nach WindowPane - wieso List statt Set
+	private List<TabModel> tabModels; // TODO verschieben nach WindowPane - wieso List statt Set
 	private List<Tab> tabs;
 //	Tab currentTab; // nur eine Tab kann es sein, die bekommen wir aus tabPane => getSelectedTab
 	protected ProcessPanel processWindow; 
@@ -143,18 +143,19 @@ public class WindowFrame extends JXFrame implements WindowListener {
 
 		this.ctx = Env.getCtx();
 		this.trxName = Trx.createTrxName(WindowFrame.class.getName());
-		if(object instanceof WindowModel) {
-			initWindow((WindowModel)object);
+		if(object instanceof GridWindow  && object.getClass() != GridWindow.class) {
+//		if(object instanceof GridWindow  && object.getClass() != GridWindow.class) {
+			initWindow((GridWindow)object);
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
 			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
-//		} else if(object instanceof GenericDataModel) {
-//			initGridWindow((GridWindow)object);
-//			// mWindow ==> gridWindow
-//			mWindow = new MWindow(ctx, this.window_ID, trxName);
-//			LOG.config("mWindow:"+mWindow);
-////			setTitle();
-//			setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
+//		} else if(object instanceof WindowModel) {
+		} else if(object instanceof GridWindow) {
+			LOG.warning("DAS SOLL NICHT SEIN GridWindow object:"+object);
+			initWindow((WindowModel)object);
+			mWindow = new MWindow(ctx, this.window_ID, trxName);
+			LOG.warning("DAS SOLL NICHT SEIN mWindow:"+mWindow);
+			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
 		} else if(object instanceof GenericDataModel) {
 			initInfoWindow((GenericDataModel)object);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
@@ -546,43 +547,30 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 	private void initInfoWindow(GenericDataModel gdm) {
 		this.infoWindow = new InfoPanel(this, gdm);
 	}
-	private void initWindow(WindowModel gridWindow) {
+	private void initWindow(GridWindow gridWindow) {
 		LOG.config(">>>>GridWindow.get ...");
-//		gridWindow.getAD_Window_ID()
-		this.windowModel = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
-		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
+		this.windowModel = (WindowModel)gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
+		LOG.config("windowModel:"+windowModel.toString() + " WindowType:"+windowModel.getWindowType() + " with Tab#:"+windowModel.getTabCount());
 		LOG.config("<<<<");
-		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
-		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
-		for (int i = 0; i < gridWindow.getTabCount(); i++) {
+		this.tabModels = new ArrayList<TabModel>(windowModel.getTabCount());
+		this.tabs = new ArrayList<Tab>(windowModel.getTabCount());
+		for (int i = 0; i < windowModel.getTabCount(); i++) {
 			Tab tab = new Tab(this, i);
 			this.tabs.add(tab); // gridTabs und tabs korrespondieren
-			this.gridTabs.add(tab.getGridTab());
+			this.tabModels.add(tab.getTabModel());
 		}
 	}
-//	@Deprecated
-//	private void initGridWindow(GridWindow gridWindow) {
-////		if(gridWindow==null) {
-////			LOG.warning("gridWindow==null");
-////			this.gridTabs = new ArrayList<GridTab>(5); // initialCapacity : 5 , bleibt leer
-////			return;
-////		}
-//		LOG.config(">>>>GridWindow.get ...  @Deprecated      ");
-//		this.gridWindow = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
-//		LOG.config("gridWindow:"+gridWindow.toString() + " getWindowType:"+gridWindow.getWindowType() + " with Tab#:"+gridWindow.getTabCount());
+//	private void initWindow(WindowModel gridWindow) {
+//		LOG.config(">>>>GridWindow.get ...");
+//		this.windowModel = gridWindow; //GridWindow.get(ctx, this.windowNo, this.window_ID); 
+//		LOG.config("windowModel:"+windowModel.toString() + " WindowType:"+windowModel.getWindowType() + " with Tab#:"+windowModel.getTabCount());
 //		LOG.config("<<<<");
-///* WINDOWTYPEs: aus GridWindowVO		
-//		public static final String	WINDOWTYPE_QUERY = "Q";
-//		public static final String	WINDOWTYPE_TRX = "T";
-//		public static final String	WINDOWTYPE_MMAINTAIN = "M";
-//TODO Demo für jeden Typ
-//*/
-//		this.gridTabs = new ArrayList<GridTab>(gridWindow.getTabCount());
-//		this.tabs = new ArrayList<Tab>(gridWindow.getTabCount());
-//		for (int i = 0; i < gridWindow.getTabCount(); i++) {
+//		this.tabModels = new ArrayList<TabModel>(windowModel.getTabCount());
+//		this.tabs = new ArrayList<Tab>(windowModel.getTabCount());
+//		for (int i = 0; i < windowModel.getTabCount(); i++) {
 //			Tab tab = new Tab(this, i);
 //			this.tabs.add(tab); // gridTabs und tabs korrespondieren
-//			this.gridTabs.add(tab.getGridTab());
+//			this.tabModels.add(tab.getTabModel());
 //		}
 //	}
 	
@@ -597,8 +585,8 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 		return c;
 	}
 	
-	List<GridTab> getGridTabs() {
-		return this.gridTabs;
+	List<TabModel> getTabModels() {
+		return this.tabModels;
 	}
 	
 	List<Tab> getTabs() {
@@ -663,9 +651,6 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 	public void setTitle(String title) {
 		super.setTitle(title);
 	}
-//	void setTitle() {
-//		setTitle("["+this.windowNo+"] " + this.gridWindow.getName());
-//	}
 	
 	public void setTabPane(HidableTabbedPane hidableTabbedPane) { // TODO raus
 		this.tabPane = hidableTabbedPane; 

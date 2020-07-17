@@ -1,11 +1,17 @@
-package org.compiere.model;
+package com.klst.gossip.wrapper;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.compiere.model.GridField;
+import org.compiere.model.GridFieldVO;
+import org.compiere.model.GridTab;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.GridTable;
+import org.compiere.model.GridWindow;
+import org.compiere.model.MultiMap;
+import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.util.Env;
-
-import com.klst.gossip.wrapper.GridTableModel;
 
 public class TabModel extends GridTab {
 
@@ -353,34 +359,35 @@ Committer: globalqss <devnull@localhost> 2010-12-19 04:49:52
 
 		if (! m_mTable.getTableName().equals(X_AD_PInstance_Log.Table_Name)) { // globalqss, bug 1662433 
 			//  Add Standard Fields
-			if (m_mTable.getField("Created") == null)
-			{
-				GridField created = new GridField (GridFieldVO.createStdField(m_vo.ctx,
-					m_vo.WindowNo, m_vo.TabNo,
-					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, true));
-				m_mTable.addField(created);
-			}
-			if (m_mTable.getField("CreatedBy") == null)
-			{
-				GridField createdBy = new GridField (GridFieldVO.createStdField(m_vo.ctx,
-					m_vo.WindowNo, m_vo.TabNo,
-					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, false));
-				m_mTable.addField(createdBy);
-			}
-			if (m_mTable.getField("Updated") == null)
-			{
-				GridField updated = new GridField (GridFieldVO.createStdField(m_vo.ctx,
-					m_vo.WindowNo, m_vo.TabNo,
-					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, true));
-				m_mTable.addField(updated);
-			}
-			if (m_mTable.getField("UpdatedBy") == null)
-			{
-				GridField updatedBy = new GridField (GridFieldVO.createStdField(m_vo.ctx,
-					m_vo.WindowNo, m_vo.TabNo,
-					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, false));
-				m_mTable.addField(updatedBy);
-			}
+			LOG.warning("Add Standard Fields TODO");
+//			if (m_mTable.getField("Created") == null)
+//			{
+//				GridField created = new GridField (GridFieldVO.createStdField(m_vo.ctx,
+//					m_vo.WindowNo, m_vo.TabNo,
+//					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, true));
+//				m_mTable.addField(created);
+//			}
+//			if (m_mTable.getField("CreatedBy") == null)
+//			{
+//				GridField createdBy = new GridField (GridFieldVO.createStdField(m_vo.ctx,
+//					m_vo.WindowNo, m_vo.TabNo,
+//					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, true, false));
+//				m_mTable.addField(createdBy);
+//			}
+//			if (m_mTable.getField("Updated") == null)
+//			{
+//				GridField updated = new GridField (GridFieldVO.createStdField(m_vo.ctx,
+//					m_vo.WindowNo, m_vo.TabNo,
+//					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, true));
+//				m_mTable.addField(updated);
+//			}
+//			if (m_mTable.getField("UpdatedBy") == null)
+//			{
+//				GridField updatedBy = new GridField (GridFieldVO.createStdField(m_vo.ctx,
+//					m_vo.WindowNo, m_vo.TabNo,
+//					m_vo.AD_Window_ID, m_vo.AD_Tab_ID, false, false, false));
+//				m_mTable.addField(updatedBy);
+//			}
 		}
 		return true;
 	}

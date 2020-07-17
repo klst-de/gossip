@@ -6,13 +6,14 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 import org.compiere.grid.VPanel;
-import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
-//import org.compiere.model.GridField;
-//import org.compiere.model.Lookup;
+import org.compiere.model.GridField;
 import org.compiere.util.DisplayType;
+import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
+
+import com.klst.gossip.wrapper.GridTableModel;
 
 public class SingleRowPanel extends JPanel {
 
@@ -20,7 +21,7 @@ public class SingleRowPanel extends JPanel {
 	
 	private static final Logger LOG = Logger.getLogger(SingleRowPanel.class.getName());
 	
-	private GenericDataModel tableModel;
+	private GridTableModel tableModel;
 	private int currentRow = -1;
 	// kapselt
 	VPanel vPanel;
@@ -29,20 +30,21 @@ public class SingleRowPanel extends JPanel {
 //	public SingleRowPanel() {
 //		this(null);
 //	}
-	public SingleRowPanel(GenericDataModel tm) {
-		this(tm, new VPanel(tm.getName(), tm.getWindowNo()));
+	public SingleRowPanel(GridTableModel tm) {
+		this(tm, new VPanel("tm.getName()", 5 /*tm..getWindowNo()*/));
 	}
-	private SingleRowPanel(GenericDataModel tm, VPanel vPanel) {
+	private SingleRowPanel(GridTableModel tm, VPanel vPanel) {
 		super(); // default ist FlowLayout
 		this.tableModel = tm;
 		this.vPanel = vPanel;
 	}
 	
 	public Dimension getSingleRowPanelSize() {
-		TableColumnModelExt fields = tableModel.getColumns();
-		for(int f=0; f<fields.getColumnCount(true); f++) {
-//			GridField field = fields[f];
-			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
+		TableColumnModelExt fields = tableModel.getFields();
+		for(int f=0; f<fields.getColumnCount(false); f++) {
+			TableColumnExt tce = fields.getColumnExt(f);
+			GridField field = (GridField)(tce.getIdentifier());
+//			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
 			LOG.config("field# "+f +"/"+fields.getColumnCount()+"=?="+fields.getColumnCount(true));
 			if(field.isDisplayed()) {
 				VEditor editor = getEditor(field); // factory TODO
@@ -60,11 +62,12 @@ public class SingleRowPanel extends JPanel {
 	
 	public void showSingleRowPanelSize(int rowIndex) {
 		LOG.warning("rowIndex="+rowIndex);
-		TableColumnModelExt fields = tableModel.getColumns();
+		TableColumnModelExt fields = tableModel.getFields();
 //		GridField[] fields = tableModel.getColumns();
-		for(int f=0; f<fields.getColumnCount(true); f++) {
-//			GridField field = fields[f];
-			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
+		for(int f=0; f<fields.getColumnCount(false); f++) {
+			TableColumnExt tce = fields.getColumnExt(f);
+			GridField field = (GridField)(tce.getIdentifier());
+//			GridFieldBridge field = (GridFieldBridge)fields.getColumn(f);
 			if(field.isDisplayed()) {
 //				Object o = this.tableModel.getValueAt(rowIndex, f);
 //				if(o!=null) LOG.info("fieldno:"+f + " value:"+this.tableModel.getValueAt(rowIndex, f).toString());
@@ -115,7 +118,7 @@ public class SingleRowPanel extends JPanel {
 	public static final int FilePathOrName  = 53670;
 
  */
-	private VEditor getEditor(GridFieldBridge mField) { // TODO mField in field umbenennen
+	private VEditor getEditor(GridField mField) { // TODO mField in field umbenennen
 		LOG.config(mField.toString());
 		if (mField == null)
 			return null; // gut ist das nicht
@@ -146,7 +149,7 @@ public class SingleRowPanel extends JPanel {
 //			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, mField.getLookup());
 			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, null);
 			vl.setName(columnName);
-			vl.setField (mField);
+//			vl.setField (mField);
 			editor = vl;
 		}
 		//	YesNo - BooleanEditor
@@ -163,10 +166,11 @@ public class SingleRowPanel extends JPanel {
 		{
 			if (displayType == DisplayType.DateTime)
 				readOnly = true;
-			VDate vd = new VDate(columnName, mandatory, readOnly, updateable, displayType, (String)mField.getHeaderValue());
-			vd.setName(columnName);
-			vd.setField (mField);
-			editor = vd;
+			// TODO VEditorFactory nutzen
+//			VDate vd = new VDate(columnName, mandatory, readOnly, updateable, displayType, (String)mField.getHeaderValue());
+//			vd.setName(columnName);
+//			vd.setField (mField);
+//			editor = vd;
 		}
 
 		else {
@@ -175,7 +179,7 @@ public class SingleRowPanel extends JPanel {
 //			LOG.warning("ignoriert: " + getLookup + " ersatzweise null");
 			VLookup vl = new VLookup(columnName, mandatory, readOnly, updateable, null);
 			vl.setName(columnName);
-			vl.setField (mField);
+//			vl.setField (mField);
 			editor = vl;
 
 		}

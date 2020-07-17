@@ -162,21 +162,22 @@ public class InfoPanel extends JPanel implements ComponentListener {
 		this.dataLoader.execute();
 	}
 
-	GenericDataLoader initDataLoader() { // ähnlich zu Tab.initDataLoader()
-		this.dataLoader = new GenericDataLoader(this.dataModel);
-
-		BindingGroup group = new BindingGroup();
-        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
-        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
-        group.bind();
-        
-        dataLoader.addPropertyChangeListener(event -> {
-        	if ("state".equals(event.getPropertyName())) {
-        		setLoadState((StateValue)event.getNewValue());
-        	}
-        });
-        
-		return dataLoader;	
+	GenericDataLoader initDataLoader() {
+		return dataLoader; // TODO
+//		this.dataLoader = new GenericDataLoader(this.dataModel);
+//
+//		BindingGroup group = new BindingGroup();
+//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
+//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+//        group.bind();
+//        
+//        dataLoader.addPropertyChangeListener(event -> {
+//        	if ("state".equals(event.getPropertyName())) {
+//        		setLoadState((StateValue)event.getNewValue());
+//        	}
+//        });
+//        
+//		return dataLoader;	
 	}
 	
 	public void setLoadState(StateValue state) { // ähnlich zu Tab.setLoadState()

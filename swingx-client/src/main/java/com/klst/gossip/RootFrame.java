@@ -27,7 +27,6 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.compiere.Adempiere;
 import org.compiere.model.GridWindow;
 import org.compiere.model.PO;
-import org.compiere.model.WindowModel;
 import org.compiere.plaf.CompiereTheme;
 import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -35,6 +34,7 @@ import org.compiere.util.Env;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.client.LoginPanel;
+import com.klst.gossip.wrapper.WindowModel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 

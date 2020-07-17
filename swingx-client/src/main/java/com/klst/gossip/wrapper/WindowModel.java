@@ -1,4 +1,4 @@
-package org.compiere.model;
+package com.klst.gossip.wrapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,6 +7,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.compiere.model.GridTabVO;
+import org.compiere.model.GridWindow;
+import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
 
 /*

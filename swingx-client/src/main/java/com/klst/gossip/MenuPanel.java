@@ -272,11 +272,14 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 					MMenu mMenu = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
 					rootFrame.openNewFrame(mMenu.getAD_Window_ID());
 				} else if(node.isProcess()) {
-					MMenu mm = new MMenu(Env.getCtx(), node.getNode_ID(), null); // gleichwertig zu MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					MMenu mm1 = new MMenu(Env.getCtx(), node.getNode_ID(), null); // gleichwertig zu MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					MMenu mm2 = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
 					// mm.getAD_Window_ID()==0
-					MProcess mp = MProcess.get(Env.getCtx(), node.getNode_ID());
-					LOG.config("TODO Process Node_ID="+node.getNode_ID() + " AD_Window_ID="+mm.getAD_Window_ID());// TODO Process, siehe AMenuStartItem.startProcess
+//					MProcess mp = MProcess.get(Env.getCtx(), node.getNode_ID());
+					LOG.config("TODO Process Node_ID="+node.getNode_ID() + " MMenu ID="+mm1.get_ID() + "/"+mm2.get_ID() + " OptionId="+mm1.getOptionId());// TODO Process, siehe AMenuStartItem.startProcess
+					MProcess mp = MProcess.get(Env.getCtx(), mm1.getAD_Process_ID());
 					WindowFrame pd = rootFrame.openNewFrame(mp);
+					LOG.config("WindowFrame pd/aka ProcessDialog:"+pd);
 					pd.getContentPane().invalidate();
 					pd.getContentPane().validate();
 					pd.pack();

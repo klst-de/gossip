@@ -1,5 +1,7 @@
 package com.klst.gossip;
 
+import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -22,7 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VComboBox;
@@ -31,16 +33,21 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
-import org.compiere.model.TabModel;
-import org.compiere.model.WindowModel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
+
+import com.klst.gossip.wrapper.GridTableModel;
+import com.klst.gossip.wrapper.TabModel;
+import com.klst.gossip.wrapper.WindowModel;
 
 /**
  *	Generic Form Panel
@@ -260,21 +267,48 @@ Parameters:
 		LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause());
 	}
 
-	static public Vector<Vector<Object>> getData(GridTable gridTableModel) {
-		// mit boolean GridTable.open (int maxRows=0) wird alles geladen:
-		boolean success = gridTableModel.open(0);
-		LOG.config("load all data via GridTable.open success="+success + " RowCount="+gridTableModel.getRowCount());
-		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-		for (int row = 0; row < gridTableModel.getRowCount(); row++) {
-			Vector<Object> rowVector = new Vector<Object>();
-			for (int col = 0; col < gridTableModel.getColumnCount(); col++) {
-				Object o = gridTableModel.getValueAt(row, col);
-				rowVector.add(o); // bei RowCount=135039 exception
-			}
-			data.add(rowVector);
-		}
-		return data;
+//	GenericDataLoader dataLoader;
+	private GenericDataLoader initDataLoader() {
+		GenericDataLoader dataLoader = new GenericDataLoader(this.gridTableModel);
+        BindingGroup group = new BindingGroup();
+        //                        createAutoBinding(AutoBinding.UpdateStrategy strategy
+        //                                              , SS sourceObject, Property<SS, SV> sourceProperty
+        //                                                                                           , TS targetObject, Property<TS, TV> targetProperty)
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), this.formFrame.progressBar, BeanProperty.create("value")));
+        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+        group.bind();
+        dataLoader.addPropertyChangeListener(event -> {
+        	LOG.config("event:"+event);
+        	if ("state".equals(event.getPropertyName())) {
+        		StateValue sv = (StateValue)event.getNewValue();
+        		if(StateValue.DONE.equals(sv)) {
+        			LOG.config("Alles geladen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DataVector().size()="+gridTableModel.getDataVector().size());
+        		}
+//        		this.formFrame.setLoadState((StateValue)event.getNewValue());
+        	}
+        });
+		return dataLoader;		
 	}
+	private Vector<Vector<Object>> getData(GridTableModel gridTableModel) {
+		GenericDataLoader dataLoaderTask = initDataLoader();
+		dataLoaderTask.execute();
+		return null;
+	}
+//	static public Vector<Vector<Object>> getData(GridTable gridTableModel) {
+//		// mit boolean GridTable.open (int maxRows=0) wird alles geladen:
+//		boolean success = gridTableModel.open(0);
+//		LOG.config("load all data via GridTable.open success="+success + " RowCount="+gridTableModel.getRowCount());
+//		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+//		for (int row = 0; row < gridTableModel.getRowCount(); row++) {
+//			Vector<Object> rowVector = new Vector<Object>();
+//			for (int col = 0; col < gridTableModel.getColumnCount(); col++) {
+//				Object o = gridTableModel.getValueAt(row, col);
+//				rowVector.add(o); // bei RowCount=135039 exception
+//			}
+//			data.add(rowVector);
+//		}
+//		return data;
+//	}
 	
 	static public Vector<String> getFieldsNames(GridTable gridTableModel) {
 		Vector<String> columnNames = new Vector<String>();
@@ -314,14 +348,15 @@ Parameters:
 		
 		if(miniTable==null) {
 			miniTable = MXTable.createXTable(gridTableModel);
+//					MXTable.createXTable(gridTableModel, tabModel);
 		}
 		
 		setSelectWhereClause();
 
 		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
 		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
-		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
-		miniTable.setModel(dataModel);
+//		DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
+//		miniTable.setModel(dataModel);
 
 //// ----------------
 //			boolean success = gridTableModel.open(0);
@@ -359,19 +394,23 @@ Parameters:
 	//// <<<<<<<<<<<	
 //			miniTable.setModel(tablemodel);
 
-		GridField[] fields = gridTableModel.getFields();
-		assert(gridTableModel.getRowCount()==miniTable.getRowCount());
-//		LOG.config("gridTableModel.getColumnCount()="+gridTableModel.getColumnCount()
-//			+ "=?= miniTable.getColumnCount(includeHidden)="+miniTable.getTableColumnModelExt().getColumnCount(true) // boolean includeHidden
-//			+ "=?= miniTable.getColumnCount()="+miniTable.getColumnCount());
-			
-		for(int f = 0; f < fields.length; f++) {
-			GridField field = fields[f];
-//			LOG.config("field "+f + " isSelectionColumn="+field.isSelectionColumn() + " "+field.getColumnName());
+		for(int c = 0; c < gridTableModel.getColumnCount(); c++) {
+			GridField field = gridTableModel.getGridField(c);
 			if(field.isSelectionColumn()) {
 				addSelection(field); 
 			}								
 		}
+//		TableColumnModelExt tcme = gridTableModel.getFields(); // FieldsModelExt
+//		for(int f = 0; f < tcme.getColumnCount(false); f++) {
+//			TableColumnExt tce = tcme.getColumnExt(f);
+//			GridField field = (GridField)(tce.getIdentifier());
+////			GridField field = fields[f];
+////			LOG.config("field "+f + " isSelectionColumn="+field.isSelectionColumn() + " "+field.getColumnName());
+//			if(field.isSelectionColumn()) {
+//				addSelection(field); 
+//			}								
+//		}
+		
 //		addSelection(fields); // additional selectionFields TODO
 		if(gridTableModel.getRowCount()>0) {
 			// JTable.changeSelection(rowIndex, columnIndex, toggle, extend);
@@ -519,7 +558,8 @@ Parameters:
 //		statusBar.setStatusDB(text);
 //	}
 	
-	private GridTable gridTableModel;
+	private TabModel tabModel;
+	private GridTableModel gridTableModel;
 	private boolean getGridTableModel() {
 		gridTableModel = null;
 		WindowModel windowModel = getWindowModel();
@@ -527,22 +567,27 @@ Parameters:
 		if(windowModel!=null && windowModel.getTabCount()>=1) {
 //			if(windowModel==null) return null; // kann null sein, wenn Berechtigung fehlt, ===========> GridWindowVO.create: No Window - AD_Window_ID=1000001
 			// (base)GridTab hat einen Loader
-			TabModel tabModel = windowModel.getTab(0); // es gibt mindestens einen Tab
+			tabModel = windowModel.getTab(0); // es gibt mindestens einen Tab
 			// (base)GridTable hat einen Loader / GridTable extends AbstractTableModel
 			// nur so zur Info: in der DB steht WhereClause="RV_Unprocessed.CreatedBy=@#AD_User_ID@"
 			LOG.config("tab "+tabModel + " tab.TableName="+tabModel.get_TableName() + " AD_Tab_ID="+tabModel.getAD_Tab_ID());
 			LOG.config("tab.WhereClause:"+tabModel.getWhereClause());
 			LOG.config("tab.WhereExtended:"+tabModel.getWhereExtended()); // was ist der Unterschied zu getWhereClause() ?
 			
-			gridTableModel = tabModel.getTableModel(); // macht boolean initTab(boolean synchron)
-			LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause()); // ist leer!? !!!!!!!!!!!!!!!!! tatsächlich wird nicht selektiert
+			gridTableModel = tabModel.getGridTableModel();
+//			LOG.config("WhereClause:"+gridTableModel.getSelectWhereClause()); // ist leer!? !!!!!!!!!!!!!!!!! tatsächlich wird nicht selektiert
 			
 			assert(!tabModel.isOnlyCurrentRows());
 			int onlyCurrentDays = 0;
-			gridTableModel.setSelectWhereClause(tabModel.getWhereClause(), tabModel.isOnlyCurrentRows(), onlyCurrentDays);
+			gridTableModel.setSelectWhereClause(
+					tabModel.getWhereClause()
+					, tabModel.isOnlyCurrentRows()
+					, onlyCurrentDays);
 			
 			whereText.setText(gridTableModel.getSelectWhereClause());
 			LOG.config("OrderClause:"+gridTableModel.getOrderClause());
+//			TableColumnModel tcme = 
+//					MXTable.initTableColumnModelExt(gridTableModel, tabModel);
 		}
 		return (gridTableModel!=null);
 	}
