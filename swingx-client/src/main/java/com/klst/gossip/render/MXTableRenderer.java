@@ -195,9 +195,6 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				cellRendererComponent = checkbox;
 				break;
 			case DisplayType.Location: // 21
-				// new GenericTableRenderer(StringValues.NUMBER_TO_STRING, JLabel.LEFT)
-				// MyLabelProvider(StringValue converter, int alignment)
-				//new MyLabelProvider(converter, alignment);
 //				field.setDisplayType(DisplayType.TableDir); // TODO zoom
 				if(value!=null) {
 					
@@ -215,48 +212,11 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 					
 					cellRendererComponent = ic;
 				}
-/*    ------------------------
-						StringValue stringValue = new StringValue() {
-							 
-						     public String getString(Object np) {
-						         if (!(np instanceof NamePair))
-						             return StringValues.TO_STRING.getString(np);
-						         NamePair namePair = (NamePair) value;
-						         return namePair.getID() + ", " + namePair.getName();
-						     }
-						 
-						 };
-
-						 //table.setDefaultRenderer(NamePair.class, new DefaultTableRenderer(stringValue));
-						 //list.setCellRenderer(new DefaultListRenderer(stringValue));
-						 //tree.setCellRenderer(new DefaultTreeRenderer(stringValue));
-
-						//StringValue sv = StringValues.NUMBER_TO_STRING;
-						StringValue converter = StringValues.TO_STRING;
-						MyLabelProvider mlp = new MyLabelProvider(converter, JLabel.LEFT);
-						StringValue sv = new StringValue() {
-							public String getString(Object value) {
-								if (value instanceof Icon) {
-									return "";
-								}
-								return StringValues.TO_STRING.getString(value);
-							}
-						};
-						MappedValue mv = MappedValues.STRING_OR_ICON_ONLY;
-						StringValue lv = new MappedValue(sv, IconValues.ICON);
-						DefaultListRenderer listRenderer = new DefaultListRenderer(lv, JLabel.LEFT);
-						// list The JList we're painting / the <code>JList</code> to render on
-						// value The value returned by list.getModel().getElementAt(index) / the value to assign to the cell 
-						// index the row index (in view coordinates) of the cell to render
-						// isSelected True if the specified cell was selected.
-						// cellHasFocus True if the specified cell has the focus.
-					    //Component getListCellRendererComponent(JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus);
-						//listRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-//						List<TableColumn> ltc = tcme.getColumns(true);
-//						ComponentProvider<List> cp = listRenderer.getComponentProvider();
-//						return listRenderer.getListCellRendererComponent(table, value, row, false, false);
- ---------------------------------
- */
+				break;
+			case DisplayType.Number:    // 22
+				if(value!=null) {
+					cellRendererComponent = getRenderer_Number(value, field);
+				}
 				break;
 			case DisplayType.Button:    // 28
 				JRendererCheckBox button = new JRendererCheckBox();				
@@ -287,6 +247,13 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     	return cellRendererComponent;
     }
 
+    /* 
+     * Bsp: AD_Column_ID=77930 value:0.0 of type class java.math.BigDecimal displayType:22/Number
+     * wie displayType:12/Amount
+     */
+    private Component getRenderer_Number(Object value, GridField field) {
+    	return getRenderer_Amount(value, field);
+    }
     private Component getRenderer_Amount(Object value, GridField field) {
 		JRendererLabel rLabel = new JRendererLabel();
 		BigDecimal amount = (BigDecimal)value;

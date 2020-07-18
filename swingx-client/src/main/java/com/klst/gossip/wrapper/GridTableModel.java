@@ -79,23 +79,15 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
         int first = getDataVector().size();
         int last = first + chunks.size() - 1;
         LOG.config("DataVector().size() is "+first + ", chunks.size()="+chunks.size());
-        //getDataVector().addAll(chunks);
         for (int i = 0; i < chunks.size(); i++) {
         	Object[] rowData = chunks.get(i);
-//        	Vector<Vector> rows = new Vector<Vector>(chunks.size());
         	Vector<Object> row = new Vector<Object>(rowData.length);
         	for (int column = 0; column < rowData.length; column++) {
-        		Object o = rowData[column];
-        		row.add(rowData[column]);
-        		LOG.config("Object:"+o + " R/C="+first+i+"/"+column);
-        		//setValueAt(rowData[column], first+i, column);      		
+         		row.add(rowData[column]);
+//        		LOG.config("Object:"+rowData[column] + " R/C="+first+i+"/"+column);
         	}
         	getDataVector().add(row); // References to generic type Vector<E>
         }
-//        chunks.get(index)
-//        chunks.forEach((Object[] row) -> {
-//        	add(row); // TODO
-//        });
         fireTableRowsInserted(first, last); // implementiert in AbstractTableModel
     }
     public void add(Object[] rowData) {

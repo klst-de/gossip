@@ -297,6 +297,7 @@ public class Tab extends JPanel implements ComponentListener {
         BindingGroup group = new BindingGroup();
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
+// TODO Tab.setLoadState: Unposted Documents StateValue:DONE wird ZWEI mal gerufen ??????????
         group.bind();
         dataLoader.addPropertyChangeListener(event -> {
         	if ("state".equals(event.getPropertyName())) {
@@ -305,32 +306,6 @@ public class Tab extends JPanel implements ComponentListener {
         });
 		return dataLoader;		
 	}
-//	private GenericDataLoader initDataLoaderXXX() {
-// 		this.dataLoader = new GenericDataLoader(this.dataModel);
-// 		
-//        BindingGroup group = new BindingGroup();
-//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
-//        group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 
-////      group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("cancelled"), frame.tableStatus, BeanProperty.create("text"))); // schreibt true, wie frame.tableStatus.setText(text)
-//        group.bind();
-//
-////		setVisible(true); // in setLoadState
-//        
-//        dataLoader.addPropertyChangeListener(event -> {
-//        	//LOG.config("event.getPropertyName() =============== event:"+event);
-////        	if ("cancelled".equals(event.getPropertyName())) { // ist gar nicht gebunden ==> also raus/auskommentieren
-////        		if(dataLoader.isCancelled()) {
-////        			frame.tableStatus.setText("cancelled ");
-////        			setLoadState(StateValue.PENDING);
-////        		}
-////        	}
-//        	if ("state".equals(event.getPropertyName())) {
-////        		if(event.getNewValue()==StateValue.DONE) ...
-//        		setLoadState((StateValue)event.getNewValue());
-//        	}
-//        });
-//		return dataLoader;		
-//	}
 
 	public void setLoadState(StateValue state) {
 		LOG.config(this.getName()+" StateValue:"+state);

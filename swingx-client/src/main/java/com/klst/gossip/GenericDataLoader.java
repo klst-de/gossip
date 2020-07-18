@@ -13,15 +13,12 @@ import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.compiere.model.GridField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trx;
-import org.jdesktop.swingx.table.TableColumnExt;
-import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.wrapper.GridTableModel;
 
@@ -84,20 +81,6 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
 		trx  = trxName != null ? Trx.get(trxName, true) : null;	
 	}
-//	public GenericDataLoader(GenericDataModel dm) {
-//		this.dataModel = dm;
-//		LOG.config("dataModel "+this.dataModel);
-//// GridFieldVO hieß vormals / >13Jahre zurück MFieldVO	
-////		List<GridFieldVO> fieldModel = dataModel.getGridFieldVOList(); // seqno ist nicht zu bekommen, aber die Reihenfolge entspricht seqno
-////		fieldModel.forEach( field -> {
-////			LOG.config("Field_ID:"+field.AD_Field_ID + ", Column_ID:"+field.AD_Column_ID);
-////		});
-//		
-//		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
-////		trxName = dataModel.m_virtual ? Trx.createTrxName("Loader") : null;
-////		dataModel.setTrxName(trxName); // in swing dataModel hat trxName nix zu suchen
-//		trx  = trxName != null ? Trx.get(trxName, true) : null;	
-//	}
 
 	// wrapper für dataModel:
 	private void setRowsToLoad(int expectedNumberofRows) {
@@ -151,7 +134,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		while(resultSet.next() && (dbResultRows.size() < expectedNumberofRows) && !super.isCancelled()) {
 			Object[] rowData = readData(resultSet, dbResultRows.size());
 			dbResultRows.add(rowData);
-			LOG.warning("vor publish "+dbResultRows.size());
+//			LOG.warning("vor publish "+dbResultRows.size());
 			super.publish(rowData);
 			super.setProgress(100 * dbResultRows.size() / expectedNumberofRows);
 		}
@@ -233,40 +216,6 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 					LOG.warning(f+"/"+size + " DT="+displayType + ": "+columnName); //SeqNoGrid="+field.getSeqNoGrid());
 				}
 				//	Integer, ID, Lookup (UpdatedBy is a numeric column)
-/*
-17:46:41.094   GenericDataLoader.getSelectAll: select=
-
-
-
-
-SELECT
- DynPriorityStart
-,IsActive
-,AD_Client_ID
-,AD_Org_ID
-,AD_WF_Process_ID
-,AD_WF_Node_ID
-,Priority
-,Created
-,WFState
-,EndWaitTime
-,AD_Workflow_ID
-,AD_WF_Responsible_ID
-,AD_User_ID
-,AD_Table_ID
-,Record_ID
-,AD_Message_ID
-,DateLastAlert
-,TextMsg
-,Processing
-,Processed
-,AD_WF_Activity_ID
-,CreatedBy
-,Updated
-,UpdatedBy
- FROM AD_WF_Activity [31]
-
- */
 				if (displayType == DisplayType.Integer
 					|| (DisplayType.isID(displayType) 
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
@@ -334,7 +283,7 @@ SELECT
 //				field.setValue(fieldData[f], false);
 //				LOG.warning("fieldData["+f+"]:"+fieldData[f]);			
 			}
-			LOG.warning("DB Zeile "+row+" hat Anzahl Spalten fieldData.length="+fieldData.length);
+//			LOG.warning("DB Zeile "+row+" hat Anzahl Spalten fieldData.length="+fieldData.length);
 		}
 		catch (SQLException e)
 		{
