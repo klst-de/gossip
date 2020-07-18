@@ -247,7 +247,7 @@ Parameters:
 	
 	protected WindowModel getWindowModel() {
 		// wrapped (base)org.compiere.model.GridWindow
-		return WindowModel.get(Env.getCtx(), this.getWindowNo(), this.getWindowId());
+		return WindowModel.getInstance(Env.getCtx(), this.getWindowNo(), this.getWindowId());
 	}
 
 	private final static boolean finalCall = false;

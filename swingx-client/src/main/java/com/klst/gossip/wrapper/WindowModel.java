@@ -1,8 +1,10 @@
 package com.klst.gossip.wrapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -32,38 +34,56 @@ public class WindowModel extends GridWindow {
 	private static final long serialVersionUID = 623538046539276675L;
 	private static final Logger LOG = Logger.getLogger(WindowModel.class.getName());
 	
-	public static WindowModel get(Properties ctx, int WindowNo, int AD_Window_ID) {
-		return get(ctx, WindowNo, AD_Window_ID, false);
+	@SuppressWarnings("serial")
+	static Map<String,String> WINDOWTYPE = new HashMap<String,String>(){ // TODO besser enum?
+		{
+			put(GridWindowVO.WINDOWTYPE_QUERY, "WINDOWTYPE_QUERY");
+			put(GridWindowVO.WINDOWTYPE_TRX, "WINDOWTYPE_TRX");
+			put(GridWindowVO.WINDOWTYPE_MMAINTAIN, "WINDOWTYPE_MMAINTAIN");
+		}
+	};
+	
+	// Static factory methods:
+	/* rule from Effective Java book by Joshua Bloch:
+	 
+	 "Consider static factory methods instead of constructors"
+	 
+	 These are common names for different types of static factory methods:
+	 valueOf, of, getInstance, newInstance, getType, newType
+	 
+	 */
+	
+	public static WindowModel getInstance(Properties ctx, int WindowNo, int AD_Window_ID) {
+		return getInstance(ctx, WindowNo, AD_Window_ID, false);
 	}
 	
-	public static WindowModel get(Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual) {
+	public static WindowModel getInstance(Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual) {
 		LOG.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
-//		GridWindowVO mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID);
-//		if(mWindowVO == null)
-//			return null;
-//		return new WindowModel(mWindowVO, virtual);
 		return new WindowModel(GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID), virtual);
 	}
 	
+	// nur intern in gossip, eigentlich nicht public, kommt weg! TODO
+	@Deprecated
 	public static WindowModel get(GridWindowVO gridWindowVO, boolean virtual) {
-		LOG.warning("internal factory method to create WindowModel. Params GridWindowVO:" + gridWindowVO + ", virtual=" + virtual);
+		LOG.warning("internal factory method to create WindowModel, params GridWindowVO:" + gridWindowVO + ", virtual=" + virtual);
 		return new WindowModel(gridWindowVO, virtual);
 	}
 	
-	public WindowModel(GridWindowVO vo) {
+	WindowModel(GridWindowVO vo) {
 		this(vo, false);
 	}
 
-	protected WindowModel(GridWindowVO vo, boolean virtual) {
+	WindowModel(GridWindowVO vo, boolean virtual) {
 		super(vo, virtual);
 		this.m_vo = vo;
 		LOG.config("vo.Tabs.size="+vo.Tabs.size());
 		m_vo.Tabs.forEach((GridTabVO tabVO) -> {
-			LOG.config("tabVO:" + (tabVO==null ? "null" : tabVO.AD_Window_ID+"/"+tabVO.AD_Window_ID));
+			LOG.config("tabVO:" + (tabVO==null ? "null" : tabVO.Name+"/"+tabVO.AD_Tab_ID));
 		});
 		this.m_virtual = virtual;
 		if (loadTabData()) enableEvents();
-		LOG.config("TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
+		LOG.config("VO:" + (m_vo==null ? "null" : m_vo.AD_Window_ID+"/"+m_vo.AD_Window_ID+"/"+WINDOWTYPE.get(m_vo.WindowType))
+				+ ", TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
 	}
 	
 	GridWindowVO m_vo;
@@ -73,7 +93,8 @@ public class WindowModel extends GridWindow {
 	
 	private boolean loadTabData()
 	{
-		LOG.config("m_vo:"+m_vo + " m_virtual:"+m_virtual + " m_tabs:"+m_tabs);
+		LOG.config("windowVO:" + (m_vo==null ? "null" : m_vo.Name+"/"+m_vo.AD_Window_ID+"/"+WINDOWTYPE.get(m_vo.WindowType))
+				+ ", TabCount:"+getTabCount());
 
 		if (m_vo.Tabs == null)
 			return false;
@@ -95,7 +116,8 @@ public class WindowModel extends GridWindow {
 		for (int i = 0; i < getTabCount(); i++) {
 			TabModel tabModel = getTab(i);
 //			getTab(i).enableEvents(); // wg. interface DataStatusListener extends EventListener method dataStatusChanged for MTable.
-			LOG.warning("NO DataStatusListener for ["+tabModel+"] of "+getTabCount());
+			LOG.warning("NO DataStatusListener for tabModel "+(i+1)+"/"+getTabCount());
+			LOG.config("tabModel:"+tabModel);
 		}
 			
 	}
@@ -134,8 +156,9 @@ public class WindowModel extends GridWindow {
 
 	@Override
 	public void initTab(int index)
-	{	LOG.config(" initTab for tab ["+index+"] of "+getTabCount());
+	{	LOG.config("for tabModel "+(index+1)+"/"+getTabCount());
 		TabModel mTab = m_tabs.get(index);
+		LOG.config("tabModel:"+mTab);
 		if (initTabs.contains(mTab)) return;		
 		mTab.initTab(false);		
 		//		Set Link Column
@@ -182,7 +205,7 @@ public class WindowModel extends GridWindow {
 		mTab.setLinkColumnName(null);	//	overwrites, if AD_Column_ID exists
 		//
 		initTabs.add(mTab);
-		LOG.config("TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
+		LOG.config("DONE tabModel:"+mTab);
 	}
 
 }
