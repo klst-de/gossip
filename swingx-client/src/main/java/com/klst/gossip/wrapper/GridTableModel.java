@@ -33,7 +33,29 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 	private static final long serialVersionUID = -1195711198935289642L;
 	
 	private static final Logger LOG = Logger.getLogger(GridTableModel.class.getName());
-	
+
+	GridTableModel(GridTable gridTable) {
+		// ich brauche gridTable, um die final Methoden setValueAt , ... dranzukommen
+		// super DefaultTableModel(Object[] columnNames, int rowCount)
+		// super(gridTable.getFields(), 0); // GridField[] gridTable.getFields()
+		// super(int rowCount, int columnCount)
+		super(0, gridTable.getFields().length); // (int rowCount, int columnCount)
+		m_tableName = gridTable.getTableName();
+		this.fields = new FieldsModelExt(gridTable);
+		LOG.config("m_tableName="+m_tableName + " gridTable.getFields().length="+gridTable.getFields().length +" TableColumnModelExt.ColumnCount:"+fields.getColumnCount()+"/"+fields.getColumnCount(true)); // includeHidden
+		super.setColumnIdentifiers(gridTable.getFields()); // array of column identifiers
+/* Standard Fields werden in GridTab.loadFields "nachinitialisiert" und sind daher in gridTable.getFields() nicht dabei
+
+
+
+  */
+		for(int c = 0; c < getColumnCount(); c++) {
+			LOG.config("ColumnName["+c+"]="+super.columnIdentifiers.get(c));
+		}
+		LOG.config("ctor fertig, ColumnCount="+super.getColumnCount() + " " + gridTable);		
+	}
+
+
 	private int rowsToLoad = -1; // der Loader liefert es per setter
 	private String 		        m_tableName = "";
 	public int getRowsToLoad() {
@@ -92,17 +114,6 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
     	super.fireTableRowsInserted(firstRow, lastRow);
     }
 
-//    public void setValueAt(Object aValue, int row, int column) {
-//    	LOG.config("Object:"+aValue + ", row="+ row + ",column="+column);
-//    	LOG.config("dataVector.size:"+((Vector)dataVector).size());
-//    	//super.setValueAt(aValue, row, column);
-////        Vector rowVector = (Vector)dataVector.elementAt(row);
-////        rowVector.setElementAt(aValue, column);
-////        fireTableCellUpdated(row, column);
-//    	Vector<Vector> rows = ((Vector)dataVector);
-//    	Vector<Object> rowCells = ((Vector)dataVector);
-//    }
-    
 //    /**
 //     * {@inheritDoc}
 //     * 
@@ -118,7 +129,6 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 
 //	GridTable gridTable;
 	TableColumnModelExt fields; // GridFields extends DefaultTableColumnModelExt implements TableColumnModelExt
-	// UI: TableColumnExt extends TableColumn
 	
 /* interface TableColumnModelExt methods: // TableColumnModelExt extends TableColumnModel
 
@@ -129,54 +139,6 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
     public void addColumnModelListener(TableColumnModelListener x);
 
  */
-//	public GridTableModel(Properties ctx, int AD_Table_ID, String TableName, int WindowNo, int TabNo, boolean withAccessControl, boolean virtual) {
-//		
-//	}
-//	in super:
-//	@SuppressWarnings("rawtypes")
-//	protected static Vector convertToVector(Object[] anArray) {
-//		return null;
-//	}
-	// tatsächlich Vector<TableColumnModelExt>
-//	protected static Vector<Object> convertToTableColumnModelExt(Object[] anArray) {
-//		DefaultTableColumnModelExt dtcme;
-//        if (anArray == null) {
-//            return null;
-//        }
-//        Vector<Object> v = new Vector<Object>(anArray.length);
-//        for(int c = 0; c < anArray.length; c++) {
-//        	Object o = anArray[c];
-//        	if(o instanceof GridField) {
-//        		GridField gridField = (GridField)o;
-////        		TableColumnExt aColumn = new TableColumnExt(gridField.g);    		
-////        		dtcme.addColumn(aColumn);
-//        	} else {
-//                v.addElement(o);
-//        	}
-//        }
-//        return v;
-//	}
-	public GridTableModel(GridTable gridTable) {
-// ich brauche gridTable, um die final Methoden setValueAt , ... dranzukommen
-		// super DefaultTableModel(Object[] columnNames, int rowCount)
-		// super(gridTable.getFields(), 0); // GridField[] gridTable.getFields()
-		// super(int rowCount, int columnCount)
-		super(0, gridTable.getFields().length); // (int rowCount, int columnCount)
-		m_tableName = gridTable.getTableName();
-		this.fields = new FieldsModelExt(gridTable);
-		LOG.config("m_tableName="+m_tableName + " gridTable.getFields().length="+gridTable.getFields().length +" TableColumnModelExt.ColumnCount:"+fields.getColumnCount()+"/"+fields.getColumnCount(true)); // includeHidden
-		super.setColumnIdentifiers(gridTable.getFields()); // array of column identifiers
-/* Standard Fields werden erst in GridTab.loadFields "nachinitialisiert" und sind daher in gridTable.getFields() nicht dabei
-
-
-
- */
-		for(int c = 0; c < getColumnCount(); c++) {
-			LOG.config("ColumnName["+c+"]="+super.getColumnName(c));
-		}
-		LOG.config("ctor fertig, ColumnCount="+super.getColumnCount() + " " + gridTable);		
-	}
-
 	// stubs:
 	private String m_whereClause;
 	private String m_orderClause;
@@ -247,6 +209,7 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 		LOG.warning("id NOT GridField !!!!!!!!!!!! :"+id);
 		return "!!!!!";		
 	}
+	
     /**
      * {@inheritDoc}
      * 
@@ -254,19 +217,6 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 	@Override // implemeted in DefaultTableModel
     public String getColumnName(int column) {
 		return getColumnSQL(column, false);
-//		Object id = null;
-//        if (column < columnIdentifiers.size() && (column >= 0)) {
-//            id = columnIdentifiers.elementAt(column);
-//        }
-////		TableColumnExt tce = this.fields.getColumnExt(column); // alle
-////		id = tce.getIdentifier();
-//		if(id == null) super.getColumnName(column);
-//		if(id instanceof GridField) return ((GridField)id).getColumnName();
-//		LOG.warning("id NOT GridField !!!!!!!!!!!! :"+id);
-//		return "!!!!!";
-////        return (id == null) ? super.getColumnName(column)
-////                : ((GridField)id).getColumnName();
-////                : ((GridField)id).getHeader();
     }
 
 //	public boolean open (int maxRows) {

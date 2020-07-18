@@ -19,9 +19,7 @@ import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.GridTabVO;
 import org.compiere.model.GridTable;
-import org.compiere.model.GridWindow;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -33,8 +31,7 @@ import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
 
 public class Tab extends JPanel implements ComponentListener {
 
-	private static final long serialVersionUID = -2597982525624660612L;
-	
+	private static final long serialVersionUID = -2597982525624660612L;	
 	private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
 	private static EnumMap<StateValue, Icon> statusToTrafficlights = new EnumMap<>(StateValue.class);
@@ -196,21 +193,6 @@ public class Tab extends JPanel implements ComponentListener {
 		return frame.getTabs();
 	}
 	
-	// nur zur Doku
-//	private GenericDataLoader getDataLoaderBUGGY() {
-//        frame.tabPane = new HidableTabbedPane(); // BUG. so geht es nicht
-//        for (int i = 0; i < getGridTabs().size(); i++) { // ohne first
-//        	GridTab gt = getGridTabs().get(i);
-//        	Tab t = getTabs().get(i); 
-//        	frame.tabPane.addTab(gt.getName(), t);
-//        	t.initModelAndTable(???);
-//        	t.initDataLoader();
-//        }
-//        frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
-//        frame.pack();
-//        
-//        return this.loader;
-//	}
 	public GenericDataLoader getDataLoader() { // TODO nicht nur first ==> this
 //		GridTab gridTab = getGridTabs().get(0); // first Tab
 //		Tab tab = getTabs().get(0); 
@@ -232,27 +214,15 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-//		if(dataModel.getDbTableName().equals("AD_OrgType")) {
-//			LOG.warning("----------------const Patch für AD_OrgType == "+dataModel.getDbTableName());
-//			return new Dimension(523, 125);
-//		}
 		srp = new SingleRowPanel(this.gtm); // darin VPanel gekapselt!
 		return srp.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-//		this.dataModel = new GenericDataModel(this.tabModel, getWindowNo());
 		gtm = this.tabModel.getGridTableModel();
-//		dataModel.addTableModelListener(event -> {
-//			LOG.warning("event Rows "+event.getFirstRow()+":"+event.getLastRow() + ", RowCount:"+dataModel.getRowCount()+"/"+dataModel.getRowsToLoad());
-//			if(event.getFirstRow()==TableModelEvent.HEADER_ROW && this.currentRow<0) {
-//				first();
-//			}
-//		});
-
 		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+tabModel.isSingleRow());
 		Dimension preferredDim = useDim;
-		if(preferredDim==null) {
+		if(preferredDim==null && tabModel.isSingleRow()) {
 			preferredDim = getSingleRowPanelSize();
 			// TODO die Berechnung der preferredDim ist ohne included Tab!!!!
 			LOG.warning("dimension: H/W "+preferredDim.getHeight()+"/"+preferredDim.getWidth());
