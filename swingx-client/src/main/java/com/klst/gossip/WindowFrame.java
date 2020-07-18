@@ -508,11 +508,11 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 			LOG.info("ctx key:"+key + " : " + value.toString());
 		});
 		boolean virtual = false;
-		return new WindowModel(mWindowVO, virtual); // in APanel Zeile 738
+		return WindowModel.get(mWindowVO, virtual); // in APanel Zeile 738
 
 	}
 	// == org.compiere.model.GridWindowVO ersetzen, dmit das sql angezeigt werden kann:
-	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID) {
+	static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID, int AD_Menu_ID) {
 		StringBuffer sql = new StringBuffer("SELECT Name,Description,Help,WindowType, "
 			+ "AD_Color_ID,AD_Image_ID,WinHeight,WinWidth, "
 			+ "IsSOTrx ");

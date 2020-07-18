@@ -24,7 +24,8 @@ GridTab            vor 1,5J
  */
 /**
  * wrapper subclass for org.compiere.model.GridWindow / Window Model
- *
+ * </p>
+ * class name WindowModel represents what it is: a Window Model
  */
 public class WindowModel extends GridWindow {
 
@@ -37,35 +38,30 @@ public class WindowModel extends GridWindow {
 	
 	public static WindowModel get(Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual) {
 		LOG.config("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
-		GridWindowVO mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID);
-		if (mWindowVO == null)
-			return null;
-		return new WindowModel(mWindowVO, virtual);
+//		GridWindowVO mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID);
+//		if(mWindowVO == null)
+//			return null;
+//		return new WindowModel(mWindowVO, virtual);
+		return new WindowModel(GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID), virtual);
+	}
+	
+	public static WindowModel get(GridWindowVO gridWindowVO, boolean virtual) {
+		LOG.warning("internal factory method to create WindowModel. Params GridWindowVO:" + gridWindowVO + ", virtual=" + virtual);
+		return new WindowModel(gridWindowVO, virtual);
 	}
 	
 	public WindowModel(GridWindowVO vo) {
 		this(vo, false);
 	}
 
-	public WindowModel(GridWindowVO vo, boolean virtual) {
-		super(vo, virtual); // exception:
-/*
-
-Exception in ctor thread "AWT-EventQueue-0" java.lang.NullPointerException
-	at org.compiere.model.WindowModel.getTab(WindowModel.java:85)
-	at org.compiere.model.WindowModel.getTab(WindowModel.java:1)
-	at org.compiere.model.GridWindow.enableEvents(GridWindow.java:308) 	=====>	getTab(i).enableEvents();
-	at org.compiere.model.GridWindow.<init>(GridWindow.java:112)
-	at org.compiere.model.WindowModel.<init>(WindowModel.java:43)
-	at com.klst.gossip.WindowFrame.getGridWindow(WindowFrame.java:512)
-
- */
-		m_vo = vo;
-		LOG.config("m_vo.Tabs.size="+m_vo.Tabs.size());
-		m_vo.Tabs.forEach((GridTabVO tab) -> {
-			LOG.config(tab.toString());
+	protected WindowModel(GridWindowVO vo, boolean virtual) {
+		super(vo, virtual);
+		this.m_vo = vo;
+		LOG.config("vo.Tabs.size="+vo.Tabs.size());
+		m_vo.Tabs.forEach((GridTabVO tabVO) -> {
+			LOG.config("tabVO:" + (tabVO==null ? "null" : tabVO.AD_Window_ID+"/"+tabVO.AD_Window_ID));
 		});
-		m_virtual = virtual;
+		this.m_virtual = virtual;
 		if (loadTabData()) enableEvents();
 		LOG.config("TabCount:"+getTabCount() + " m_tabs.size="+m_tabs.size() + " initTabs.size="+initTabs.size() + "\n");
 	}
