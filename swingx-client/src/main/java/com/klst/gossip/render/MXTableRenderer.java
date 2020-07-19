@@ -139,21 +139,14 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				}
 				break;
 			case DisplayType.ID:       // 13 C_BPartner.C_BPartner_ID ===> Kombination aus Button+TableDir TODO Lookup anders holen
-				if(field.getLookup()==null) {
-//					LOG.config("R/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
-//					+ " AD_Column_ID/Name="+field.getAD_Column_ID()+"/"+field.getColumnName() + " Lookup:"+field.getLookup() );
-//					field.loadLookup();
-//					new Lookup(int displayType, int windowNo)
-//					VLookup.createBPartner(1); // VLookup extends JComponent
-				}
-//				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.ID value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
-//						+ " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				JRendererCheckBox id = new JRendererCheckBox();	
-				Integer idkey = (Integer)value; 
-//				Lookup idlookup = field.getLookup(); // MutableComboBoxModel Lookup==null!
-//				NamePair namePair = idlookup.get(idkey);
-//				id.setText(namePair.getName());
-				id.setText("#"+idkey.toString()+"#");
+				if(value instanceof Integer) {
+					Integer idkey = (Integer)value; 
+					id.setText("#"+idkey.toString()+"#");				
+				}
+				if(value instanceof String) {
+					id.setText((String)value);				
+				}
 				id.setIcon(null);
 				cellRendererComponent = id;
 				break;
@@ -172,18 +165,19 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				}
 				break;
 			case DisplayType.List:     // 17 DocStatus
-//				boolean optional = false; //field.isMandatory(checkContext); // auch ein leerer Eintrag ist dabei
-//				ValueNamePair[] valueName = MRefList.getList(Env.getCtx(), field.getAD_Reference_Value_ID(), optional);
-				MRefList mRefList = MRefList.get(Env.getCtx(), field.getAD_Reference_Value_ID(), value.toString(), null);
-//				LOG.config("mRefList:"+mRefList);
-				JRendererLabel label = new JRendererLabel();
-				label.setText(mRefList.getName()); // ==.toString()
-				cellRendererComponent = label;
+				if(value!=null) {
+					MRefList mRefList = MRefList.get(Env.getCtx(), field.getAD_Reference_Value_ID(), value.toString(), null);
+//					LOG.config("mRefList:"+mRefList);
+					JRendererLabel label = new JRendererLabel();
+					label.setText(mRefList.getName()); // ==.toString()
+					cellRendererComponent = label;
+				}
 				break;
-//			case DisplayType.Table:    // 18 CreatedBy, UpdatedBy
+			case DisplayType.Table:    // 18 AD_Language, CreatedBy, UpdatedBy
+				if(value!=null) {
+					cellRendererComponent = getRenderer_Table(value, field);
+				}
 			case DisplayType.TableDir: // 19 AD_Client_ID, ...
-//				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.TableDir value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
-//						+ " Header="+field.getHeader() + " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				if(value!=null) {
 					cellRendererComponent = getRenderer_TableDir(value, field);
 				}
@@ -224,11 +218,50 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				button.setIcon(null);
 				cellRendererComponent = button; // TODO Button ist linksbündig, rechts der Text
 				break;
+			case DisplayType.Quantity:  // 28	
+				if(value!=null) {
+					cellRendererComponent = getRenderer_Quantity(value, field);
+				}
+				break;
 			case DisplayType.Search:    // 30 Table oder User/Contact AD_Column_ID=10443
 //				LOG.config("\nR/C:"+row+"/"+column + " DisplayType.Search value:" + value + " of type " + (value==null ? "null" : value.getClass()) 
 //						+ " Header="+field.getHeader() + " AD_Column_ID="+field.getAD_Column_ID() + " Lookup:"+field.getLookup() );
 				if (value != null) {
 					cellRendererComponent = getRenderer_Search(value, field);
+				}
+				break;
+			case DisplayType.Locator:   // 31
+//				field.setDisplayType(DisplayType.TableDir); // TODO zoom
+				if(value!=null) {
+					
+					Lookup lookup = field.getLookup(); // MutableComboBoxModel
+					Integer key = (Integer) value;
+					NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
+					
+					Icon icon = AIT.getImageIcon(AIT.ZOOM, SMALL_ICON_SIZE);
+					JXButton ic = new JXButton((np == null ? "<" + key + ">" : np.getName()), icon);	
+
+//					ActionListener tut nicht! Untersuchen TODO
+					ic.addActionListener(event -> { 
+						LOG.config("Location key:"+key+" event:"+event);
+					});
+					
+					cellRendererComponent = ic;
+				}
+				break;
+			case DisplayType.PAttribute: // 35	
+				if(value!=null) {
+					cellRendererComponent = getRenderer_PAttribute(value, field); // TODO Überprüfen
+				}
+				break;
+			case DisplayType.CostPrice:  // 37	
+				if(value!=null) {
+					cellRendererComponent = getRenderer_CostPrice(value, field);
+				}
+				break;
+			case DisplayType.URL:        // 40	
+				if(value!=null) {
+					cellRendererComponent = getRenderer_URL(value, field);
 				}
 				break;
 			default:
@@ -254,6 +287,12 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     private Component getRenderer_Number(Object value, GridField field) {
     	return getRenderer_Amount(value, field);
     }
+    private Component getRenderer_Quantity(Object value, GridField field) {
+    	return getRenderer_Amount(value, field);
+    }
+    private Component getRenderer_CostPrice(Object value, GridField field) {
+    	return getRenderer_Amount(value, field);
+    }
     private Component getRenderer_Amount(Object value, GridField field) {
 		JRendererLabel rLabel = new JRendererLabel();
 		BigDecimal amount = (BigDecimal)value;
@@ -268,6 +307,16 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 		SimpleDateFormat simpleDateFormat = DisplayType.getDateFormat(field.getDisplayType()); // wg. I18N 					
 		dateTime.setText(simpleDateFormat.format(ts)); // TODO Spaltenbreite
 		return dateTime;
+    }
+    
+    private Component getRenderer_URL(Object value, GridField field) {
+    	return getRendererLabel(value, field);
+    }
+    private Component getRenderer_PAttribute(Object value, GridField field) {
+    	return getRendererLabel(value, field);
+    }
+    private Component getRenderer_Table(Object value, GridField field) {
+    	return getRendererLabel(value, field);
     }
     private Component getRenderer_TableDir(Object value, GridField field) {
     	return getRendererLabel(value, field);
@@ -284,13 +333,22 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
      * 
      * Bsp: getRenderer_Search GridField is User/Contact AD_Column_ID=10443 , Object=100
      * rLabel.text = "<100>" : entspricht der Implemetierung im AD-client
+     * 
+     * Bsp: getRenderer_Table AD_Language AD_Column_ID=??? , Object=fr_LU
+     * rLabel.text = "fr_LU"
      */
     private Component getRendererLabel(Object value, GridField field) {
 		JRendererLabel rLabel = new JRendererLabel();
 		Lookup lookup = field.getLookup(); // MutableComboBoxModel
-		Integer key = (Integer) value;
-		NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
-		rLabel.setText(np == null ? "<" + key + ">" : np.getName()); // ==.toString()
+		if(value instanceof Integer) {
+			Integer key = (Integer)value;
+			NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
+			rLabel.setText(np == null ? "<" + key + ">" : np.getName()); // ==.toString()
+		}
+		if(value instanceof String) {
+			String key = (String)value;
+			rLabel.setText(key);
+		}
 		return rLabel; // TODO: Spaltenbreite und editor wenn selektiert 	
     }
 }
