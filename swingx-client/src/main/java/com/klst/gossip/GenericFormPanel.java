@@ -379,7 +379,7 @@ Parameters:
 		LOG.config("additional selectionFields"); // TODO brauche ich das??????
 	}
 
-	static final int _YesNo = 319; // reference_Value_ID for 53365:Yes-No-Unknown
+	static final int _YesNo = 319; // List reference_Value_ID for Yes and No and optional any/both // @see 53365:Yes-No-Unknown
 	void addSelection(GridField field) {
 		String header = field.getHeader();
 		JXLabel label = new JXLabel(header);
@@ -393,7 +393,7 @@ Parameters:
 			selection = makeSelectionTextField(field);
 			break;
 		case DisplayType.YesNo:  // 20
-			selection = makeSelectionComboBox(_YesNo, field); // 319 _YesNo / 53365:Yes-No-Unknown
+			selection = makeSelectionComboBox(_YesNo, field);
 			break;
 		case DisplayType.List:   // 17
 			selection = makeSelectionComboBox(field.getAD_Reference_Value_ID(), field);
