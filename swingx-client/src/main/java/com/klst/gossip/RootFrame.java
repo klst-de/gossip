@@ -177,7 +177,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		if(gdm==null) {
 			GridWindow gridWindow = getWindowModel(window_ID);
 			if(gridWindow==null) {
-				LOG.warning("window mit AD_Window_ID="+window_ID+"nicht gefunden");
+				LOG.warning("window mit AD_Window_ID="+window_ID+" nicht gefunden");
 				return;		
 			}
 			WindowFrame frame;

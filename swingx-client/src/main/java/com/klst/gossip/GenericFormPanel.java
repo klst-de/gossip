@@ -27,7 +27,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 
 import org.compiere.apps.form.FormPanel;
-import org.compiere.grid.ed.VComboBox;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
@@ -41,6 +40,7 @@ import org.compiere.util.ValueNamePair;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.swingx.JXComboBox;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
@@ -379,6 +379,7 @@ Parameters:
 		LOG.config("additional selectionFields"); // TODO brauche ich das??????
 	}
 
+	static final int _YesNo = 319; // reference_Value_ID for 53365:Yes-No-Unknown
 	void addSelection(GridField field) {
 		String header = field.getHeader();
 		JXLabel label = new JXLabel(header);
@@ -392,7 +393,7 @@ Parameters:
 			selection = makeSelectionTextField(field);
 			break;
 		case DisplayType.YesNo:  // 20
-			selection = makeSelectionComboBox(319, field); // 319 _YesNo / 53365:Yes-No-Unknown
+			selection = makeSelectionComboBox(_YesNo, field); // 319 _YesNo / 53365:Yes-No-Unknown
 			break;
 		case DisplayType.List:   // 17
 			selection = makeSelectionComboBox(field.getAD_Reference_Value_ID(), field);
@@ -434,16 +435,50 @@ Parameters:
 		return selectionFld;
 	}
 
+	private class MXComboBox extends JXComboBox { // hasChanged() fehlt in JXComboBox
+	    public MXComboBox(Object[] items) {
+	        super(items);
+	        LOG.config("ItemCount="+super.getItemCount() );
+	        for(int i = 0; i < super.getItemCount(); i++) {
+	        	Object item = super.getItemAt(i);
+	        	LOG.config("Item "+i + ":"+item + "/" );
+	        }        
+	    }
+		Object m_oldValue;
+		public void set_oldValue(Object o) {
+			this.m_oldValue = o;
+		}
+		public boolean hasChanged() {
+			Object si = getSelectedItem();
+			if(si != null)
+				if(m_oldValue != null)
+					return !m_oldValue.equals(si);
+				else
+					return true;
+			else  // getValue() is null
+				if(m_oldValue != null)
+					return true;
+				else
+					return false;
+		}
+	}
+//	static final ValueNamePair EMPTY_EXT = new ValueNamePair("", "any"); // schon besser, aber nicht I18N
+	static final ValueNamePair EMPTY_EXT = new ValueNamePair("", " "); // GUT!
 	private Component makeSelectionComboBox(int reference_Value_ID, GridField field) {
 		String header = field.getHeader();
 		boolean optional = true; // auch ein leerer Eintrag ist dabei
+		// das optionale item hat ID und value = "" - dadurch Hohe nicht sichtbar
 		ValueNamePair[] valueName = MRefList.getList(Env.getCtx(), reference_Value_ID, optional);
 		for (int i = 0; i < valueName.length; i++) {
-			LOG.config("valueName:"+valueName[i].getID()+"/"+valueName[i].getName()+"/"+valueName[i].getValue());
+			ValueNamePair vnp = valueName[i];
+			LOG.config("valueName "+i+":"+vnp.getID()+"/"+vnp.getName()+"/"+vnp.getValue());
+			if(vnp.equals(ValueNamePair.EMPTY)) {
+				// keine setter, nur getter
+				valueName[i] = EMPTY_EXT;
+			}
 		}
-//		JXComboBox selectionFld = new JXComboBox(valueName); // hasChanged() fehlt
-		VComboBox selectionFld = new VComboBox(valueName);
-		selectionFld.setEditable(false); // keine freie Texteingabe! 1 aus n
+		MXComboBox selectionFld = new MXComboBox(valueName);
+		selectionFld.setEditable(false);
 		selectionFld.addActionListener(event -> {
 			LOG.config(header+" event:"+event);
 			LOG.config(header + " SelectedIndex:"+selectionFld.getSelectedIndex() + " SelectedItem:"+selectionFld.getSelectedItem());
@@ -455,7 +490,7 @@ Parameters:
 				addRestriction(field.getColumnName(), MQuery.EQUAL, emptyYorN);
 			}
 			if(selectionFld.hasChanged()) { // hasChanged() ist Eigenschaft von VComboBox extends CComboBox
-				selectionFld.set_oldValue();
+				selectionFld.set_oldValue(selectionFld.getSelectedItem());
 				setModelAndControler();
 			}
 		});
