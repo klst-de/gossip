@@ -129,7 +129,10 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 // <<< TEST
         	
 			switch(displayType) {
-			case DisplayType.String:   // 10 DocumentNo	==> Implementierung in Oberklasse			
+			case DisplayType.String:   // 10 DocumentNo	==> Implementierung in Oberklasse
+				// org.jdesktop.swingx.renderer.JRendererLabel extends JLabel implements PainterAware, IconAware
+//				JRendererLabel jrl = (JRendererLabel)cellRendererComponent;
+//				LOG.config("JRendererLabel Text:"+jrl.getText());
 				break;
 			case DisplayType.Integer:  // 11 Priority ==> Implementierung in Oberklasse				
 				break;
@@ -183,10 +186,7 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				}
 				break;
 			case DisplayType.YesNo:    // 20
-				JRendererCheckBox checkbox = new JRendererCheckBox();				
-				checkbox.setSelected((Boolean)value); // AbstractButton.setSelected(boolean b)
-				checkbox.setHorizontalAlignment(SwingConstants.CENTER);
-				cellRendererComponent = checkbox;
+				cellRendererComponent = getRenderer_YesNo(value, field);
 				break;
 			case DisplayType.Location: // 21
 //				field.setDisplayType(DisplayType.TableDir); // TODO zoom
@@ -280,6 +280,38 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     	return cellRendererComponent;
     }
 
+    static final boolean USE_EMOJI = true;
+    // for No:
+    static final String BALLOT_BOX = "\u2610";
+    static final String white_large_square = "\u2B1C";
+    static final String black_square_button = "\u1F53";
+    // for Yes:    
+    static final String BALLOT_BOX_WITH_CHECK = "\u2611";
+    static final String CHECK_MARK = "\u2713";
+    static final String heavy_check_mark = "\u2714";
+    static final String white_check_mark = "\u2705";
+
+    private Component getRenderer_YesNo(Object value, GridField field) {
+    	if(value==null) {
+    		LOG.warning("null field "+field );
+    	}
+    	if(USE_EMOJI) {
+        	JRendererLabel jrl = new JRendererLabel();
+        	if((Boolean)value) {
+        		jrl.setText(heavy_check_mark);
+        	} else {
+        		jrl.setText(white_large_square);
+        	}
+        	jrl.setHorizontalAlignment(SwingConstants.CENTER);
+        	return jrl;
+    	}
+    	// konventionell, ohne UTF emoji
+		JRendererCheckBox checkbox = new JRendererCheckBox();				
+		checkbox.setSelected((Boolean)value); // AbstractButton.setSelected(boolean b)
+		checkbox.setHorizontalAlignment(SwingConstants.CENTER);
+		return checkbox;
+    }
+    
     /* 
      * Bsp: AD_Column_ID=77930 value:0.0 of type class java.math.BigDecimal displayType:22/Number
      * wie displayType:12/Amount
