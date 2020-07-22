@@ -114,8 +114,9 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	public void refresh() {
-//		this.dataModel.clear(); // remove all elements
-		gtm.getDataVector().clear();
+//		gtm.getDataVector().removeAllElements(); // leeren aber nicht entfernen == clear
+//		gtm.getDataVector().clear();
+		gtm.setRowCount(0); // @see https://stackoverflow.com/questions/6232355/deleting-all-the-rows-in-a-jtable
 		frame.tableStatus.setText(""); // cancelled Status
 		this.dataLoader = initDataLoader();
 		this.dataLoader.execute();

@@ -333,10 +333,10 @@ Parameters:
 					MXTable.createXTable(gridTableModel, tabModel);
 		}
 		
+		// delete all the rows-in jTable before reload
+		gridTableModel.setRowCount(0); // @see https://stackoverflow.com/questions/6232355/deleting-all-the-rows-in-a-jtable
+		
 		setSelectWhereClause();
-
-		// javax.swing.table.DefaultTableModel erwartet raw type Vector data
-//		Vector<Vector<Object>> data = getData(gridTableModel); // Vector data wird für worker benötigt
 		this.dataLoader = initDataLoader();
 		this.dataLoader.execute();
 
