@@ -85,22 +85,12 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 
 	// wrapper für dataModel:
 	private void setRowsToLoad(int expectedNumberofRows) {
-//		if(dataModel instanceof GenericDataModel) {
-//			((GenericDataModel)dataModel).setRowsToLoad(expectedNumberofRows);
-//		}
 		((GridTableModel)dataModel).setRowsToLoad(expectedNumberofRows);
 	}
 	private void add(List<Object[]> chunks) {
-//		if(dataModel instanceof GenericDataModel) {
-//			((GenericDataModel)dataModel).add(chunks);
-//		}
 		((GridTableModel)dataModel).add(chunks);
 	}
 	private String getTableName() {
-		((GridTableModel)dataModel).getSelectWhereClause();		
-//		if(dataModel instanceof GenericDataModel) {
-//			return ((GenericDataModel)dataModel).getTableName();
-//		}
 		return ((GridTableModel)dataModel).getTableName();		
 	}
 	private String getSelectWhereClause() {
@@ -220,13 +210,12 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		StringBuffer select = new StringBuffer("SELECT ");
 		for(int f=0; f<dataModel.getColumnCount(); f++) {
 			if(f > 0) select.append(",");
-//			GridFieldBridge field = dataModel.getFieldModel(f);
 			String columnExt = ((GridTableModel)dataModel).getColumnSQL(f, true);  // ColumnName or Virtual Column withAS
-//			GridField field = (GridField)(columnExt.getIdentifier());
 			select.append(columnExt);
 		}
 		select.append("\n FROM "); // new line macht sich im log gut
 		select.append(getTableName());
+		select.append(where);
 		LOG.config("select="+select);
 		return select.toString();
     }
