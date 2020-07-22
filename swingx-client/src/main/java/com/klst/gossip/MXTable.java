@@ -1,5 +1,6 @@
 package com.klst.gossip;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
@@ -7,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.swing.event.EventListenerList;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -106,67 +108,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 		int min = Math.min(Math.min(Math.min(75, field.getDisplayLength()), field.getFieldLength()), GridField.MAXDISPLAY_LENGTH);
 		return Math.max(min, header.length());
 	}
-//	static private TableColumnModel initTableColumnModel(TabModel tabModel) { // OK ==> GridTableModel dataModel, TabModel tabModel
-//		TableColumnModelExt tcme = new DefaultTableColumnModelExt();
-//		GridField[] fields = tabModel.getFields(); 
-//		for (int f = 0; f < fields.length; f++) {	
-//			GridField field = fields[f];
-//			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
-//			int displayType = field.getDisplayType();
-//			String header = field.getHeader();
-//			String columnName = field.getColumnName();
-//			Class<?> columnClass = field.getClass();
-//			LOG.config("displayType="+displayType + " isKey="+field.isKey() + " isDisplayed="+isDisplayed + " isSelectionColumn="+field.isSelectionColumn() + 
-//					": fields["+f+"].ColumnName="+columnName + "/" + columnClass);
-//			
-//			int width = calculateWidth(field);
-//			TableCellRenderer cellRenderer = new MXTableRenderer();
-//			TableCellEditor cellEditor = null;
-//			TableColumnExt aColumn = new TableColumnExt(f, width, cellRenderer, cellEditor);
-//			aColumn.setHeaderValue(field.getHeader()); // TODO es gibt TableColumn.sizeWidthToFit()
-//			aColumn.setIdentifier(field); // GridField is Object Identifier
-//						
-//			if(isDisplayed) {
-//				// Both isDisplayed() and isDisplayedGrid() should be true
-//			} else {
-//				aColumn.setVisible(false);
-//			}	
-//			tcme.addColumn(aColumn);
-//		}
-//		LOG.config("GridField.length="+fields.length + " TableColumnModelExt="+tcme.getColumnCount(true));
-//		return tcme;
-//	}
-//	static private TableColumnModel initTableColumnModel(GridTable dataModel) { // OK
-//		TableColumnModelExt tcme = new DefaultTableColumnModelExt();
-//		GridField[] fields = dataModel.getFields();
-//		boolean readOnly = true; // alle sind RO
-//		for (int f = 0; f < fields.length; f++) {	
-//			GridField field = fields[f];
-//			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
-//			int displayType = field.getDisplayType();
-//			String header = field.getHeader();
-//			String columnName = field.getColumnName();
-//			Class<?> columnClass = dataModel.getColumnClass(f);
-//			LOG.config("XXXXXdisplayType="+displayType + " isKey="+field.isKey() + " isDisplayed="+isDisplayed + " isSelectionColumn="+field.isSelectionColumn() + 
-//					": fields["+f+"].ColumnName="+columnName + "/" + columnClass);
-//			
-////			int width = calculateWidth(field);
-//			TableCellRenderer cellRenderer = new MXTableRenderer();
-//			TableCellEditor cellEditor = null;
-//			TableColumnExt aColumn = new TableColumnExt(f, 10, cellRenderer, cellEditor);
-//			aColumn.setHeaderValue(field.getHeader()); // TODO es gibt TableColumn.sizeWidthToFit()
-//			aColumn.setIdentifier(field); // GridField is Object Identifier
-//						
-//			if(isDisplayed) {
-//				// Both isDisplayed() and isDisplayedGrid() should be true
-//			} else {
-//				aColumn.setVisible(false);
-//			}	
-//			tcme.addColumn(aColumn);
-//		}
-//		LOG.config("GridField.length="+fields.length + " TableColumnModelExt="+tcme.getColumnCount(true));
-//		return tcme;
-//	}
+	
 	static private TableColumnModel initTableColumnModel(GridTableModel dataModel, TabModel tabModel) {  // OK ==> GridTableModel dataModel, TabModel tabModel
 		LOG.config("para GridTableModel dataModel:"+dataModel + " cols "+dataModel.getColumnCount());
 		TableColumnModelExt tcme = dataModel.getFields();
@@ -217,30 +159,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 //		setDefaultRenderer(Object.class, new MXTableRenderer(gtm)); // DefaultTableRenderer geht wohl nicht
 		LOG.config("tableHeader ColumnCount="+tableHeader.getColumnModel().getColumnCount());
 	}
-//	private MXTable(GridTable dataModel) {
-//		super(dataModel, initTableColumnModel(dataModel)); // TableModel dm, TableColumnModel cm
-//		tcme = (TableColumnModelExt)columnModel; // protected TableModel in super.columnModel
-//		LOG.config("columnModel ColumnCount="+tcme.getColumnCount());
-//		
-//		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
-//		setColumnControlVisible(isColumnControlVisible); // column control to the trailing corner of the scroll pane 
-//
-//		// replace grid lines with striping 
-//		setShowGrid(showHorizontalLines, showVerticalLines);
-//		addHighlighter(highlighter);
-//
-//		// JXTable uses instances of this as per-class default renderers:
-//		setDefaultRenderer(Object.class, new DefaultTableRenderer());
-////		setDefaultRenderer(Object.class, new MXTableRenderer(dataModel)); // auf diesen Renderer kommt es nicht an !!!!!!!!!!!!!!!!!!!!!!
-//		
-//		// in JTable: protected JTableHeader      tableHeader
-//		// überschreiben mit JXTableHeader ... new JXTableHeader(columnModel);
-////		tableHeader = new JXTableHeader(tcme);
-////		tableHeader.getColumnModel()
-//		LOG.config("tableHeader ColumnCount="+tableHeader.getColumnModel().getColumnCount() 
-//				+ " tableHeader"+tableHeader 
-//				+ " tableHeader.getColumnModel()"+tableHeader.getColumnModel());
-//	}
+
 	private MXTable(GridTableModel dataModel) { // GUT fürGenericFormPanel
                                // dataModel instanceof GridTableModel extends DefaultTableModel extends AbstractTableModel implements TableModel 
                                // mit FieldsModelExt implements TableColumnModelExt
@@ -293,8 +212,26 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 //     */
 //	@Override // implemeted in JXTable
 //    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-//    	LOG.warning("renderer:"+renderer + " R/C:"+row+"/"+column);
-//    	Component stamp = super.prepareRenderer(renderer, row, column);
+////    	LOG.warning("renderer:"+renderer + " R/C:"+row+"/"+column);
+//    	if(getTableColumnModelExt() instanceof FieldsModelExt) {
+//    		FieldsModelExt fme = (FieldsModelExt)getTableColumnModelExt();
+//    		Object identifier = fme.getColumnExt(column).getIdentifier();
+//    		TableCellRenderer fieldRenderer = fme.getColumnExt(column).getCellRenderer();
+//    		LOG.warning("TableColumnModelExt instanceof FieldsModelExt - renderer:"+renderer + " fieldRenderer:"+fieldRenderer 
+//    			+ " R/C:"+row+"/"+column + " "+identifier);
+//    		// damit kann ich abkürzen, wenn Value für die Ermittlung der Komponente nicht wichtig ist
+//    	}
+//    	if(getTableColumnModelExt() instanceof GridTableModel) {
+//    		GridTableModel gtm = (GridTableModel)getTableColumnModelExt();
+//    		GridField gf = gtm.getGridField(column);
+//    		LOG.warning("TableColumnModelExt instanceof GridTableModel - renderer:"+renderer + " R/C:"+row+"/"+column);
+//    	}
+//// Execption in AWT-EventQueue, bei refresh: wenn row=0
+//    	Component stamp = super.prepareRenderer(renderer, row, column); /* damit wird
+//    	 in JTable: Object value = getValueAt(row, column);
+//    	            ...
+//    	            return renderer.getTableCellRendererComponent(this, value, isSelected, hasFocus, row, column);
+//    	*/
 //    	LOG.config("renderer:"+renderer + " R/C:"+row+"/"+column + " stamp:"+stamp);
 //    	return stamp;
 //    }
@@ -329,8 +266,12 @@ in (swingx)public class DefaultTableColumnModelExt extends DefaultTableColumnMod
 //     */
 //	@Override // implemeted in JTable
 //	public Object getValueAt(int row, int column) {
+//		if(dataModel.getRowCount()==0) {
+//			LOG.warning("(row "+row+", column "+column+"): !!!!!!!!!!!!!!!!!!!!!");
+//			return null;
+//		}
 //		Object o = super.getValueAt(row, column);
-//		LOG.config("(row "+row+", column "+column+"):"+o);
+////		LOG.config("(row "+row+", column "+column+"):"+o);
 //		return o;
 //	}
 	
