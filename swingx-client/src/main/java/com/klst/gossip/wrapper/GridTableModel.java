@@ -2,6 +2,7 @@ package com.klst.gossip.wrapper;
 
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.table.DefaultTableModel;
@@ -132,13 +133,27 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 
  */
 	// stubs:
+	private boolean m_open = false;
 	private String m_whereClause;
 	private String m_orderClause;
+	
+	private final static boolean isOnlyCurrentRows = false;
+	private final static int ONLY_CURRENT_DAYS = 0;
+	private boolean m_onlyCurrentRows = isOnlyCurrentRows;
+	private int m_onlyCurrentDays = ONLY_CURRENT_DAYS;
+	
+	// wie GridTable:
 	public boolean setSelectWhereClause(String newWhereClause, boolean onlyCurrentRows, int onlyCurrentDays) {
-		LOG.warning("STUB newWhereClause="+newWhereClause);
+		if(m_open) {
+			LOG.log(Level.SEVERE, "Table already open - ignored");
+			return false;
+		}
+
 		m_whereClause = newWhereClause;
-		// TODO
-		return false;	
+		m_onlyCurrentRows = onlyCurrentRows;
+		m_onlyCurrentDays = onlyCurrentDays;
+		
+		return true;
 	}
 	public String getSelectWhereClause() {
 		return m_whereClause;
@@ -150,10 +165,11 @@ public class GridTableModel extends DefaultTableModel { // extends AbstractTable
 	public TableColumnModelExt getFields() {
 		return fields;
 	}
-	public void close (boolean finalCall) {
-		LOG.warning("nur Kompatibilität zu GridTable");
+	public void close(boolean finalCall) {
+		LOG.warning("nur Kompatibilität zu GridTable finalCall="+finalCall);
+		m_open = false;
 	}
-// ------------------------------- stubs TODO
+// ------------------------------- stubs
 	
 //    /**
 //     * {@inheritDoc}

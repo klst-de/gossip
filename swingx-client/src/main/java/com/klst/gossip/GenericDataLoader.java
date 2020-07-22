@@ -78,29 +78,34 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	public GenericDataLoader(GridTableModel gtm) { // GridTableModel extends DefaultTableModel extends AbstractTableModel implements Serializable
 		this.dataModel = gtm;
 		LOG.config("dataModel "+this.dataModel);
+		// TODO virtuelle Tabellen, s. GridTable: trxName = m_virtual ? Trx.createTrxName("Loader") : null;
 		this.trxName =  Trx.createTrxName(GenericDataLoader.class.getSimpleName());
 		trx  = trxName != null ? Trx.get(trxName, true) : null;	
 	}
 
 	// wrapper für dataModel:
 	private void setRowsToLoad(int expectedNumberofRows) {
-		if(dataModel instanceof GenericDataModel) {
-			((GenericDataModel)dataModel).setRowsToLoad(expectedNumberofRows);
-		}
+//		if(dataModel instanceof GenericDataModel) {
+//			((GenericDataModel)dataModel).setRowsToLoad(expectedNumberofRows);
+//		}
 		((GridTableModel)dataModel).setRowsToLoad(expectedNumberofRows);
 	}
 	private void add(List<Object[]> chunks) {
-		if(dataModel instanceof GenericDataModel) {
-			((GenericDataModel)dataModel).add(chunks);
-		}
+//		if(dataModel instanceof GenericDataModel) {
+//			((GenericDataModel)dataModel).add(chunks);
+//		}
 		((GridTableModel)dataModel).add(chunks);
 	}
-	
 	private String getTableName() {
-		if(dataModel instanceof GenericDataModel) {
-			return ((GenericDataModel)dataModel).getTableName();
-		}
+		((GridTableModel)dataModel).getSelectWhereClause();		
+//		if(dataModel instanceof GenericDataModel) {
+//			return ((GenericDataModel)dataModel).getTableName();
+//		}
 		return ((GridTableModel)dataModel).getTableName();		
+	}
+	private String getSelectWhereClause() {
+		String whereClause = ((GridTableModel)dataModel).getSelectWhereClause();	
+		return whereClause==null || whereClause.isEmpty() ? "" : " WHERE "+whereClause;
 	}
 	
 	/*
@@ -110,8 +115,43 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 	@Override
 	protected List<Object[]> doInBackground() throws Exception {
 		// zuerst die erwartete Menge ermitteln mit SELECT COUNT(*)
-		sql = this.getSelectCountStar();
+		sql = this.getSelectCountStar(getSelectWhereClause());
 		LOG.config(sql + "; trxName:"+getTrxName());
+/* TODO
+
+02:16:15.438   WindowFrame.windowClosing: TODO [26]
+[WARNING] com.mchange.v2.resourcepool.BasicResourcePool@2bec854f -- an attempt to checkout a resource was interrupted, and the pool is still live: some other thread must have either interrupted the Thread attempting checkout!java.lang.InterruptedException
+	at java.lang.Object.wait(Native Method)
+	at com.mchange.v2.resourcepool.BasicResourcePool.awaitAvailable(BasicResourcePool.java:1315)
+	at com.mchange.v2.resourcepool.BasicResourcePool.prelimCheckoutResource(BasicResourcePool.java:557)
+	at com.mchange.v2.resourcepool.BasicResourcePool.checkoutResource(BasicResourcePool.java:477)
+	at com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.checkoutPooledConnection(C3P0PooledConnectionPool.java:525)
+	at com.mchange.v2.c3p0.impl.AbstractPoolBackedDataSource.getConnection(AbstractPoolBackedDataSource.java:128)
+	at org.compiere.db.DB_PostgreSQL.getCachedConnection(DB_PostgreSQL.java:526)
+	at org.compiere.db.CConnection.getConnection(CConnection.java:1357)
+	at org.compiere.util.DB.createConnection(DB.java:455)
+	at org.compiere.util.DB.getConnectionRO(DB.java:404)
+	at org.compiere.db.PreparedStatementProxy.init(PreparedStatementProxy.java:66)
+	at org.compiere.db.PreparedStatementProxy.<init>(PreparedStatementProxy.java:44)
+	at org.compiere.db.ProxyFactory.newCPreparedStatement(ProxyFactory.java:56)
+	at org.compiere.util.DB.prepareStatement(DB.java:784)
+	at org.compiere.util.DB.prepareStatement(DB.java:753)
+	at com.klst.gossip.GenericDataLoader.doInBackground(GenericDataLoader.java:115)
+	at com.klst.gossip.GenericDataLoader.doInBackground(GenericDataLoader.java:1)
+	at javax.swing.SwingWorker$1.call(SwingWorker.java:295)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at javax.swing.SwingWorker.run(SwingWorker.java:334)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+02:16:15.468   Tab.setLoadState: Batch StateValue:DONE [26]
+02:16:15.483   Tab.setLoadState: Batch StateValue:DONE [26]
+02:16:15.507   Tab.setLoadState: Attendance StateValue:DONE [26]
+02:16:15.523   Tab.setLoadState: Attendance StateValue:DONE [26]
+
+
+ */
 		pstmt = DB.prepareStatement(sql, getTrxName());
 		try {
 			resultSet = pstmt.executeQuery();
@@ -126,7 +166,7 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		close();
 		
 		// jetzt die tatsächlichen Daten holen
-		sql = getSelectAll();
+		sql = getSelectAll(getSelectWhereClause());
 		LOG.config(expectedNumberofRows + " rows expected, trxName:"+getTrxName() + ", sql query=\n"+sql);
 		dbResultRows = new ArrayList<Object[]>(expectedNumberofRows);
 		pstmt = DB.prepareStatement(sql, getTrxName());
@@ -172,10 +212,10 @@ public class GenericDataLoader extends SwingWorker<List<Object[]>, Object[]> imp
 		return trxName;
 	}
 	// SelectCountStar und SelectAll haben gemeinsame where clause, aus GridTable.m_whereClause und RO/RW Access TODO
-    private String getSelectCountStar() {
-    	return "SELECT COUNT(*) FROM "+getTableName();
+    private String getSelectCountStar(String where) {
+    	return "SELECT COUNT(*) FROM "+getTableName() + where;
     }
-    private String getSelectAll() {
+    private String getSelectAll(String where) {
     	LOG.config("dataModel.ColumnCount="+dataModel.getColumnCount());
 		StringBuffer select = new StringBuffer("SELECT ");
 		for(int f=0; f<dataModel.getColumnCount(); f++) {
