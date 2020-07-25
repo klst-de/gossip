@@ -91,6 +91,8 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	JRadioButtonMenuItem miPlastikLaF; // jgoodies
 	JRadioButtonMenuItem miCompiereLaF; // compiere
 	JRadioButtonMenuItem miCompiereIceLaF;
+	JRadioButtonMenuItem miLiquidLaF; // Miroslav Lazarevic (Mickey) - mickey@birosoft.com https://sourceforge.net/projects/liquidlnf/
+
 	// Platform dependent:
 	JRadioButtonMenuItem miMotifLaF;
 	JRadioButtonMenuItem miWindowsLaF;
@@ -313,6 +315,17 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
         });
         group.add(miGimpLaF);
         mLuf.add(miGimpLaF);
+        
+        mLuf.addSeparator(); // ------------------------- 
+
+        miLiquidLaF = new JRadioButtonMenuItem("Liquid");
+        miLiquidLaF.setMnemonic(KeyEvent.VK_Q);
+        miLiquidLaF.addActionListener(event -> {
+        	miGimpLaF.setSelected(true);
+        	updateLaF("com.birosoft.liquid.LiquidLookAndFeel");
+        });
+        group.add(miLiquidLaF);
+        mLuf.add(miLiquidLaF);
         
         mLuf.addSeparator(); // -------------------------
         
