@@ -91,7 +91,8 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	JRadioButtonMenuItem miPlastikLaF; // jgoodies
 	JRadioButtonMenuItem miCompiereLaF; // compiere
 	JRadioButtonMenuItem miCompiereIceLaF;
-	JRadioButtonMenuItem miLiquidLaF; // Miroslav Lazarevic (Mickey) - mickey@birosoft.com https://sourceforge.net/projects/liquidlnf/
+	JRadioButtonMenuItem miLiquidLaF; // https://sourceforge.net/projects/liquidlnf/ Miroslav Lazarevic (Mickey) - mickey@birosoft.com
+	JRadioButtonMenuItem miNapkinLaF; // https://sourceforge.net/projects/napkinlaf/ Ken Arnold
 
 	// Platform dependent:
 	JRadioButtonMenuItem miMotifLaF;
@@ -270,7 +271,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
         mLuf.addSeparator(); // ------------------------- 
         
         miCompiereLaF = new JRadioButtonMenuItem("Compiere: BlueMetal");
-        miCompiereLaF.setMnemonic(KeyEvent.VK_A);
+        miCompiereLaF.setMnemonic(KeyEvent.VK_B);
         miCompiereLaF.addActionListener(event -> {
         	updateLaF(crossPlatformLookAndFeelClassName, new CompiereTheme());
         	miCompiereLaF.setSelected(true);
@@ -279,7 +280,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
         mLuf.add(miCompiereLaF);
       
         miCompiereIceLaF = new JRadioButtonMenuItem("Compiere: Ice");
-        miCompiereIceLaF.setMnemonic(KeyEvent.VK_A);
+        miCompiereIceLaF.setMnemonic(KeyEvent.VK_I);
         miCompiereIceLaF.addActionListener(event -> {
         	updateLaF(crossPlatformLookAndFeelClassName, new CompiereThemeBlueMetal());
         	miCompiereIceLaF.setSelected(true);
@@ -321,11 +322,20 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
         miLiquidLaF = new JRadioButtonMenuItem("Liquid");
         miLiquidLaF.setMnemonic(KeyEvent.VK_Q);
         miLiquidLaF.addActionListener(event -> {
-        	miGimpLaF.setSelected(true);
-        	updateLaF("com.birosoft.liquid.LiquidLookAndFeel");
+        	miLiquidLaF.setSelected(true);
+        	updateLaF("com.birosoft.liquid.LiquidLookAndFeel"); // extends javax.swing.plaf.basic.BasicLookAndFeel
         });
         group.add(miLiquidLaF);
         mLuf.add(miLiquidLaF);
+        
+        miNapkinLaF = new JRadioButtonMenuItem("Napkin");
+        miNapkinLaF.setMnemonic(KeyEvent.VK_K);
+        miNapkinLaF.addActionListener(event -> {
+        	miNapkinLaF.setSelected(true);
+        	updateLaF("net.sourceforge.napkinlaf.NapkinLookAndFeel"); // extends javax.swing.plaf.basic.BasicLookAndFeel
+        });
+        group.add(miNapkinLaF);
+        mLuf.add(miNapkinLaF);
         
         mLuf.addSeparator(); // -------------------------
         
