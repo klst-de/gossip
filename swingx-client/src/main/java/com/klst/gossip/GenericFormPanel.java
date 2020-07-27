@@ -196,7 +196,7 @@ public class GenericFormPanel implements FormPanel {
 		for( Iterator<JComponent> iterator = selections.iterator(); iterator.hasNext(); i++ ) {
 			JComponent component = iterator.next();
 			/*
-Parameters:
+GridBagConstraints Parameters:
     gridx The initial gridx value.
     gridy The initial gridy value.
     gridwidth The initial gridwidth value.
