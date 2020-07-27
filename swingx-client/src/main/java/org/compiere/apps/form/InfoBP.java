@@ -11,8 +11,6 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
 import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.GridTable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MLocation;
@@ -26,6 +24,7 @@ import org.jdesktop.swingx.JXTaskPane;
 import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericFormPanel;
 import com.klst.gossip.MXTable;
+import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.gossip.wrapper.TabModel;
 import com.klst.gossip.wrapper.WindowModel;
 
@@ -60,8 +59,8 @@ public class InfoBP extends GenericFormPanel {
 	// super.miniTable contains BPartner info is managed by superclass
 	private MXTable contactTbl; // = new MXTable();
 	private MXTable locationTbl; // = new MXTable(); // renamed address to location
-	private GridTable contactTableModel; // renamed to contactTableModel
-	private GridTable locationTableModel;
+	private GridTableModel contactTableModel; // renamed to contactTableModel
+	private GridTableModel locationTableModel;
 	
 	@Override // dimension calculated for mainPanel, use 50% height for bpPanel
 	protected void setPreferredSize(Dimension dimension) {
@@ -77,10 +76,10 @@ public class InfoBP extends GenericFormPanel {
 		
 		WindowModel gridWindow = super.getWindowModel();
 
-		GridTab contactTab = gridWindow.getTab(1); // es gibt 3 Tabs : 0==>BP, 1==>Contact, 2==>Location
-		contactTableModel = contactTab.getTableModel(); // getTableModel() macht boolean initTab(boolean synchron)
-		GridTab locationTab = gridWindow.getTab(2);
-		locationTableModel = locationTab.getTableModel();
+		TabModel contactTab = gridWindow.getTab(1); // es gibt 3 Tabs : 0==>BP, 1==>Contact, 2==>Location
+		contactTableModel = contactTab.getGridTableModel(); // getTableModel() macht boolean initTab(boolean synchron)
+		TabModel locationTab = gridWindow.getTab(2);
+		locationTableModel = locationTab.getGridTableModel();
 		
 		if(miniTable instanceof MXTable) {
 			MXTable mxTable = (MXTable)miniTable;
@@ -88,10 +87,10 @@ public class InfoBP extends GenericFormPanel {
 			for (int i = 0; i < mxTable.getColumnCount(); i++) {
 				// getColumnExt(i) : The return value is null, if the column atposition columnIndex is not of type TableColumnExt.
 				// mxTable.getColumnExt(i).getIdentifier() liefert Object GridField
-				LOG.config("i="+i + ":"+mxTable.getColumn(i) + "/"+mxTable.getColumnExt(i) + " - "+mxTable.getColumnExt(i).getIdentifier()); 
+//				LOG.config("i="+i + ":"+mxTable.getColumn(i) + "/"+mxTable.getColumnExt(i) + " - "+mxTable.getColumnExt(i).getIdentifier()); 
 				Object identifier = mxTable.getColumnExt(i).getIdentifier();
 				GridField gridField = ((GridField)identifier);
-				LOG.config("i="+i + ":"+gridField.getColumnName() + "/"+gridField.getColumnSQL(false) ); 
+				LOG.config("i="+i + ": ColumnName/ColumnSQL="+gridField.getColumnName() + "/"+gridField.getColumnSQL(false) + " - "+identifier); 
 				String columnName = gridField.getColumnName();
 				if(I_C_BPartner.COLUMNNAME_C_BPartner_ID.equals(columnName)) {
 					column_index_Record_ID = i;
@@ -146,7 +145,7 @@ public class InfoBP extends GenericFormPanel {
 	}
 
 	// returns bp valueAtName
-	private Object setSelectWhereClause(GridTable gridTableModel) {
+	private Object setSelectWhereClause(GridTableModel gridTableModel) {
 		int bpSelectedRow = super.miniTable.getSelectedRow();
 		LOG.config("TableName="+gridTableModel.getTableName() + " WhereClause:"+gridTableModel.getSelectWhereClause() 
 			+ " BP SelectedRow:"+bpSelectedRow
@@ -191,11 +190,9 @@ public class InfoBP extends GenericFormPanel {
 					);
 				
 				if(column_index_C_Location_ID==columnSM.getAnchorSelectionIndex()) {
-					// eigentlich sollte der ActionListener dran kommen. ABER das tut nicht! Untersuchen TODO
 					int selectedRow = miniTable.getSelectedRow();
 					Object value = miniTable.getValueAt(selectedRow, column_index_C_Location_ID);
-					if(value!=null) {
-						
+					if(value!=null) {					
 						Integer key = (Integer) value;
 						MLocation mLocation = new MLocation(Env.getCtx(), key.intValue(), null); // String trxName
 						// Das Öffnen von Window kann ich nocht nciht implementieren, aber GOOGLE_MAPS
@@ -215,7 +212,7 @@ public class InfoBP extends GenericFormPanel {
 	protected void registerTableSelectionListener() { // für Component miniTable, also BP
 		MXTable miniTable = (MXTable)getTable(); // getTable() returns JTable, but instance is MXTable
 		
-		LOG.config("TableSelectionListener registriert!!!!!");
+//		LOG.config("TableSelectionListener registriert!!!!!");
 		miniTable.addMiniTableSelectionListener(event -> {
 			LOG.config("TableSelectionListener event:"+event);
 			Object source = event.getSource();
@@ -235,17 +232,14 @@ public class InfoBP extends GenericFormPanel {
 				Object bpValueAtName = setSelectWhereClause(); // for contactTableModel and locationTableModel
 				subPane.setTitle(Msg.translate(Env.getCtx(), "ContactAndAddress") + (bpValueAtName==null ? ":" : " for "+bpValueAtName));
 
-				TabModel tabModel = getWindowModel().getTab(1);
-				contactTableModel = tabModel.getTableModel();
-				GenericDataLoader dataLoader = new GenericDataLoader(tabModel.getGridTableModel());
+				// reload data
+				contactTableModel.setRowCount(0); // deleting-all-the-rows-in-a-jtable
+				GenericDataLoader dataLoader = new GenericDataLoader(contactTableModel);
 				dataLoader.execute();
-//				Vector<Vector<Object>> data = null; //super.getData(contactTableModel);
-//				DefaultTableModel dataModel = new DefaultTableModel(data, super.getFieldsNames(contactTableModel));
-//				contactTbl.setModel(dataModel);
-				// TODO Laden
 				
-//				DefaultTableModel locModel = new DefaultTableModel(super.getData(locationTableModel), super.getFieldsNames(locationTableModel));
-//				addressTbl.setModel(locModel);
+				// oder kürzer:
+				locationTableModel.setRowCount(0);
+				new GenericDataLoader(locationTableModel).execute();
 				
 			} else {
 				LOG.config("source NOT JTable:"+source);		
