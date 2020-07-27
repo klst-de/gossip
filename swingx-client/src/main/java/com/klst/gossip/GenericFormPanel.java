@@ -422,10 +422,10 @@ Parameters:
 			String value = (String)(selectionFld.getValue());
 			if(value.isEmpty()) {
 				LOG.config(header+" kein where Zusatz");
-				removeRestriction(field.getColumnName());
+				removeRestriction(field.getColumnSQL(false));
 			} else {
-//				log.config(header+" where Zusatz: " + field.getColumnName()+" LIKE '"+value+"%'");
-				addRestriction(field.getColumnName(), MQuery.LIKE, value+"%");
+//				log.config(header+" where Zusatz: " + field.getColumnSQL(false)+" LIKE '"+value+"%'");
+				addRestriction(field.getColumnSQL(false), MQuery.LIKE, value+"%");
 			}
 			if(selectionFld.hasChanged()) {
 				selectionFld.set_oldValue();
