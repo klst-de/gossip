@@ -382,6 +382,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             refreshItem.setName("refresh");
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
+            	LOG.config("Source:"+event.getSource());
             	Component c = this.getSelectedTab();
             	if(c instanceof Tab) {
             		Tab tab = (Tab)c;
@@ -394,6 +395,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             	} else {
             		LOG.warning("refresh on SelectedTab Component "+c+ " , "+this);
             	}
+//            	((JMenuItem)(event.getSource())).setVisible(false); // ??????????????????????????????
             });
             mEdit.add(refreshItem);
 

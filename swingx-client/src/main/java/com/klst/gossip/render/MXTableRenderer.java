@@ -186,7 +186,9 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 				}
 				break;
 			case DisplayType.YesNo:    // 20
-				cellRendererComponent = getRenderer_YesNo(value, field);
+				if(value!=null) {
+					cellRendererComponent = getRenderer_YesNo(value, field);
+				}
 				break;
 			case DisplayType.Location: // 21
 //				field.setDisplayType(DisplayType.TableDir); // TODO zoom
@@ -292,9 +294,9 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
     static final String white_check_mark = "\u2705";
 
     private Component getRenderer_YesNo(Object value, GridField field) {
-    	if(value==null) {
-    		LOG.warning("null field "+field );
-    	}
+//    	if(value==null) {
+//    		LOG.warning("null field "+field );
+//    	}
     	if(USE_EMOJI) {
         	JRendererLabel jrl = new JRendererLabel();
         	if((Boolean)value) {

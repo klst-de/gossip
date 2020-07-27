@@ -52,11 +52,12 @@ public class TabModel extends GridTab {
 	private ArrayList<String>	m_parents = new ArrayList<String>(2);
 //	private GridTable.Loader gridTableLoader;
 	
+	// liefert GridTableModel mit gekapseltem compiereGridTable
 	public GridTableModel getGridTableModel() {
 		LOG.warning(">>> wrap");
-		GridTable gt = getTableModel();
+		GridTable compiereGridTable = getTableModel();
 		LOG.warning("<<< wrap done.");
-		return new GridTableModel(gt);
+		return new GridTableModel(compiereGridTable); // liefert GridTableModel extends DefaultTableModel extends AbstractTableModel
 	}
 	
 	// fast alle methoden kann ich überschreiben, ABER super.m_mTable ist private nur mit public GridTable getTableModel() erreichbar

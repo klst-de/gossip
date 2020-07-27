@@ -8,6 +8,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -17,9 +18,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 
-import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.model.GridTable;
+import org.compiere.util.Env;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
@@ -75,18 +75,25 @@ public class Tab extends JPanel implements ComponentListener {
 		this.tabModel = new TabModel(frame.windowModel.getTab(tabIndex).getM_vo(), frame.windowModel);
 		this.tabModel.initTab(false);
 		
-		String tableName = this.tabModel.get_TableName(); 
-		GridField[] gFields = this.tabModel.getFields(); 
-		LOG.config(" tableName="+tableName+" gFields.length="+gFields.length);
+//		String tableName = this.tabModel.get_TableName(); 
+//		GridField[] gFields = this.tabModel.getFields(); 
+//		LOG.config(" tableName="+tableName+" gFields.length="+gFields.length);
+//		
+//		GridTable gridTable = this.tabModel.getTableModel();
+//		LOG.warning("GridTable gridTable.Class="+gridTable.getClass());
 		
-		GridTable gridTable = this.tabModel.getTableModel();
+//		Properties props = Env.getCtx();
+//		for(Object key: props.keySet()) {
+//			LOG.config("Ctx "+key + " : " + props.getProperty(key.toString()));
+//		}
+		this.gtm = this.tabModel.getGridTableModel();
 		
 		this.addComponentListener(this);
 		this.setName(this.tabModel.getName());
 		
-/* TODO GridTab Bridge
+/* 
  in GridTab gibt es ein GridTable m_mTable // GridTable extends AbstractTableModel
- wir wollen unser eigenes Model haben GenericDataModel extends AbstractTableModel
+ wir wollen unser eigenes Model haben GenericDataModel/GridTableModel extends AbstractTableModel
  und org.jdesktop.swingx.JXTable nutzen, darin 
  - GenericEditor
  - NumberEditor
@@ -205,7 +212,7 @@ public class Tab extends JPanel implements ComponentListener {
         	Tab t = getTabs().get(i); 
         	frame.tabPane.addTab(gt.getName(), t);
         	t.initModelAndTable(preferredDim);
-        	t.initDataLoader();
+        	t.initDataLoader(); // ?kann ich DataLoader für tab>0 jetzt schon initialisieren?
         }
         frame.jPanel.add(frame.tabPane, BorderLayout.CENTER);
         frame.pack();
@@ -220,7 +227,7 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-		gtm = this.tabModel.getGridTableModel();
+//		gtm = this.tabModel.getGridTableModel();
 		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+tabModel.isSingleRow());
 		Dimension preferredDim = useDim;
 		if(preferredDim==null && tabModel.isSingleRow()) {
