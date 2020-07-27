@@ -329,8 +329,7 @@ GridBagConstraints Parameters:
 		// dann miniTable und selections controler definieren
 		
 		if(miniTable==null) {
-			miniTable = //MXTable.createXTable(gridTableModel);
-					MXTable.createXTable(gridTableModel, tabModel);
+			miniTable = MXTable.createXTable(gridTableModel);
 		}
 		
 		// delete all the rows-in jTable before reload
@@ -358,25 +357,8 @@ GridBagConstraints Parameters:
 		
 	}
 
-//	protected void formatTableFields(GridTable gridTableModel, MXTable minitable) {
-//		GridField[] fields = gridTableModel.getFields();
-//		boolean readOnly = true; // alle sind RO
-//		for (int f = 0; f < minitable.getColumnCount(); f++) {	
-//			GridField field = fields[f];
-//			boolean isDisplayed = field.isDisplayed() & field.isDisplayedGrid(); // nur fields anzeigen, die isDisplayed UND isDisplayedGrid sind
-//			int displayType = field.getDisplayType();
-//			String header = field.getHeader();
-//			String columnName = field.getColumnName();
-//			Class<?> columnClass = gridTableModel.getColumnClass(f);
-//			LOG.config("displayType="+displayType + " isKey="+field.isKey() + " isDisplayed="+isDisplayed + " isSelectionColumn="+field.isSelectionColumn() + 
-//					": fields["+f+"].ColumnName="+columnName + " =?= " + minitable.getColumnName(f) + 
-//					" ColumnClass:"+minitable.getColumnClass(f) + "/" + columnClass);
-//			assert(columnName.equals(minitable.getColumnName(f)));
-//		}
-//	}
-	
 	protected void addSelection(GridField[] fields) {
-		LOG.config("additional selectionFields"); // TODO brauche ich das??????
+		LOG.config("no additional selectionFields"); // to be implemented in subclass
 	}
 
 	static final int _YesNo = 319; // List reference_Value_ID for Yes and No and optional any/both // @see 53365:Yes-No-Unknown

@@ -46,7 +46,7 @@ public class Tab extends JPanel implements ComponentListener {
 
 	private WindowFrame frame;
 	private TabModel tabModel;
-	private GridTableModel gtm;
+	private GridTableModel gridTableModel;
 	private GenericDataLoader dataLoader;
 	int currentRow = -1;
 
@@ -86,7 +86,7 @@ public class Tab extends JPanel implements ComponentListener {
 //		for(Object key: props.keySet()) {
 //			LOG.config("Ctx "+key + " : " + props.getProperty(key.toString()));
 //		}
-		this.gtm = this.tabModel.getGridTableModel();
+		this.gridTableModel = this.tabModel.getGridTableModel();
 		
 		this.addComponentListener(this);
 		this.setName(this.tabModel.getName());
@@ -123,7 +123,7 @@ public class Tab extends JPanel implements ComponentListener {
 	public void refresh() {
 //		gtm.getDataVector().removeAllElements(); // leeren aber nicht entfernen == clear
 //		gtm.getDataVector().clear();
-		gtm.setRowCount(0); // @see https://stackoverflow.com/questions/6232355/deleting-all-the-rows-in-a-jtable
+		gridTableModel.setRowCount(0); // @see https://stackoverflow.com/questions/6232355/deleting-all-the-rows-in-a-jtable
 		frame.tableStatus.setText(""); // cancelled Status
 		this.dataLoader = initDataLoader();
 		this.dataLoader.execute();
@@ -131,11 +131,11 @@ public class Tab extends JPanel implements ComponentListener {
 	
 	private void updateStatusBar() {
 //		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(dataModel.getRowCount());
-		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(gtm.getRowCount());
-		if(gtm.getRowCount()==gtm.getRowsToLoad()) {
+		StringBuilder text = new StringBuilder("").append(currentRow+1).append("/").append(gridTableModel.getRowCount());
+		if(gridTableModel.getRowCount()==gridTableModel.getRowsToLoad()) {
 			// OK alles geladen
 		} else {
-			text.append("/").append(gtm.getRowsToLoad());
+			text.append("/").append(gridTableModel.getRowsToLoad());
 		}
 		frame.tableRows.setText(text.toString());
 	}
@@ -222,12 +222,11 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-		srp = new SingleRowPanel(this.gtm); // darin VPanel gekapselt!
+		srp = new SingleRowPanel(this.gridTableModel); // darin VPanel gekapselt!
 		return srp.getSingleRowPanelSize();
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {
-//		gtm = this.tabModel.getGridTableModel();
 		LOG.config("Tab.Name=:'"+this.getName()+"' isSingleRow:"+tabModel.isSingleRow());
 		Dimension preferredDim = useDim;
 		if(preferredDim==null && tabModel.isSingleRow()) {
@@ -239,7 +238,7 @@ public class Tab extends JPanel implements ComponentListener {
 		}
 		
 		// init
-		mXTable = MXTable.createXTable(this.gtm, tabModel); 
+		mXTable = MXTable.createXTable(this.gridTableModel); 
 		
 //		if(!gridTab.isSingleRow()) { // isSingleRow aka Single Row Panel in MigLayout für dieses Tab !!!!!!!!!!!!!!! TODO NOT raus - ist nur zum Test
 		if(tabModel.isSingleRow()) {	
@@ -267,7 +266,7 @@ public class Tab extends JPanel implements ComponentListener {
 //			DefaultTableModel dataModel = new DefaultTableModel(data, getFieldsNames(gridTableModel));
 			
 			//miniTable.setModel(dataModel);
-			mXTable.setModel(gtm); // bereits in MXTable.createXTable(gtm)
+			mXTable.setModel(gridTableModel); // bereits in MXTable.createXTable(gtm)
 			
 //			GridField[] fields = gridTableModel.getFields();
 //			assert(gridTableModel.getRowCount()==miniTable.getRowCount());
@@ -301,7 +300,7 @@ public class Tab extends JPanel implements ComponentListener {
 	
 
 	private GenericDataLoader initDataLoader() {
-		this.dataLoader = new GenericDataLoader(this.gtm);
+		this.dataLoader = new GenericDataLoader(this.gridTableModel);
         BindingGroup group = new BindingGroup();
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("progress"), frame.progressBar, BeanProperty.create("value")));
         group.addBinding(Bindings.createAutoBinding(READ, dataLoader, BeanProperty.create("state"), this, BeanProperty.create("loadState"))); // call setLoadState 

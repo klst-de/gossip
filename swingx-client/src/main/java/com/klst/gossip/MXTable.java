@@ -21,7 +21,6 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.wrapper.GridTableModel;
-import com.klst.gossip.wrapper.TabModel;
 import com.klst.icon.TableColumnControlButton;
 
 public class MXTable extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
@@ -40,25 +39,9 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 	private static Highlighter highlighter = HighlighterFactory.createAlternateStriping();
 			
 	// factory method aus org.jdesktop.swingx.demos.table.XTableDemo, erweitert, wird in GenericFormPanel und in Tab verwendet
-	public static MXTable createXTable(GridTableModel dataModel, TabModel tabModel) {
+	public static MXTable createXTable(GridTableModel dataModel) {
 		return new MXTable(dataModel);
 	}
-//	public static MXTable createXTable(TableModel dataModel) {
-//		LOG.config("????????????????????? dataModel:"+dataModel);
-//		if(dataModel instanceof GridTableModel) {
-//			return new MXTable((GridTableModel)dataModel);
-//		}
-//		if(dataModel instanceof GridTable) {
-//			// Ansatz 1:
-//			// - OK Header und Spalten synchron
-//			// - OK Splatenbreite berechnet, aber nicht aus den Zellen
-//			// - OK einige Spalten ausgeblendet
-//			// - NOK Zellen nur teilweise gerendert TODO
-//			return new MXTable((GridTable)dataModel);
-//		}
-//		LOG.warning("dataModel:"+dataModel);
-//		return new MXTable(dataModel);
-//	}
 	
     /**
      * {@inheritDoc}
