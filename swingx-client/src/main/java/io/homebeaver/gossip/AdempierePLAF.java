@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.adempiere.plaf;
+package io.homebeaver.gossip;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -38,16 +38,16 @@ import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
-import org.compiere.plaf.CompiereLookAndFeel;
-import org.compiere.plaf.CompiereThemeBlueMetal;
-import org.compiere.plaf.CompiereThemeIce;
-import org.compiere.swing.CButton;
-import org.compiere.swing.ColorBlind;
-import org.compiere.swing.ExtendedTheme;
+//import org.compiere.plaf.CompiereLookAndFeel;
+//import org.compiere.plaf.CompiereThemeBlueMetal;
+//import org.compiere.plaf.CompiereThemeIce;
+//import org.compiere.swing.CButton;
+//import org.compiere.swing.ColorBlind;
+//import org.compiere.swing.ExtendedTheme;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
 
-import com.jgoodies.looks.plastic.PlasticTheme;
+//import com.jgoodies.looks.plastic.PlasticTheme;
 
 /**
  *  Variable Pluggable Look And Feel.
@@ -59,6 +59,7 @@ import com.jgoodies.looks.plastic.PlasticTheme;
  *  @author Low Heng Sin
  *  @version 2006-11-27
  */
+//copied from package org.adempiere.plaf
 public final class AdempierePLAF
 {
 	/**	Logger			*/
