@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.adempiere;
+package io.homebeaver.gossip;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -25,13 +25,13 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.jnlp.BasicService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
+//import javax.jnlp.BasicService;
+//import javax.jnlp.ServiceManager;
+//import javax.jnlp.UnavailableServiceException;
 import javax.swing.ImageIcon;
 
 import org.compiere.db.CConnection;
-import org.compiere.db.CConnectionDialog;
+import org.compiere.db.CConnectionDialog; // (client) io.homebeaver.gossip.db
 import org.compiere.model.MClient;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
@@ -44,7 +44,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.Login;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
-import org.compiere.util.Splash;
+//import org.compiere.util.Splash; // (client) TODO io.homebeaver.gossip.???
 import org.compiere.util.Util;
 
 /**
@@ -439,39 +439,39 @@ public final class Adempiere
 	 * 	Get JNLP CodeBase
 	 *	@return code base or null
 	 */
-	public static URL getCodeBase()
-	{
-		try
-		{
-			BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService"); 
-			URL url = bs.getCodeBase();
-	        return url;
-		} 
-		catch(UnavailableServiceException ue) 
-		{
-			return null; 
-		} 
-	}	//	getCodeBase
-	
-	/**
-	 * @return True if client is started using web start
-	 */
-	public static boolean isWebStartClient()
-	{
-		return getCodeBase() != null;
-	}
-
-	/**
-	 * 	Get JNLP CodeBase Host
-	 *	@return code base or null
-	 */
-	public static String getCodeBaseHost()
-	{
-		URL url = getCodeBase();
-		if (url == null)
-			return null;
-		return url.getHost();
-	}	//	getCodeBase
+//	public static URL getCodeBase()
+//	{
+//		try
+//		{
+//			BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService"); 
+//			URL url = bs.getCodeBase();
+//	        return url;
+//		} 
+//		catch(UnavailableServiceException ue) 
+//		{
+//			return null; 
+//		} 
+//	}	//	getCodeBase
+//	
+//	/**
+//	 * @return True if client is started using web start
+//	 */
+//	public static boolean isWebStartClient()
+//	{
+//		return getCodeBase() != null;
+//	}
+//
+//	/**
+//	 * 	Get JNLP CodeBase Host
+//	 *	@return code base or null
+//	 */
+//	public static String getCodeBaseHost()
+//	{
+//		URL url = getCodeBase();
+//		if (url == null)
+//			return null;
+//		return url.getHost();
+//	}	//	getCodeBase
 
 	/*************************************************************************
 	 *  Startup Client/Server.
@@ -542,7 +542,7 @@ public final class Adempiere
 		if (attributes == null || attributes.length () == 0)
 		{
 			CConnection cc = new CConnection("");
-			CConnectionDialog ccd = new CConnectionDialog (cc);
+			CConnectionDialog ccd = new CConnectionDialog (cc); // TODO
 			cc = ccd.getConnection ();
 			if (!cc.isDatabaseOK() && !ccd.isCancel()) {
 				cc.testDatabase(true);
@@ -631,7 +631,7 @@ public final class Adempiere
 	 */
 	public static void main (String[] args)
 	{
-		Splash.getSplash();
+//		Splash.getSplash(); // TODO
 		startup(true);     //  error exit and initUI
 
 		//  Start with class as argument - or if nothing provided with Client
