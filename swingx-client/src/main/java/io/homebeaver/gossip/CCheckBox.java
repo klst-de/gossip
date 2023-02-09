@@ -23,7 +23,7 @@
 * Contributors:                                                      * 
 *  - Bahman Movaqar (bmovaqar@users.sf.net)                          * 
 **********************************************************************/
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.awt.Color;
 import java.awt.event.InputEvent;
@@ -47,6 +47,7 @@ import org.compiere.model.GridField;
  * @author Jorg Janke
  * @version $Id: CCheckBox.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
+//copied from package org.compiere.swing
 public class CCheckBox extends JCheckBox implements CEditor {
 	/**
 	 * 

@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
@@ -28,6 +28,7 @@ import org.compiere.model.GridField;
  *  @author     Jorg Janke
  *  @version    $Id: CEditor.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
+// copied from package org.compiere.swing
 public interface CEditor extends PropertyChangeListener
 {
 	/**

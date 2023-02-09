@@ -23,7 +23,7 @@
 * Contributors:                                                      * 
 *  - Bahman Movaqar (bmovaqar@users.sf.net)                          * 
 **********************************************************************/ 
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.awt.Color;
 import java.awt.event.InputEvent;
@@ -40,10 +40,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentInputMapUIResource;
 
 import org.adempiere.exceptions.ValueChangeListener;
-import org.adempiere.plaf.AdempierePLAF;
+//import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
-import org.compiere.plaf.CompiereColor;
-import org.compiere.plaf.CompiereLookAndFeel;
+//import org.compiere.plaf.CompiereColor;
+//import org.compiere.plaf.CompiereLookAndFeel;
 
 /**
  * Adempiere Button supporting colored Background
@@ -51,6 +51,7 @@ import org.compiere.plaf.CompiereLookAndFeel;
  * @author Jorg Janke
  * @version $Id: CButton.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
+//copied from package org.compiere.swing
 public class CButton extends JButton implements CEditor {
 	/**
 	 * 

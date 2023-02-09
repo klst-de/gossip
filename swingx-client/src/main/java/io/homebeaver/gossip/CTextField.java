@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -25,7 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.text.Document;
 
 import org.adempiere.exceptions.ValueChangeListener;
-import org.adempiere.plaf.AdempierePLAF;
+//import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
 
 /**
@@ -38,6 +38,7 @@ import org.compiere.model.GridField;
  * 				<li>ADEMPIERE-72 VLookup and Info Window improvements
  * 					https://adempiere.atlassian.net/browse/ADEMPIERE-72
  */
+//copied from package org.compiere.swing
 public class CTextField extends JTextField 
 	implements CEditor, KeyListener
 {

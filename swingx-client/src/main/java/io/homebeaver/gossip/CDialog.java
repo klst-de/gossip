@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.awt.Container;
 import java.awt.Dialog;
@@ -44,6 +44,7 @@ import javax.swing.KeyStroke;
  *		<li> FR [ 145 ] Show dialogs like modal just for parent
  *		@see https://github.com/adempiere/adempiere/issues/145
  */
+//copied from package org.compiere.swing
 public class CDialog extends JDialog 
 	implements ActionListener, MouseListener
 {

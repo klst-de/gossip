@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.swing;
+package io.homebeaver.gossip;
 
 import java.awt.Color;
 import java.awt.event.FocusEvent;
@@ -46,9 +46,9 @@ import javax.swing.plaf.ComboBoxUI;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.exceptions.ValueChangeListener;
-import org.adempiere.plaf.AdempierePLAF;
+//import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
-import org.compiere.plaf.CompiereComboBoxUI;
+//import org.compiere.plaf.CompiereComboBoxUI;
 import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
 
@@ -58,6 +58,7 @@ import org.compiere.util.Trace;
  *  @author     Jorg Janke
  *  @version    $Id: CComboBox.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
+//copied from package org.compiere.swing
 public class CComboBox extends JComboBox
 	implements CEditor
 {
