@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.db;
+package io.homebeaver.gossip.db;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -25,14 +25,25 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
+import org.compiere.db.CConnection; // ==> DBConnection extends CConnection
+import org.compiere.db.Database;
+/*
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -41,9 +52,29 @@ import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
+
+public class CButton extends JButton implements CEditor 
+public class CCheckBox extends JCheckBox implements CEditor
+public class CComboBox extends JComboBox implements CEditor
+public class CDialog extends JDialog implements ActionListener, MouseListener
+public class CLabel extends JLabel
+public class CPanel extends JPanel
+public class CTextField extends JTextField implements CEditor, KeyListener
+
+
+*/
 import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
+
+import io.homebeaver.gossip.AdempierePLAF;
+import io.homebeaver.gossip.CButton;
+import io.homebeaver.gossip.CCheckBox;
+import io.homebeaver.gossip.CComboBox;
+import io.homebeaver.gossip.CDialog;
+import io.homebeaver.gossip.CLabel;
+import io.homebeaver.gossip.CPanel;
+import io.homebeaver.gossip.CTextField;
 
 /**
  *  Connection Dialog.
@@ -52,6 +83,7 @@ import org.compiere.util.ValueNamePair;
  *  @author     Marek Mosiewicz<marek.mosiewicz@jotel.com.pl> - support for RMI over HTTP
  *  @version    $Id: CConnectionDialog.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
+//copied from (client) package org.compiere.db
 public class CConnectionDialog extends CDialog implements ActionListener
 {
 	/**
@@ -71,7 +103,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	 *  Connection Dialog
 	 *  @param cc Adempiere Connection
 	 */
-	public CConnectionDialog(CConnection cc)
+	public CConnectionDialog(DBConnection cc)
 	{
 		super((Frame)null, true);
 		try
@@ -84,28 +116,28 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			log.log(Level.SEVERE, "", e);
 		}
 		AdempierePLAF.showCenterScreen(this);
-	}   //  CConnection
+	}
 
 	/** Resources							*/
 	private static ResourceBundle res = ResourceBundle.getBundle("org.compiere.db.DBRes");
 
-	static
-	{
-		/** Connection Profiles					*/
-		CConnection.CONNECTIONProfiles = new ValueNamePair[]{
-			new ValueNamePair("L", res.getString("LAN")),
-			new ValueNamePair("V", res.getString("VPN")),
-			new ValueNamePair("W", res.getString("WAN"))
-		};
-	}
+//	static
+//	{
+//		/** Connection Profiles	- seit 15 Jahren deprecated und nur LAN */
+//		CConnection.CONNECTIONProfiles = new ValueNamePair[]{
+//			new ValueNamePair("L", res.getString("LAN")),
+//			new ValueNamePair("V", res.getString("VPN")),
+//			new ValueNamePair("W", res.getString("WAN"))
+//		};
+//	}
 	
 	/**	 Default HTTP Port					*/
 	public static final String	APPS_PORT_HTTP = "80";
 	/** Default RMI Port					*/
 	public static final String	APPS_PORT_JNP = "1099";
 	/** Connection							*/
-	private CConnection 	m_cc = null;
-	private CConnection 	m_ccResult = null;
+	private DBConnection 	m_cc = null;
+	private DBConnection 	m_ccResult = null;
 	private boolean 		m_updating = false;
 	private boolean     	m_saved = false;
 
@@ -298,17 +330,18 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	 *  Set Connection
 	 *  @param cc - if null use current connection
 	 */
-	public void setConnection (CConnection cc)
+	public void setConnection (DBConnection cc)
 	{
 		m_cc = cc;
 		if (m_cc == null)
 		{
-			m_cc = CConnection.get();
-			m_cc.setName();
+			m_cc = DBConnection.get();
+			m_cc.setName(); // protected in (base) org.compiere.db, 
+			// in (client) ist diese Klasse im gleichnamigen package - gelöst mit DBConnection
 		}
 		//	Should copy values
 		try {
-			m_ccResult = (CConnection)m_cc.clone();
+			m_ccResult = (DBConnection)m_cc.clone();
 		} catch (CloneNotSupportedException e) {
 			// should not happen
 			e.printStackTrace();
@@ -326,10 +359,10 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	 *  Get Connection
 	 *  @return CConnection
 	 */
-	public CConnection getConnection()
+	public DBConnection getConnection()
 	{
 		return m_ccResult;
-	}   //  getConnection;
+	}
 
 	/**
 	 *  ActionListener
