@@ -66,6 +66,7 @@ public class CTextField extends JTextField implements CEditor, KeyListener
 import org.compiere.util.CLogger;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
+import org.jdesktop.swingx.JXButton;
 
 import io.homebeaver.gossip.AdempierePLAF;
 import io.homebeaver.gossip.CButton;
@@ -148,8 +149,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
 	private CPanel southPanel = new CPanel();
-	private CButton bOK = AdempierePLAF.getOKButton();
-	private CButton bCancel = AdempierePLAF.getCancelButton();
+	private JXButton bOK = AdempierePLAF.getOKButton();
+	private JXButton bCancel = AdempierePLAF.getCancelButton();
 	private FlowLayout southLayout = new FlowLayout();
 	private GridBagLayout centerLayout = new GridBagLayout();
 	private CLabel nameLabel = new CLabel();

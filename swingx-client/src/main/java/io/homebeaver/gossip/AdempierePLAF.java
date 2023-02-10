@@ -27,11 +27,18 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -46,6 +53,10 @@ import javax.swing.plaf.metal.MetalTheme;
 //import org.compiere.swing.ExtendedTheme;
 import org.compiere.util.Ini;
 import org.compiere.util.ValueNamePair;
+import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXTitledSeparator;
+import org.jdesktop.swingx.color.ColorBlind;
+import org.jdesktop.swingx.icon.JXIcon;
 
 //import com.jgoodies.looks.plastic.PlasticTheme;
 
@@ -320,78 +331,79 @@ public final class AdempierePLAF
 		ArrayList<ValueNamePair> plafList = new ArrayList<ValueNamePair>();
 		//e-evolution vpj-cd 19102006
 		ValueNamePair vp = null;
-		ArrayList<ValueNamePair> metalThemes = new ArrayList<ValueNamePair>();
-		ArrayList<ValueNamePair> plasticThemes = new ArrayList<ValueNamePair>();
-		
-		try
-		{
-			Class.forName("com.jgoodies.looks.plastic.Plastic3DLookAndFeel");
-			vp = new ValueNamePair("org.adempiere.plaf.AdempiereLookAndFeel", org.adempiere.plaf.AdempiereLookAndFeel.NAME);
-			plafList.add(vp);
-			s_vp_adempiereTheme = new ValueNamePair("org.adempiere.plaf.AdempiereTheme", AdempiereThemeInnova.NAME);
-			plasticThemes.add (s_vp_adempiereTheme);
-			
-			List<?> installedThemes = AdempiereLookAndFeel.getInstalledThemes();
-			for(Object t : installedThemes) {
-				MetalTheme theme = (MetalTheme)t;
-				vp = new ValueNamePair(theme.getClass().getName(), theme.getName());
-				plasticThemes.add(vp);
-			}
-		}
-		catch (Exception e)
-		{
-			log.severe("Plastic look and feel not found");
-		}
-		//e-evolution vpj-cd 19102006
-		vp = new ValueNamePair("org.compiere.plaf.CompiereLookAndFeel", CompiereLookAndFeel.NAME);
-		plafList.add (vp);
-		
-		//Metal
-		s_vp_compiereTheme = new ValueNamePair("org.compiere.plaf.CompiereThemeBlueMetal", CompiereThemeBlueMetal.NAME);
-		metalThemes.add (s_vp_compiereTheme);
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.CompiereThemeIce", CompiereThemeIce.NAME));
-		s_vp_metalTheme = new ValueNamePair("javax.swing.plaf.metal.OceanTheme", "Ocean");
-		metalThemes.add (s_vp_metalTheme);
-		metalThemes.add (new ValueNamePair("javax.swing.plaf.metal.DefaultMetalTheme", "Steel"));
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.AquaTheme", "Aqua"));
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.CharcoalTheme", "Charcoal"));
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.ContrastTheme", "Contrast"));
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.EmeraldTheme", "Emerald"));
-		metalThemes.add (new ValueNamePair("org.compiere.plaf.RubyTheme", "Ruby"));
-
-		//  Install discovered PLAFs
-		for (int i = 0; i < plafList.size(); i++)
-		{
-			vp = plafList.get(i);
-			UIManager.installLookAndFeel(vp.getName(), vp.getValue());
-		}
-
-		//  Fill Available PLAFs
-		plafList = new ArrayList<ValueNamePair>();
+//		ArrayList<ValueNamePair> metalThemes = new ArrayList<ValueNamePair>();
+//		ArrayList<ValueNamePair> plasticThemes = new ArrayList<ValueNamePair>();
+//		
+//		try
+//		{
+//			Class.forName("com.jgoodies.looks.plastic.Plastic3DLookAndFeel");
+//			vp = new ValueNamePair("org.adempiere.plaf.AdempiereLookAndFeel", org.adempiere.plaf.AdempiereLookAndFeel.NAME);
+//			plafList.add(vp);
+//			s_vp_adempiereTheme = new ValueNamePair("org.adempiere.plaf.AdempiereTheme", AdempiereThemeInnova.NAME);
+//			plasticThemes.add (s_vp_adempiereTheme);
+//			
+//			List<?> installedThemes = AdempiereLookAndFeel.getInstalledThemes();
+//			for(Object t : installedThemes) {
+//				MetalTheme theme = (MetalTheme)t;
+//				vp = new ValueNamePair(theme.getClass().getName(), theme.getName());
+//				plasticThemes.add(vp);
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			log.severe("Plastic look and feel not found");
+//		}
+//		//e-evolution vpj-cd 19102006
+//		vp = new ValueNamePair("org.compiere.plaf.CompiereLookAndFeel", CompiereLookAndFeel.NAME);
+//		plafList.add (vp);
+//		
+//		//Metal
+//		s_vp_compiereTheme = new ValueNamePair("org.compiere.plaf.CompiereThemeBlueMetal", CompiereThemeBlueMetal.NAME);
+//		metalThemes.add (s_vp_compiereTheme);
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.CompiereThemeIce", CompiereThemeIce.NAME));
+//		s_vp_metalTheme = new ValueNamePair("javax.swing.plaf.metal.OceanTheme", "Ocean");
+//		metalThemes.add (s_vp_metalTheme);
+//		metalThemes.add (new ValueNamePair("javax.swing.plaf.metal.DefaultMetalTheme", "Steel"));
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.AquaTheme", "Aqua"));
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.CharcoalTheme", "Charcoal"));
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.ContrastTheme", "Contrast"));
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.EmeraldTheme", "Emerald"));
+//		metalThemes.add (new ValueNamePair("org.compiere.plaf.RubyTheme", "Ruby"));
+//
+//		//  Install discovered PLAFs
+//		for (int i = 0; i < plafList.size(); i++)
+//		{
+//			vp = plafList.get(i);
+//			UIManager.installLookAndFeel(vp.getName(), vp.getValue());
+//		}
+//
+//		//  Fill Available PLAFs
+//		plafList = new ArrayList<ValueNamePair>();
 		UIManager.LookAndFeelInfo[] lfInfo = UIManager.getInstalledLookAndFeels();
 		for (int i = 0; i < lfInfo.length; i++)
 		{
 			vp = new ValueNamePair (lfInfo[i].getClassName(), lfInfo[i].getName());
 			plafList.add(vp);
-			if (lfInfo[i].getName().equals(org.adempiere.plaf.AdempiereLookAndFeel.NAME))
+//			if (lfInfo[i].getName().equals(org.adempiere.plaf.AdempiereLookAndFeel.NAME))
+			if (lfInfo[i].getName().equals("Metal"))
 			{
 				s_defaultPLAF = vp;
-				log.finest(vp.getName() + " (default)");
+				log.info(vp.getName() + " (default)");
 			}
 			else
-				log.finest(vp.getName());
+				log.info(vp.getName());
 		}
-		s_looks = new ValueNamePair[plafList.size()];
-		plafList.toArray(s_looks);
-
-		//  Fill Available Themes
-		s_metalThemes = new ValueNamePair[metalThemes.size()];
-		metalThemes.toArray(s_metalThemes);
-		
-		s_plasticThemes = new ValueNamePair[plasticThemes.size()];
-		plasticThemes.toArray(s_plasticThemes);
-		//
-	//	printPLAFDefaults();
+//		s_looks = new ValueNamePair[plafList.size()];
+//		plafList.toArray(s_looks);
+//
+//		//  Fill Available Themes
+//		s_metalThemes = new ValueNamePair[metalThemes.size()];
+//		metalThemes.toArray(s_metalThemes);
+//		
+//		s_plasticThemes = new ValueNamePair[plasticThemes.size()];
+//		plasticThemes.toArray(s_plasticThemes);
+//		//
+//	//	printPLAFDefaults();
 	}   //  static Initializer
 
 
@@ -408,57 +420,57 @@ public final class AdempierePLAF
 	 *  Get the list of available Metal or Plastic Themes.
 	 *  @return Array of Strings with Names of Metal Themes
 	 */
-	public static ValueNamePair[] getThemes ()
-	{
-		LookAndFeel l = UIManager.getLookAndFeel();
-		if ( l instanceof AdempiereLookAndFeel)
-			return s_plasticThemes;
-		else if ( l instanceof MetalLookAndFeel)
-			return s_metalThemes;
-		return new ValueNamePair[0];
-	}   //  getThemes
+//	public static ValueNamePair[] getThemes ()
+//	{
+//		LookAndFeel l = UIManager.getLookAndFeel();
+//		if ( l instanceof AdempiereLookAndFeel)
+//			return s_plasticThemes;
+//		else if ( l instanceof MetalLookAndFeel)
+//			return s_metalThemes;
+//		return new ValueNamePair[0];
+//	}   //  getThemes
 
 	
 	/**************************************************************************
 	 *  Set PLAF based on Ini Properties
 	 */
-	public static void setPLAF ()
+	public static void setPLAF()
 	{
-		String look = Ini.getProperty(Ini.P_UI_LOOK);
-		String lookTheme = Ini.getProperty(Ini.P_UI_THEME);
+//		String look = Ini.getProperty(Ini.P_UI_LOOK);
+//		String lookTheme = Ini.getProperty(Ini.P_UI_THEME);
 		//  Search for PLAF
 		ValueNamePair plaf = null;
-		for (int i = 0; i < s_looks.length; i++)
-		{
-			if (s_looks[i].getName().equals(look))
-			{
-				plaf = s_looks[i];
-				break;
-			}
-		}
+//		for (int i = 0; i < s_looks.length; i++)
+//		{
+//			if (s_looks[i].getName().equals(look))
+//			{
+//				plaf = s_looks[i];
+//				break;
+//			}
+//		}
 		//  Search for Theme
 		ValueNamePair theme = null;
-		for (int i = 0; i < s_metalThemes.length; i++)
-		{
-			if (s_metalThemes[i].getName().equals(lookTheme))
-			{
-				theme = s_metalThemes[i];
-				break;
-			}
-		}
-		
-		if (theme == null) 
-		{
-			for (int i = 0; i < s_plasticThemes.length; i++)
-			{
-				if (s_plasticThemes[i].getName().equals(lookTheme))
-				{
-					theme = s_plasticThemes[i];
-					break;
-				}
-			}
-		}
-		//  Set PLAF
+//		for (int i = 0; i < s_metalThemes.length; i++)
+//		{
+//			if (s_metalThemes[i].getName().equals(lookTheme))
+//			{
+//				theme = s_metalThemes[i];
+//				break;
+//			}
+//		}
+//		
+//		if (theme == null) 
+//		{
+//			for (int i = 0; i < s_plasticThemes.length; i++)
+//			{
+//				if (s_plasticThemes[i].getName().equals(lookTheme))
+//				{
+//					theme = s_plasticThemes[i];
+//					break;
+//				}
+//			}
+//		}
+//		//  Set PLAF
 		setPLAF (plaf == null ? s_defaultPLAF : plaf, theme, true);
 	}   //  setPLAF
 
@@ -473,6 +485,7 @@ public final class AdempierePLAF
 	{
 		if (plaf == null)
 			return;
+		log.info(plaf	+ (theme == null ? "" : (" - " + theme)));
 		log.config(plaf	+ (theme == null ? "" : (" - " + theme)));
 
 		//	  Look & Feel
@@ -494,15 +507,15 @@ public final class AdempierePLAF
 		
 		//  Default Theme
 		boolean metal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
-		boolean adempiere = AdempiereLookAndFeel.class.isAssignableFrom(lafClass);
-		boolean compiere = CompiereLookAndFeel.class.isAssignableFrom(lafClass);
+//		boolean adempiere = AdempiereLookAndFeel.class.isAssignableFrom(lafClass);
+//		boolean compiere = CompiereLookAndFeel.class.isAssignableFrom(lafClass);
 		if (theme == null && metal)
 		{
-			if (compiere)
-				theme = s_vp_compiereTheme;
-			else if (adempiere)
-				theme = s_vp_adempiereTheme;
-			else
+//			if (compiere)
+//				theme = s_vp_compiereTheme;
+//			else if (adempiere)
+//				theme = s_vp_adempiereTheme;
+//			else
 				theme = s_vp_metalTheme;
 		}
 		if (theme != null && metal && theme.getValue().length() > 0)
@@ -511,11 +524,11 @@ public final class AdempierePLAF
 			{
 				Class<?> c = Class.forName(theme.getValue());
 				MetalTheme t = (MetalTheme)c.newInstance();
-				if (compiere)
-					CompiereLookAndFeel.setCurrentTheme(t);
-				else if (adempiere && t instanceof PlasticTheme)
-					AdempiereLookAndFeel.setCurrentTheme((PlasticTheme)t);
-				else 
+//				if (compiere)
+//					CompiereLookAndFeel.setCurrentTheme(t);
+//				else if (adempiere && t instanceof PlasticTheme)
+//					AdempiereLookAndFeel.setCurrentTheme((PlasticTheme)t);
+//				else 
 					MetalLookAndFeel.setCurrentTheme(t);
 				//
 				if (updateIni)
@@ -535,7 +548,7 @@ public final class AdempierePLAF
 			log.severe(e.getMessage());
 		}
 		log.config(plaf + " - " + theme);
-	//	printPLAFDefaults();
+		printPLAFDefaults();
 	}   //  setPLAF
 
 	/**
@@ -562,11 +575,11 @@ public final class AdempierePLAF
 	/**
 	 *  Reset PLAF Settings
 	 */
-	public static void reset ()
-	{
-		//  Clean Theme Properties
-		AdempierePLAF.setPLAF ();
-	}  //  reset
+//	public static void reset ()
+//	{
+//		//  Clean Theme Properties
+//		AdempierePLAF.setPLAF ();
+//	}  //  reset
 
 	/**
 	 *  Print current UIDefaults
@@ -575,7 +588,16 @@ public final class AdempierePLAF
 	{
 		System.out.println(UIManager.getLookAndFeel());
 		Object[] keys = UIManager.getLookAndFeelDefaults().keySet().toArray();
+/* wg.
+Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$LCDContrastKey cannot be cast to class java.lang.Comparable (sun.awt.SunHints$LCDContrastKey is in module java.desktop of loader 'bootstrap'; java.lang.Comparable is in module java.base of loader 'bootstrap')
+	at java.base/java.util.ComparableTimSort.binarySort(ComparableTimSort.java:249)
+	at java.base/java.util.ComparableTimSort.sort(ComparableTimSort.java:207)
+	at java.base/java.util.Arrays.sort(Arrays.java:1040)
+	at io.homebeaver.gossip.AdempierePLAF.printPLAFDefaults(AdempierePLAF.java:582)
+
 		Arrays.sort(keys);
+
+ */
 		char lastStart = ' ';
 		for (int i = 0; i < keys.length; i++)
 		{
@@ -594,10 +616,10 @@ public final class AdempierePLAF
 	 *  Is AdempiereL&F the active L&F
 	 *  @return true if L&F is Adempiere
 	 */
-	public static boolean isActive()
-	{
-		return UIManager.getLookAndFeel() instanceof AdempiereLookAndFeel;
-	}   //  isActive
+//	public static boolean isActive()
+//	{
+//		return UIManager.getLookAndFeel() instanceof AdempiereLookAndFeel;
+//	}   //  isActive
 
 	/*************************************************************************/
 
@@ -607,10 +629,10 @@ public final class AdempierePLAF
 	 *  Create OK Button
 	 *  @return OK button
 	 */
-	public static CButton getOKButton()
+	public static JXButton getOKButton()
 	{
-		CButton b = new CButton();
-		b.setIcon(new ImageIcon(AdempierePLAF.class.getResource("icons/Ok24.gif")));
+		JXButton b = new JXButton();
+		b.setIcon(TangoRDialog_accept.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("OK"));
 		return b;
@@ -620,10 +642,10 @@ public final class AdempierePLAF
 	 *  Create Cancel Button
 	 *  @return Cancel button
 	 */
-	public static CButton getCancelButton()
+	public static JXButton getCancelButton()
 	{
-		CButton b = new CButton();
-		b.setIcon(new ImageIcon(AdempierePLAF.class.getResource("icons/Cancel24.gif")));
+		JXButton b = new JXButton();
+		b.setIcon(TangoRDialog_error_round.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("Cancel"));
 		return b;
@@ -649,35 +671,96 @@ public final class AdempierePLAF
 	 * @param laf Metal based look and feel
 	 * @param theme Metal based theme
 	 */
-	public static void setCurrentMetalTheme(MetalLookAndFeel laf, MetalTheme theme)
-	{
-		if (laf instanceof CompiereLookAndFeel)
-			CompiereLookAndFeel.setCurrentTheme(theme);
-		else if (laf instanceof AdempiereLookAndFeel && theme instanceof PlasticTheme)
-			AdempiereLookAndFeel.setCurrentTheme((PlasticTheme)theme);
-		else 
-			MetalLookAndFeel.setCurrentTheme(theme);
-	}
+//	public static void setCurrentMetalTheme(MetalLookAndFeel laf, MetalTheme theme)
+//	{
+//		if (laf instanceof CompiereLookAndFeel)
+//			CompiereLookAndFeel.setCurrentTheme(theme);
+//		else if (laf instanceof AdempiereLookAndFeel && theme instanceof PlasticTheme)
+//			AdempiereLookAndFeel.setCurrentTheme((PlasticTheme)theme);
+//		else 
+//			MetalLookAndFeel.setCurrentTheme(theme);
+//	}
 	
+    public static void main(String[] args) {
+        //Schedule a job for the event-dispatching thread:
+        //creating and showing this application's GUI.
+//    	if(args.length>0) LaFUtils.setLAF(args[0]);
+        SwingUtilities.invokeLater( () -> {
+        	//Turn off metal's use of bold fonts
+        	UIManager.put("swing.boldMetal", Boolean.FALSE);
+            createAndShowGUI();
+        });
+    }
+
+    /**
+     * Create the GUI and show it.
+     * For thread safety, this method should be invoked from the event-dispatching thread.
+     */
+    private static void createAndShowGUI() {
+        //Create and set up the window.
+        JFrame frame = new JFrame("set the defined PLAF "+UIManager.getLookAndFeel().getClass().getSimpleName());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Create and set up the content pane.
+        java.awt.BorderLayout layout = new java.awt.BorderLayout();
+        JPanel p = new JPanel(layout);
+        p.add(getOKButton(), java.awt.BorderLayout.WEST);
+        
+        JXTitledSeparator s = new JXTitledSeparator();
+        s.setTitle("how green-blindness people see the color");
+//        p.add(s, java.awt.BorderLayout.NORTH);
+        
+        JLabel earth = new JLabel();        
+        earth.setPreferredSize(new Dimension(100, 100));
+        earth.setMinimumSize(new Dimension(100, 100));
+        Color c = Color.RED;
+        earth.setOpaque(true);
+        earth.setBackground(c);
+        JLabel moon = new JLabel("how green-blindness people see the color");
+        moon.setPreferredSize(new Dimension(100, 100));
+        moon.setMinimumSize(new Dimension(100, 100)); 
+        moon.setOpaque(true);;
+        moon.setBackground(ColorBlind.getDichromatColor(c, ColorBlind.DEUTERANOPIA));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, earth, moon);
+        splitPane.setContinuousLayout(true);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(50);
+        p.add(splitPane, java.awt.BorderLayout.CENTER);
+        
+        p.add(getCancelButton(), java.awt.BorderLayout.EAST);
+        
+        JComponent contentPane = p;
+
+        contentPane.setOpaque(true); //content panes must be opaque
+        frame.setContentPane(contentPane);
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }
+
 	/**************************************************************************
 	 *  Start Class With Adempiere Look
 	 *  @param args first parameter is class to start, if none start PLAF Editor
 	 */
-	public static void main (String[] args)
+	public static void mainX (String[] args)
 	{
 		String jVersion = System.getProperty("java.version");
-		if (!(jVersion.startsWith("1.5")))
-		{
-			JOptionPane.showMessageDialog (null,
-				"Require Java Version 1.5 or up - Not " + jVersion,
-				"AdempierePLAF - Version Conflict",
-				JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
-		}
+//		if (!(jVersion.startsWith("1.5")))
+//		{
+//			JOptionPane.showMessageDialog (null,
+//				"Require Java Version 1.5 or up - Not " + jVersion,
+//				"AdempierePLAF - Version Conflict",
+//				JOptionPane.ERROR_MESSAGE);
+//			System.exit(1);
+//		}
 
 		//  set the defined PLAF
 		Ini.loadProperties (true);
-		setPLAF ();
+		Properties props = Ini.getProperties();
+		props.list(System.out);
+		log.info("------------------------");
+		setPLAF();
 		//
 		if (args.length == 0)
 		{

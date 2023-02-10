@@ -30,8 +30,11 @@ import java.util.logging.Level;
 //import javax.jnlp.UnavailableServiceException;
 import javax.swing.ImageIcon;
 
-import org.compiere.db.CConnection;
-import org.compiere.db.CConnectionDialog; // (client) io.homebeaver.gossip.db
+//import org.compiere.db.CConnection;
+//import org.compiere.db.CConnectionDialog; // (client) io.homebeaver.gossip.db
+import io.homebeaver.gossip.db.CConnectionDialog;
+import io.homebeaver.gossip.db.DBConnection;
+
 import org.compiere.model.MClient;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
@@ -522,7 +525,7 @@ public final class Adempiere
 		
 		//  Set Default Database Connection from Ini
 		validateConnectionDialog();
-		DB.setDBTarget(CConnection.get(getCodeBaseHost()));
+		DB.setDBTarget(DBConnection.get(null)); //getCodeBaseHost()));
 
 		if (isClient)		//	don't test connection
 			return false;	//	need to call
@@ -541,7 +544,7 @@ public final class Adempiere
 		
 		if (attributes == null || attributes.length () == 0)
 		{
-			CConnection cc = new CConnection("");
+			DBConnection cc = new DBConnection("");
 			CConnectionDialog ccd = new CConnectionDialog (cc); // TODO
 			cc = ccd.getConnection ();
 			if (!cc.isDatabaseOK() && !ccd.isCancel()) {

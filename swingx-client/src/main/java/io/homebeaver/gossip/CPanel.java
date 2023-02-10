@@ -21,10 +21,9 @@ import java.awt.LayoutManager;
 
 import javax.swing.JPanel;
 
-import org.adempiere.plaf.AdempiereLookAndFeel;
-import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.plaf.CompiereLookAndFeel;
+import org.compiere.plaf.LookAndFeelConstants;
 
 /**
  *  Adempiere Panel supporting colored Backgrounds
@@ -164,9 +163,9 @@ public class CPanel extends JPanel
 	public void setTabLevel (int level)
 	{
 		if (level == 0)
-			putClientProperty(AdempiereLookAndFeel.TABLEVEL, null);
+			putClientProperty(LookAndFeelConstants.TABLEVEL, null);
 		else {
-			putClientProperty(AdempiereLookAndFeel.TABLEVEL, Integer.valueOf(level));
+			putClientProperty(LookAndFeelConstants.TABLEVEL, Integer.valueOf(level));
 		}
 	}   //  setTabLevel
 

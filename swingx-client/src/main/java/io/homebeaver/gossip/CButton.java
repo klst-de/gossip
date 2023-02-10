@@ -40,10 +40,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentInputMapUIResource;
 
 import org.adempiere.exceptions.ValueChangeListener;
-//import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
-//import org.compiere.plaf.CompiereColor;
-//import org.compiere.plaf.CompiereLookAndFeel;
+import org.compiere.plaf.CompiereColor;
+import org.compiere.plaf.CompiereLookAndFeel;
 
 /**
  * Adempiere Button supporting colored Background
@@ -51,11 +50,11 @@ import org.compiere.model.GridField;
  * @author Jorg Janke
  * @version $Id: CButton.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
-//copied from package org.compiere.swing
+//copied from package org.compiere.swing , 
+// C steht für Compiere/Client!!! ? eher Client
+// ==> A für Adempiere/Application, nein die meisten Axxx Klassen stehen in org.compiere.apps
 public class CButton extends JButton implements CEditor {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 70278798402299341L;
 
 	/**
@@ -131,8 +130,13 @@ public class CButton extends JButton implements CEditor {
 	 * @param error
 	 *            error
 	 */
+	// implements interface CEditor
 	public void setBackground(boolean error) {
-	} // setBackground
+	}
+	// implements interface CEditor, defined in super
+//	public void setVisible (boolean visible) {
+//		super.setVisible(visible);
+//	}
 
 	/**
 	 * Set Standard Background
@@ -181,19 +185,21 @@ public class CButton extends JButton implements CEditor {
 	 * @param mandatory
 	 *            true, if you have to enter data
 	 */
+	// implements interface CEditor
 	public void setMandatory(boolean mandatory) {
 		m_mandatory = mandatory;
 		setBackground(false);
-	} // setMandatory
+	}
 
 	/**
 	 * Is Field mandatory
 	 * 
 	 * @return true, if mandatory
 	 */
+	// implements interface CEditor
 	public boolean isMandatory() {
 		return m_mandatory;
-	} // isMandatory
+	}
 
 	/**
 	 * Enable Editor
@@ -201,20 +207,22 @@ public class CButton extends JButton implements CEditor {
 	 * @param rw
 	 *            true, if you can enter/select data
 	 */
+	// implements interface CEditor
 	public void setReadWrite(boolean rw) {
 		if (isEnabled() != rw)
 			setEnabled(rw);
 		m_readWrite = rw;
-	} // setReadWrite
+	}
 
 	/**
 	 * Is it possible to edit
 	 * 
 	 * @return true, if editable
 	 */
+	// implements interface CEditor
 	public boolean isReadWrite() {
 		return m_readWrite;
-	} // isReadWrite
+	}
 
 	/**
 	 * Set Editor to value
@@ -222,30 +230,33 @@ public class CButton extends JButton implements CEditor {
 	 * @param value
 	 *            value of the editor
 	 */
+	// implements interface CEditor
 	public void setValue(Object value) {
 		if (value == null)
 			setText("");
 		else
 			setText(value.toString());
-	} // setValue
+	}
 
 	/**
 	 * Return Editor value
 	 * 
 	 * @return current value
 	 */
+	// implements interface CEditor
 	public Object getValue() {
 		return getText();
-	} // getValue
+	}
 
 	/**
 	 * Return Display Value
 	 * 
 	 * @return displayed String value
 	 */
+	// implements interface CEditor
 	public String getDisplay() {
 		return getText();
-	} // getDisplay
+	}
 
 	/**
 	 * Set Text & Mnemonic
@@ -349,15 +360,21 @@ public class CButton extends JButton implements CEditor {
 		
 	}
 
+	// implements interface CEditor, defined in super
+//	public void addVetoableChangeListener(VetoableChangeListener listener) {
+//		super.addVetoableChangeListener(listener);
+//	}
+	
 	@Override
+	// implements interface CEditor
 	public void addValueChangeListener(ValueChangeListener listener) {
-		// Not used
-		
+		// Not used	
 	}
 
 	@Override
+	// implements interface CEditor
 	public GridField getField() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-} // CButton
+}

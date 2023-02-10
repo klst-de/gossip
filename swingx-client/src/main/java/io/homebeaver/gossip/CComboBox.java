@@ -48,6 +48,7 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.exceptions.ValueChangeListener;
 //import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
+import org.compiere.plaf.CompiereComboBoxUI;
 //import org.compiere.plaf.CompiereComboBoxUI;
 import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
@@ -423,12 +424,12 @@ public class CComboBox extends JComboBox
 				b.addMouseListener(ml);
 		}
                 //begin  vpj-cd e-evolution               
-                if (getUI() instanceof org.adempiere.plaf.AdempiereComboBoxUI && !Trace.getCallerClass(1).startsWith("javax"))
-		{
-			JButton b = ((org.adempiere.plaf.AdempiereComboBoxUI)getUI()).getArrowButton();
-			if (b != null)
-				b.addMouseListener(ml);
-		}
+//                if (getUI() instanceof org.adempiere.plaf.AdempiereComboBoxUI && !Trace.getCallerClass(1).startsWith("javax"))
+//		{
+//			JButton b = ((org.adempiere.plaf.AdempiereComboBoxUI)getUI()).getArrowButton();
+//			if (b != null)
+//				b.addMouseListener(ml);
+//		}
                 //end vpj-cd e-evolution
 	}   //  addMouseListener
 
