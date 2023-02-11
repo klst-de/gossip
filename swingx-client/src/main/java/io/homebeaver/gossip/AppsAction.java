@@ -37,6 +37,8 @@ import javax.swing.KeyStroke;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
+import io.homebeaver.gossip.icon.IconFactory;
+
 /**
  *  Application Action.
  *		Creates Action with MenuItem and Button, delegate execution of action to an attached ActionListener instance
@@ -47,11 +49,8 @@ import org.compiere.util.Msg;
  *  @version 	$Id: AppsAction.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 //copied from package org.compiere.apps
-public final class AppsAction extends AbstractAction
-{
-	/**
-	 * 
-	 */
+public final class AppsAction extends AbstractAction {
+
 	private static final long serialVersionUID = 8522301377339185496L;
 
 	/**
@@ -178,11 +177,11 @@ public final class AppsAction extends AbstractAction
 	 *  @param small small
 	 *  @return Icon
 	 */
-	private ImageIcon getIcon(String name, boolean small)
-	{
-		String fullName = name + (small ? "16" : "24");
-		return Env.getImageIcon2(fullName);
-	}	//	getIcon
+	private Icon getIcon(String name, boolean small) {
+		return IconFactory.get(name, (small ? 16 : 24));
+//		String fullName = name + (small ? "16" : "24");
+//		return Env.getImageIcon2(fullName); // Env ist in (base) getImageIcon2 hat dort nichts zu suchen
+	}
 
 	/**
 	 *	Get Name/ActionCommand

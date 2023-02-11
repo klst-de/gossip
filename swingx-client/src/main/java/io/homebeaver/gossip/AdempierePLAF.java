@@ -59,6 +59,9 @@ import org.jdesktop.swingx.color.ColorBlind;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.RadianceIcon;
 
+import io.homebeaver.gossip.icon.TangoRDialog_accept;
+import io.homebeaver.gossip.icon.TangoRDialog_error_round;
+
 //import com.jgoodies.looks.plastic.PlasticTheme;
 
 /**
