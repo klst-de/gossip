@@ -57,6 +57,7 @@ import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXTitledSeparator;
 import org.jdesktop.swingx.color.ColorBlind;
 import org.jdesktop.swingx.icon.JXIcon;
+import org.jdesktop.swingx.icon.RadianceIcon;
 
 //import com.jgoodies.looks.plastic.PlasticTheme;
 
@@ -86,8 +87,10 @@ public final class AdempierePLAF
 	public static Color getFieldBackground_Normal()
 	{
 		//  window => white
-		return ColorBlind.getDichromatColor(UIManager.getColor("text"));
-	}   //  getFieldBackground_Normal
+//		ColorBlind cb = new ColorBlind();
+//		return ColorBlind.getDichromatColor(UIManager.getColor("text"));
+		return UIManager.getColor("text");
+	}
 
 	/**
 	 *  Return Error field background
@@ -632,7 +635,10 @@ Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$
 	public static JXButton getOKButton()
 	{
 		JXButton b = new JXButton();
-		b.setIcon(TangoRDialog_accept.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON));
+//		RadianceIcon base = TangoRDialog_accept.factory().createNewIcon();
+//		base.setDimension(new Dimension(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON)); 
+		RadianceIcon icon = TangoRDialog_accept.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON);
+		b.setIcon(icon);
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("OK"));
 		return b;

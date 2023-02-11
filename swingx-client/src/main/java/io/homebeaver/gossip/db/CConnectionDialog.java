@@ -149,8 +149,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
 	private CPanel southPanel = new CPanel();
-	private JXButton bOK = AdempierePLAF.getOKButton();
-	private JXButton bCancel = AdempierePLAF.getCancelButton();
+	private JXButton bOK = null; // AdempierePLAF.getOKButton();
+	private JXButton bCancel = null; // AdempierePLAF.getCancelButton();
 	private FlowLayout southLayout = new FlowLayout();
 	private GridBagLayout centerLayout = new GridBagLayout();
 	private CLabel nameLabel = new CLabel();
@@ -189,6 +189,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private void jbInit() throws Exception
 	{
 		this.setTitle(res.getString("CConnectionDialog"));
+		bOK = AdempierePLAF.getOKButton();
+		bCancel = AdempierePLAF.getCancelButton();
 		mainPanel.setLayout(mainLayout);
 		southPanel.setLayout(southLayout);
 		southLayout.setAlignment(FlowLayout.RIGHT);

@@ -10,7 +10,9 @@ public class DBConnection extends CConnection {
 		return get(null);
 	}
 	public static DBConnection get(String apps_host) {
-		return (DBConnection)CConnection.get(apps_host);
+		System.out.println("apps_host: "+apps_host);
+		return new DBConnection(apps_host);
+//		return (DBConnection)CConnection.get(apps_host);
 	}
 
 	public DBConnection(String host) {

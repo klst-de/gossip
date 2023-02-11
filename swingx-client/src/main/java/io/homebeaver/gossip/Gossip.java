@@ -62,7 +62,8 @@ import org.compiere.util.Util;
  * 		@see FR [ 1208 ] Look and Feel Correction - Print footer</a>
  *  
  */
-public final class Adempiere
+//copied from package org.adempiere.Adempiere
+public final class Gossip
 {
 	/** Timestamp                   */
 	static public final String	ID				= "$Id: Adempiere.java,v 1.8 2006/08/11 02:58:14 jjanke Exp $";
@@ -114,7 +115,9 @@ public final class Adempiere
 	private static CLogger		log = null;
 
 	static {
-		ClassLoader loader = Adempiere.class.getClassLoader();
+		System.out.println("static: ");
+		ClassLoader loader = Gossip.class.getClassLoader();
+		System.out.println("loader: "+loader);
 		InputStream inputStream = loader.getResourceAsStream("org/adempiere/version.properties");
 		if (inputStream != null)
 		{
@@ -499,7 +502,7 @@ public final class Adempiere
 
 		Ini.setClient (isClient);		//	init logging in Ini
 		//	Init Log
-		log = CLogger.getCLogger(Adempiere.class);
+		log = CLogger.getCLogger(Gossip.class);
 		//	Greeting
 		log.info(getSummaryAscii());
 		log.info(getAdempiereHome() + " - " + getJavaInfo() + " - " + getOSInfo());
@@ -508,7 +511,7 @@ public final class Adempiere
 	//	EnvLoader.load(Ini.ENV_PREFIX);
 
 		//  System properties
-		Ini.loadProperties (false);
+		Ini.loadGossipProperties(false);
 		
 		//	Set up Log
 		CLogMgt.setLevel(Ini.getProperty(Ini.P_TRACELEVEL));
@@ -530,8 +533,9 @@ public final class Adempiere
 		if (isClient)		//	don't test connection
 			return false;	//	need to call
 		
+		log.info("isClient="+isClient + " ... DO startupEnvironment("+isClient+")");
 		return startupEnvironment(isClient);
-	}   //  startup
+	}
 	
 	private static void validateConnectionDialog() {
 		String attributes = Ini.getProperty (Ini.P_CONNECTION);
@@ -634,11 +638,13 @@ public final class Adempiere
 	 */
 	public static void main (String[] args)
 	{
+		System.out.println("Splash: ");
 //		Splash.getSplash(); // TODO
 		startup(true);     //  error exit and initUI
 
 		//  Start with class as argument - or if nothing provided with Client
-		String className = "org.compiere.apps.AMenu";
+//		String className = "org.compiere.apps.AMenu";
+		String className = "io.homebeaver.gossip.db.CConnectionDialog";
 		for (int i = 0; i < args.length; i++)
 		{
 			if (!args[i].equals("-debug"))  //  ignore -debug
@@ -651,7 +657,7 @@ public final class Adempiere
 		try
 		{
 			Class<?> startClass = Class.forName(className);
-			startClass.newInstance();
+			startClass.getDeclaredConstructor().newInstance();
 		}
 		catch (Exception e)
 		{
