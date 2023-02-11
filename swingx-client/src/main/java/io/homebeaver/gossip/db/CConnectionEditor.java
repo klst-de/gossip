@@ -25,18 +25,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.adempiere.exceptions.ValueChangeListener;
-//import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
-//import org.compiere.swing.CEditor;
 import org.compiere.util.DB;
+import org.jdesktop.swingx.demos.svg.FeatheRdatabase;
+import org.jdesktop.swingx.demos.svg.FeatheRserver;
+import org.jdesktop.swingx.icon.JXIcon;
 
 import io.homebeaver.gossip.AdempierePLAF;
 import io.homebeaver.gossip.CEditor;
@@ -49,12 +51,9 @@ import io.homebeaver.gossip.CEditor;
  *  @version    $Id: CConnectionEditor.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
 //copied from (client) package org.compiere.db
-public class CConnectionEditor extends JComponent
-	implements CEditor
-{
-	/**
-	 * 
-	 */
+// TODO das ist nur ein testpgm ==> verschieben - raus aus main
+public class CConnectionEditor extends JComponent implements CEditor {
+
 	private static final long serialVersionUID = 259945316129032408L;
 
 	/**
@@ -69,12 +68,12 @@ public class CConnectionEditor extends JComponent
 		m_text.setEditable(false);
 		m_text.setBorder(null);
 		m_text.addMouseListener(ml);
-		m_server.setIcon(new ImageIcon(getClass().getResource("Server16.gif")));
+		m_server.setIcon(FeatheRserver.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
 		m_server.setFocusable(false);
 		m_server.setBorder(null);
 		m_server.setOpaque(true);
 		m_server.addMouseListener(ml);
-		m_db.setIcon(new ImageIcon(getClass().getResource("Database16.gif")));
+		m_db.setIcon(FeatheRdatabase.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
 		m_db.setFocusable(false);
 		m_db.setBorder(null);
 		m_db.setOpaque(true);
@@ -267,17 +266,42 @@ public class CConnectionEditor extends JComponent
 
 	
 	/**************************************************************************
-	 *  Test Method
+	 *  Test Methods
 	 *  @param args
 	 */
-	public static void main(String[] args)
-	{
-	//	System.out.println("CConnectionEditor");
-		JFrame frame = new JFrame("CConnectionEditor");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public static void main(String[] args) {
+        //Schedule a job for the event-dispatching thread:
+        //creating and showing this application's GUI.
+//    	if(args.length>0) LaFUtils.setLAF(args[0]);
+        SwingUtilities.invokeLater( () -> {
+        	//Turn off metal's use of bold fonts
+        	UIManager.put("swing.boldMetal", Boolean.FALSE);
+            createAndShowGUI();
+        });
+    }
+    /**
+     * Create the GUI and show it.
+     * For thread safety, this method should be invoked from the event-dispatching thread.
+     */
+    private static void createAndShowGUI() {
+        //Create and set up the window.
+        JFrame frame = new JFrame("CConnectionEditor "+UIManager.getLookAndFeel().getClass().getSimpleName());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Create and set up the content pane.
+//        java.awt.BorderLayout layout = new java.awt.BorderLayout();
+//        JPanel p = new JPanel(layout);
+//        p.add(new CConnectionEditor(), java.awt.BorderLayout.CENTER);
+//        JComponent contentPane = p;
+//
+//        contentPane.setOpaque(true); //content panes must be opaque
+//        frame.setContentPane(contentPane);
 		frame.getRootPane().getContentPane().add(new CConnectionEditor());
-		AdempierePLAF.showCenterScreen(frame);
-	}   //  main
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }
 
 
 	/**
