@@ -14,14 +14,14 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package org.compiere.grid.ed;
+package io.homebeaver.gossip;
 
 import java.util.logging.Level;
 
 import javax.swing.ComboBoxModel;
 
 import org.compiere.model.MLocator;
-import org.compiere.swing.CComboBox;
+//import org.compiere.swing.CComboBox;
 import org.compiere.util.CLogger;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -39,6 +39,7 @@ import org.compiere.util.ValueNamePair;
  *  				<li>release/380 add changes to record and compare values similar to
  *  					ADEMPIERE-72
  */
+//copied from package org.compiere.grid.ed
 public class VComboBox extends CComboBox
 {
 	/**
@@ -152,7 +153,7 @@ public class VComboBox extends CComboBox
 			{
 				if (((KeyNamePair) p).getID() == null)	//	-1 return null
 					return null;
-				return new Integer(((KeyNamePair)p).getID());
+				return Integer.valueOf(((KeyNamePair) p).getID());
 			}
 			else if (p instanceof ValueNamePair)
 			{
@@ -162,7 +163,7 @@ public class VComboBox extends CComboBox
 			}
 			else if (((NamePair) p).getID() == null)	//	-1 return null
 				return null;
-			return new Integer(((NamePair)p).getID());
+			return Integer.valueOf(((NamePair) p).getID());
 		}
 		return p;
 	}	//	getValue
