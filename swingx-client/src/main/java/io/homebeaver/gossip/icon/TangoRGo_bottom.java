@@ -1,4 +1,4 @@
-package io.homebeaver.gossip;
+package io.homebeaver.gossip.icon;
 
 import java.awt.*;
 import java.awt.geom.*;
@@ -12,7 +12,7 @@ import org.jdesktop.swingx.icon.RadianceIconUIResource;
  * This class has been automatically generated using 
  * <a href="https://jdesktop.wordpress.com/2022/09/25/svg-icons/">Radiance SVG converter</a>.
  */
-public class TangoRGo_down implements RadianceIcon {
+public class TangoRGo_bottom implements RadianceIcon {
     private Shape shape = null;
     private GeneralPath generalPath = null;
     private Paint paint = null;
@@ -52,9 +52,9 @@ g.setComposite(AlphaComposite.getInstance(3, 1.0f * origAlpha));
 transformsStack.push(g.getTransform());
 g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
 // _0_0
-g.setComposite(AlphaComposite.getInstance(3, 0.20454545f * origAlpha));
+g.setComposite(AlphaComposite.getInstance(3, 0.20454544f * origAlpha));
 transformsStack.push(g.getTransform());
-g.transform(new AffineTransform(1.2144700288772583f, 0.0f, 0.0f, 0.5954599976539612f, -6.163846015930176f, 16.3127498626709f));
+g.transform(new AffineTransform(1.2144659757614136f, 0.0f, 0.0f, 0.5954579710960388f, -6.163846015930176f, 20.1877498626709f));
 // _0_0_0
 if (generalPath == null) {
    generalPath = new GeneralPath();
@@ -63,58 +63,64 @@ if (generalPath == null) {
 }
 generalPath.moveTo(40.48186f, 36.421127f);
 generalPath.curveTo(40.50693f, 39.429993f, 37.530556f, 42.216076f, 32.67976f, 43.724407f);
-generalPath.curveTo(27.828962f, 45.23274f, 21.845285f, 45.23274f, 16.994488f, 43.724407f);
-generalPath.curveTo(12.143691f, 42.216076f, 9.1673155f, 39.429993f, 9.192387f, 36.421127f);
-generalPath.curveTo(9.1673155f, 33.412262f, 12.143691f, 30.626177f, 16.994488f, 29.117846f);
-generalPath.curveTo(21.845285f, 27.609514f, 27.828962f, 27.609514f, 32.67976f, 29.117846f);
+generalPath.curveTo(27.828962f, 45.23274f, 21.845287f, 45.23274f, 16.99449f, 43.724407f);
+generalPath.curveTo(12.143692f, 42.216076f, 9.167317f, 39.429993f, 9.192389f, 36.421127f);
+generalPath.curveTo(9.167317f, 33.412262f, 12.143692f, 30.626177f, 16.99449f, 29.117847f);
+generalPath.curveTo(21.845287f, 27.609516f, 27.828962f, 27.609516f, 32.67976f, 29.117847f);
 generalPath.curveTo(37.530556f, 30.626177f, 40.50693f, 33.412262f, 40.48186f, 36.421127f);
 generalPath.closePath();
 shape = generalPath;
-paint = new RadialGradientPaint(new Point2D.Double(24.837125778198242, 36.42112731933594), 15.644737f, new Point2D.Double(24.837125778198242, 36.42112731933594), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(0, 0, 0, 255)) : new Color(0, 0, 0, 255)),((colorFilter != null) ? colorFilter.filter(new Color(0, 0, 0, 0)) : new Color(0, 0, 0, 0))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(1.0f, 0.0f, 0.0f, 0.5367199778556824f, 0.0f, 16.87306022644043f));
+paint = new RadialGradientPaint(new Point2D.Double(24.837125778198242, 36.42112731933594), 15.644737f, new Point2D.Double(24.837125778198242, 36.42112731933594), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(0, 0, 0, 255)) : new Color(0, 0, 0, 255)),((colorFilter != null) ? colorFilter.filter(new Color(0, 0, 0, 0)) : new Color(0, 0, 0, 0))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(1.0f, 0.0f, 0.0f, 0.5367230176925659f, -1.517764033350617E-15f, 16.87306022644043f));
 g.setPaint(paint);
 g.fill(shape);
 g.setTransform(transformsStack.pop());
 g.setComposite(AlphaComposite.getInstance(3, 1.0f * origAlpha));
 transformsStack.push(g.getTransform());
-g.transform(new AffineTransform(-1.0f, 0.0f, 0.0f, -1.0f, 47.028560638427734f, 43.999210357666016f));
-// _0_0_1
-g.setComposite(AlphaComposite.getInstance(3, 1.0f * origAlpha));
-transformsStack.push(g.getTransform());
 g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
-// _0_0_1_0
+// _0_0_1
 if (generalPath == null) {
    generalPath = new GeneralPath();
 } else {
    generalPath.reset();
 }
-generalPath.moveTo(14.519136f, 38.5f);
-generalPath.lineTo(32.524166f, 38.496094f);
-generalPath.lineTo(32.524166f, 25.504469f);
-generalPath.lineTo(40.51953f, 25.496656f);
-generalPath.lineTo(23.37481f, 5.4992137f);
-generalPath.lineTo(6.5285587f, 25.497284f);
-generalPath.lineTo(14.524441f, 25.501074f);
-generalPath.lineTo(14.519136f, 38.5f);
+generalPath.moveTo(40.5f, 42.5f);
+generalPath.lineTo(40.5f, 36.50379f);
+generalPath.lineTo(25.375f, 36.50379f);
+generalPath.lineTo(40.46875f, 18.5f);
+generalPath.lineTo(32.5f, 18.4375f);
+generalPath.lineTo(32.5f, 5.5f);
+generalPath.lineTo(14.53125f, 5.5f);
+generalPath.lineTo(14.53125f, 18.4375f);
+generalPath.lineTo(6.5f, 18.4375f);
+generalPath.lineTo(21.875f, 36.50379f);
+generalPath.lineTo(6.5018964f, 36.50379f);
+generalPath.lineTo(6.5018964f, 42.5f);
+generalPath.lineTo(40.5f, 42.5f);
 generalPath.closePath();
 shape = generalPath;
-paint = new RadialGradientPaint(new Point2D.Double(35.292667388916016, 20.49449348449707), 16.9562f, new Point2D.Double(35.292667388916016, 20.49449348449707), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(115, 210, 22, 255)) : new Color(115, 210, 22, 255)),((colorFilter != null) ? colorFilter.filter(new Color(78, 154, 6, 255)) : new Color(78, 154, 6, 255))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(0.0f, -0.8430200219154358f, 1.020169973373413f, 0.0f, 0.606436014175415f, 42.58613967895508f));
+paint = new RadialGradientPaint(new Point2D.Double(34.6635856628418, 20.321210861206055), 16.9562f, new Point2D.Double(34.6635856628418, 20.321210861206055), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(115, 210, 22, 255)) : new Color(115, 210, 22, 255)),((colorFilter != null) ? colorFilter.filter(new Color(78, 154, 6, 255)) : new Color(78, 154, 6, 255))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(-1.871884976963574E-16f, 0.8430219888687134f, -1.0201679468154907f, -2.26522788707826E-16f, 46.39356994628906f, 1.4138540029525757f));
 g.setPaint(paint);
 g.fill(shape);
-paint = (colorFilter != null) ? colorFilter.filter(new Color(58, 115, 4, 255)) : new Color(58, 115, 4, 255);
+paint = (colorFilter != null) ? colorFilter.filter(new Color(59, 117, 2, 255)) : new Color(59, 117, 2, 255);
 stroke = new BasicStroke(1.0000004f,1,1,10.0f,null,0.0f);
 if (generalPath == null) {
    generalPath = new GeneralPath();
 } else {
    generalPath.reset();
 }
-generalPath.moveTo(14.519136f, 38.5f);
-generalPath.lineTo(32.524166f, 38.496094f);
-generalPath.lineTo(32.524166f, 25.504469f);
-generalPath.lineTo(40.51953f, 25.496656f);
-generalPath.lineTo(23.37481f, 5.4992137f);
-generalPath.lineTo(6.5285587f, 25.497284f);
-generalPath.lineTo(14.524441f, 25.501074f);
-generalPath.lineTo(14.519136f, 38.5f);
+generalPath.moveTo(40.5f, 42.5f);
+generalPath.lineTo(40.5f, 36.50379f);
+generalPath.lineTo(25.375f, 36.50379f);
+generalPath.lineTo(40.46875f, 18.5f);
+generalPath.lineTo(32.5f, 18.4375f);
+generalPath.lineTo(32.5f, 5.5f);
+generalPath.lineTo(14.53125f, 5.5f);
+generalPath.lineTo(14.53125f, 18.4375f);
+generalPath.lineTo(6.5f, 18.4375f);
+generalPath.lineTo(21.875f, 36.50379f);
+generalPath.lineTo(6.5018964f, 36.50379f);
+generalPath.lineTo(6.5018964f, 42.5f);
+generalPath.lineTo(40.5f, 42.5f);
 generalPath.closePath();
 shape = generalPath;
 g.setPaint(paint);
@@ -124,28 +130,28 @@ g.setTransform(transformsStack.pop());
 g.setComposite(AlphaComposite.getInstance(3, 0.5080214f * origAlpha));
 transformsStack.push(g.getTransform());
 g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
-// _0_0_1_1
+// _0_0_2
 if (generalPath == null) {
    generalPath = new GeneralPath();
 } else {
    generalPath.reset();
 }
-generalPath.moveTo(39.42989f, 24.993467f);
-generalPath.lineTo(32.0235f, 25.005186f);
-generalPath.lineTo(32.02618f, 37.998024f);
-generalPath.lineTo(16.647625f, 37.988873f);
-generalPath.curveTo(17.417547f, 19.647882f, 27.370274f, 26.9958f, 32.02928f, 16.341993f);
-generalPath.lineTo(39.42989f, 24.99347f);
+generalPath.moveTo(7.598671f, 19.005743f);
+generalPath.lineTo(15.005062f, 18.994024f);
+generalPath.lineTo(15.002381f, 6.001187f);
+generalPath.lineTo(30.380938f, 6.01034f);
+generalPath.curveTo(29.611015f, 24.35133f, 19.658287f, 17.003412f, 14.999278f, 27.657219f);
+generalPath.lineTo(7.598671f, 19.005743f);
 generalPath.closePath();
 shape = generalPath;
-paint = new RadialGradientPaint(new Point2D.Double(15.987215995788574, 1.5350308418273926), 17.171415f, new Point2D.Double(15.987215995788574, 1.5350308418273926), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 255)) : new Color(255, 255, 255, 255)),((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 0)) : new Color(255, 255, 255, 0))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(0.0f, -2.0467300415039062f, -1.557610034942627f, 0.0f, 44.1155891418457f, 66.93274688720703f));
+paint = new RadialGradientPaint(new Point2D.Double(15.987215995788574, 1.5350308418273926), 17.171415f, new Point2D.Double(15.987215995788574, 1.5350308418273926), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 255)) : new Color(255, 255, 255, 255)),((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 0)) : new Color(255, 255, 255, 0))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(-3.7494270752236227E-16f, 2.04672908782959f, 1.557610034942627f, 2.853404124580298E-16f, 2.9129700660705566f, -22.93354034423828f));
 g.setPaint(paint);
 g.fill(shape);
 g.setTransform(transformsStack.pop());
 g.setComposite(AlphaComposite.getInstance(3, 0.4812834f * origAlpha));
 transformsStack.push(g.getTransform());
 g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
-// _0_0_1_2
+// _0_0_3
 paint = (colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 255)) : new Color(255, 255, 255, 255);
 stroke = new BasicStroke(1.0000004f,0,0,10.0f,null,0.0f);
 if (generalPath == null) {
@@ -153,20 +159,55 @@ if (generalPath == null) {
 } else {
    generalPath.reset();
 }
-generalPath.moveTo(15.520704f, 37.496094f);
-generalPath.lineTo(31.522108f, 37.5f);
-generalPath.lineTo(31.522108f, 24.50705f);
-generalPath.lineTo(38.33892f, 24.491425f);
-generalPath.lineTo(23.384644f, 7.03884f);
-generalPath.lineTo(8.678118f, 24.495783f);
-generalPath.lineTo(15.518019f, 24.50103f);
-generalPath.lineTo(15.520704f, 37.496094f);
+generalPath.moveTo(31.529848f, 6.5f);
+generalPath.lineTo(15.519518f, 6.5f);
+generalPath.lineTo(15.519518f, 19.49295f);
+generalPath.lineTo(8.688424f, 19.49295f);
+generalPath.lineTo(23.14629f, 36.497837f);
+generalPath.lineTo(24.058638f, 36.510067f);
+generalPath.lineTo(38.27903f, 19.537918f);
+generalPath.lineTo(31.480757f, 19.471626f);
+generalPath.lineTo(31.529848f, 6.5f);
 generalPath.closePath();
 shape = generalPath;
 g.setPaint(paint);
 g.setStroke(stroke);
 g.draw(shape);
 g.setTransform(transformsStack.pop());
+g.setComposite(AlphaComposite.getInstance(3, 0.481f * origAlpha));
+transformsStack.push(g.getTransform());
+g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
+// _0_0_4
+shape = new Rectangle2D.Double(7.499846458435059, 37.5, 32.001644134521484, 4.009467124938965);
+paint = new RadialGradientPaint(new Point2D.Double(13.904815673828125, 36.435665130615234), 16.505941f, new Point2D.Double(13.904815673828125, 36.435665130615234), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(115, 210, 22, 255)) : new Color(115, 210, 22, 255)),((colorFilter != null) ? colorFilter.filter(new Color(78, 154, 6, 255)) : new Color(78, 154, 6, 255))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(0.9996690154075623f, -0.004782903008162975f, 0.0037853040266782045f, 0.7916679978370667f, -0.2218630015850067f, 10.413769721984863f));
+g.setPaint(paint);
+g.fill(shape);
+paint = (colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 255)) : new Color(255, 255, 255, 255);
+stroke = new BasicStroke(1.0000004f,0,0,4.0f,null,0.0f);
+shape = new Rectangle2D.Double(7.499846458435059, 37.5, 32.001644134521484, 4.009467124938965);
+g.setPaint(paint);
+g.setStroke(stroke);
+g.draw(shape);
+g.setTransform(transformsStack.pop());
+g.setComposite(AlphaComposite.getInstance(3, 0.17613636f * origAlpha));
+transformsStack.push(g.getTransform());
+g.transform(new AffineTransform(1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f));
+// _0_0_5
+if (generalPath == null) {
+   generalPath = new GeneralPath();
+} else {
+   generalPath.reset();
+}
+generalPath.moveTo(40.0f, 40.78582f);
+generalPath.curveTo(27.93934f, 36.73267f, 10.597476f, 42.08491f, 7.0220966f, 39.534363f);
+generalPath.lineTo(7.0376697f, 37.02778f);
+generalPath.lineTo(40.0f, 37.00457f);
+generalPath.lineTo(40.0f, 40.78582f);
+generalPath.closePath();
+shape = generalPath;
+paint = new RadialGradientPaint(new Point2D.Double(16.620784759521484, -29.73471450805664), 16.5f, new Point2D.Double(16.620784759521484, -29.73471450805664), new float[] {0.0f,1.0f}, new Color[] {((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 255)) : new Color(255, 255, 255, 255)),((colorFilter != null) ? colorFilter.filter(new Color(255, 255, 255, 0)) : new Color(255, 255, 255, 0))}, MultipleGradientPaint.CycleMethod.NO_CYCLE, MultipleGradientPaint.ColorSpaceType.SRGB, new AffineTransform(-2.1931850910186768f, -5.372224259190261E-4f, -2.6268360670655966E-4f, 0.9166669845581055f, 44.50040054321289f, 59.29962921142578f));
+g.setPaint(paint);
+g.fill(shape);
 g.setTransform(transformsStack.pop());
 g.setTransform(transformsStack.pop());
 g.setTransform(transformsStack.pop());
@@ -203,7 +244,7 @@ g.setTransform(transformsStack.pop());
      * @return The X of the bounding box of the original SVG image.
      */
     public static double getOrigX() {
-        return 4.969583988189697;
+        return 4.969549179077148;
     }
 
     /**
@@ -212,7 +253,7 @@ g.setTransform(transformsStack.pop());
      * @return The Y of the bounding box of the original SVG image.
      */
     public static double getOrigY() {
-        return 4.999183177947998;
+        return 5.0;
     }
 
 	/**
@@ -221,7 +262,7 @@ g.setTransform(transformsStack.pop());
 	 * @return The width of the bounding box of the original SVG image.
 	 */
 	public static double getOrigWidth() {
-		return 38.0610237121582;
+		return 38.06089782714844;
 	}
 
 	/**
@@ -230,7 +271,7 @@ g.setTransform(transformsStack.pop());
 	 * @return The height of the bounding box of the original SVG image.
 	 */
 	public static double getOrigHeight() {
-		return 38.24785232543945;
+		return 42.121944427490234;
 	}
 
 	/** The current width of this icon. */
@@ -243,7 +284,7 @@ g.setTransform(transformsStack.pop());
 	 * Creates a new transcoded SVG image. This is marked as private to indicate that app
 	 * code should be using the {@link #of(int, int)} method to obtain a pre-configured instance.
 	 */
-	private TangoRGo_down() {
+	private TangoRGo_bottom() {
         this.width = (int) getOrigWidth();
         this.height = (int) getOrigHeight();
 	}
@@ -320,7 +361,7 @@ g.setTransform(transformsStack.pop());
      * @return A new instance of this icon with specified dimensions.
      */
     public static RadianceIcon of(int width, int height) {
-       TangoRGo_down base = new TangoRGo_down();
+       TangoRGo_bottom base = new TangoRGo_bottom();
        base.width = width;
        base.height = height;
        return base;
@@ -334,7 +375,7 @@ g.setTransform(transformsStack.pop());
      * @return A new {@link UIResource} instance of this icon with specified dimensions.
      */
     public static RadianceIconUIResource uiResourceOf(int width, int height) {
-       TangoRGo_down base = new TangoRGo_down();
+       TangoRGo_bottom base = new TangoRGo_bottom();
        base.width = width;
        base.height = height;
        return new RadianceIconUIResource(base);
@@ -346,7 +387,7 @@ g.setTransform(transformsStack.pop());
      * @return Factory that returns instances of this icon on demand.
      */
     public static Factory factory() {
-        return TangoRGo_down::new;
+        return TangoRGo_bottom::new;
     }
 }
 
