@@ -38,6 +38,9 @@ import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import io.homebeaver.gossip.swingx.CDialog;
+import io.homebeaver.gossip.swingx.CPanel;
+
 //import org.adempiere.plaf.AdempierePLAF;
 //import org.compiere.swing.CDialog;
 //import org.compiere.swing.CPanel;

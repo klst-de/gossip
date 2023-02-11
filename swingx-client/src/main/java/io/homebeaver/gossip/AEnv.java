@@ -67,6 +67,10 @@ import org.compiere.util.Ini;
 import org.compiere.util.Msg;
 //import org.compiere.util.Splash;
 
+import io.homebeaver.gossip.swingx.CButton;
+import io.homebeaver.gossip.swingx.CFrame;
+import io.homebeaver.gossip.swingx.CMenuItem;
+
 /**
  *  Windows Application Environment and utilities
  *

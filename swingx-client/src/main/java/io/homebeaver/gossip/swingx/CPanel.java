@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package io.homebeaver.gossip;
+package io.homebeaver.gossip.swingx;
 
 import java.awt.Color;
 import java.awt.LayoutManager;
@@ -24,6 +24,8 @@ import javax.swing.JPanel;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.plaf.CompiereLookAndFeel;
 import org.compiere.plaf.LookAndFeelConstants;
+
+import io.homebeaver.gossip.AdempierePLAF;
 
 /**
  *  Adempiere Panel supporting colored Backgrounds
@@ -83,6 +85,7 @@ public class CPanel extends JPanel
 	public CPanel()
 	{
 		super ();
+		System.out.println("TODO: TODO TODO TODO"+toString()); // TODO
 		init();
 	}   //  CPanel
 

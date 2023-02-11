@@ -65,6 +65,13 @@ import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 import io.homebeaver.gossip.db.CConnectionEditor;
+import io.homebeaver.gossip.swingx.CButton;
+import io.homebeaver.gossip.swingx.CDialog;
+import io.homebeaver.gossip.swingx.CLabel;
+import io.homebeaver.gossip.swingx.CPanel;
+import io.homebeaver.gossip.swingx.CPrinter;
+import io.homebeaver.gossip.swingx.CTabbedPane;
+import io.homebeaver.gossip.swingx.CTextField;
 
 /**
  *	Application Login Window

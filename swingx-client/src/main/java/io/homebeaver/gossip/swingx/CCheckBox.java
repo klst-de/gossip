@@ -23,7 +23,7 @@
 * Contributors:                                                      * 
 *  - Bahman Movaqar (bmovaqar@users.sf.net)                          * 
 **********************************************************************/
-package io.homebeaver.gossip;
+package io.homebeaver.gossip.swingx;
 
 import java.awt.Color;
 import java.awt.event.InputEvent;

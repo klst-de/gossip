@@ -14,7 +14,7 @@
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
-package io.homebeaver.gossip;
+package io.homebeaver.gossip.swingx;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -24,6 +24,8 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
 
+import org.jdesktop.swingx.JXLabel;
+
 /**
  *  Label with Mnemonics interpretation
  *
@@ -31,11 +33,9 @@ import javax.swing.text.JTextComponent;
  *  @version    $Id: CLabel.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
 //copied from package org.compiere.swing
-public class CLabel extends JLabel
+public class CLabel extends JXLabel
 {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 3836688834452881595L;
 	public static int   DEFAULT_ALIGNMENT = JLabel.TRAILING;
 

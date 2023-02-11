@@ -23,7 +23,7 @@
 * Contributors:                                                      * 
 *  - Bahman Movaqar (bmovaqar@users.sf.net)                          * 
 **********************************************************************/ 
-package io.homebeaver.gossip;
+package io.homebeaver.gossip.swingx;
 
 import java.awt.Color;
 import java.awt.event.InputEvent;
@@ -43,6 +43,8 @@ import org.adempiere.exceptions.ValueChangeListener;
 import org.compiere.model.GridField;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.plaf.CompiereLookAndFeel;
+
+import io.homebeaver.gossip.AdempierePLAF;
 
 /**
  * Adempiere Button supporting colored Background

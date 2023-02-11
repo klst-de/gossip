@@ -27,6 +27,8 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
+import io.homebeaver.gossip.swingx.CComboBox;
+
 /**
  *  Combobox with KeyNamePair/ValueNamePair or Locator.
  *  <p>

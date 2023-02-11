@@ -69,13 +69,13 @@ import org.compiere.util.ValueNamePair;
 import org.jdesktop.swingx.JXButton;
 
 import io.homebeaver.gossip.AdempierePLAF;
-import io.homebeaver.gossip.CButton;
-import io.homebeaver.gossip.CCheckBox;
-import io.homebeaver.gossip.CComboBox;
-import io.homebeaver.gossip.CDialog;
-import io.homebeaver.gossip.CLabel;
-import io.homebeaver.gossip.CPanel;
-import io.homebeaver.gossip.CTextField;
+import io.homebeaver.gossip.swingx.CButton;
+import io.homebeaver.gossip.swingx.CCheckBox;
+import io.homebeaver.gossip.swingx.CComboBox;
+import io.homebeaver.gossip.swingx.CDialog;
+import io.homebeaver.gossip.swingx.CLabel;
+import io.homebeaver.gossip.swingx.CPanel;
+import io.homebeaver.gossip.swingx.CTextField;
 
 /**
  *  Connection Dialog.

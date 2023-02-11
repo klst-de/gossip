@@ -38,6 +38,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
 import io.homebeaver.gossip.icon.IconFactory;
+import io.homebeaver.gossip.swingx.CButton;
+import io.homebeaver.gossip.swingx.CCheckBoxMenuItem;
+import io.homebeaver.gossip.swingx.CMenuItem;
+import io.homebeaver.gossip.swingx.CToggleButton;
 
 /**
  *  Application Action.

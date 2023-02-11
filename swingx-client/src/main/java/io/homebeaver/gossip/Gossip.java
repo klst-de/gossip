@@ -35,6 +35,7 @@ import javax.swing.ImageIcon;
 import io.homebeaver.gossip.db.CConnectionDialog;
 import io.homebeaver.gossip.db.DBConnection;
 
+import org.compiere.db.CConnection;
 import org.compiere.model.MClient;
 import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
@@ -445,8 +446,8 @@ public final class Gossip
 	 * 	Get JNLP CodeBase
 	 *	@return code base or null
 	 */
-//	public static URL getCodeBase()
-//	{
+	public static URL getCodeBase()
+	{
 //		try
 //		{
 //			BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService"); 
@@ -455,10 +456,10 @@ public final class Gossip
 //		} 
 //		catch(UnavailableServiceException ue) 
 //		{
-//			return null; 
+			return null; 
 //		} 
-//	}	//	getCodeBase
-//	
+	}	//	getCodeBase
+	
 //	/**
 //	 * @return True if client is started using web start
 //	 */
@@ -467,17 +468,17 @@ public final class Gossip
 //		return getCodeBase() != null;
 //	}
 //
-//	/**
-//	 * 	Get JNLP CodeBase Host
-//	 *	@return code base or null
-//	 */
-//	public static String getCodeBaseHost()
-//	{
-//		URL url = getCodeBase();
-//		if (url == null)
-//			return null;
-//		return url.getHost();
-//	}	//	getCodeBase
+	/**
+	 * 	Get JNLP CodeBase Host
+	 *	@return code base or null
+	 */
+	public static String getCodeBaseHost()
+	{
+		URL url = getCodeBase();
+		if (url == null)
+			return null;
+		return url.getHost();
+	}	//	getCodeBase
 
 	/*************************************************************************
 	 *  Startup Client/Server.
@@ -528,7 +529,7 @@ public final class Gossip
 		
 		//  Set Default Database Connection from Ini
 		validateConnectionDialog();
-		DB.setDBTarget(DBConnection.get(null)); //getCodeBaseHost()));
+		DB.setDBTarget(CConnection.get(getCodeBaseHost()));
 
 		if (isClient)		//	don't test connection
 			return false;	//	need to call
@@ -643,8 +644,8 @@ public final class Gossip
 		startup(true);     //  error exit and initUI
 
 		//  Start with class as argument - or if nothing provided with Client
-//		String className = "org.compiere.apps.AMenu";
-		String className = "io.homebeaver.gossip.db.CConnectionDialog";
+		String className = "io.homebeaver.gossip.AMenu";
+//		String className = "io.homebeaver.gossip.db.CConnectionDialog";
 		for (int i = 0; i < args.length; i++)
 		{
 			if (!args[i].equals("-debug"))  //  ignore -debug

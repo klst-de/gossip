@@ -73,6 +73,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
+
+import io.homebeaver.gossip.swingx.CFrame;
 //import org.compiere.util.Splash;
 /**
  *	Application Menu Controller

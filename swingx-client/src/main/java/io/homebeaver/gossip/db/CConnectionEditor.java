@@ -36,22 +36,19 @@ import javax.swing.UIManager;
 import org.adempiere.exceptions.ValueChangeListener;
 import org.compiere.model.GridField;
 import org.compiere.util.DB;
-import org.jdesktop.swingx.demos.svg.FeatheRdatabase;
-import org.jdesktop.swingx.demos.svg.FeatheRserver;
 import org.jdesktop.swingx.icon.JXIcon;
 
 import io.homebeaver.gossip.AdempierePLAF;
-import io.homebeaver.gossip.CEditor;
+import io.homebeaver.gossip.icon.IconFactory;
+import io.homebeaver.gossip.swingx.CEditor;
 
 /**
  *  Connection Editor.
  *  A combo box and a button
  *
  *  @author     Jorg Janke
- *  @version    $Id: CConnectionEditor.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
 //copied from (client) package org.compiere.db
-// TODO das ist nur ein testpgm ==> verschieben - raus aus main
 public class CConnectionEditor extends JComponent implements CEditor {
 
 	private static final long serialVersionUID = 259945316129032408L;
@@ -68,12 +65,12 @@ public class CConnectionEditor extends JComponent implements CEditor {
 		m_text.setEditable(false);
 		m_text.setBorder(null);
 		m_text.addMouseListener(ml);
-		m_server.setIcon(FeatheRserver.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
+		m_server.setIcon(IconFactory.getSERVER(JXIcon.ACTION_ICON));
 		m_server.setFocusable(false);
 		m_server.setBorder(null);
 		m_server.setOpaque(true);
 		m_server.addMouseListener(ml);
-		m_db.setIcon(FeatheRdatabase.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
+		m_db.setIcon(IconFactory.getDATABASE(JXIcon.ACTION_ICON));
 		m_db.setFocusable(false);
 		m_db.setBorder(null);
 		m_db.setOpaque(true);
