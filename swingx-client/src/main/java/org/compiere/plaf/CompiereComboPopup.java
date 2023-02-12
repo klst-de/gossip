@@ -19,11 +19,8 @@ package org.compiere.plaf;
 import javax.swing.JComboBox;
 import javax.swing.plaf.basic.BasicComboPopup;
 
-import io.homebeaver.gossip.CComboBox;
-import io.homebeaver.gossip.CField;
-
-//import org.compiere.swing.CComboBox;
-//import org.compiere.swing.CField;
+import io.homebeaver.gossip.swingx.CComboBox;
+import io.homebeaver.gossip.swingx.CField;
 
 /**
  *  Adempiere Combo Popup - allows to prevent the display of the popup
@@ -33,9 +30,7 @@ import io.homebeaver.gossip.CField;
  */
 public class CompiereComboPopup extends BasicComboPopup
 {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 2031710222285745816L;
 
 	/**

@@ -53,7 +53,7 @@ public class CompiereComboBoxUI extends MetalComboBoxUI
 	 *  Install UI - Set ComboBox opaque.
 	 *  Bug in Metal: arrowButton gets Mouse Events, so add the JComboBox
 	 *  MouseListeners to the arrowButton
-	 *  @see org.compiere.swing.CComboBox#addMouseListener(MouseListener)
+	 *  @see io.homebeaver.gossip.swingx.swing.CComboBox#addMouseListener(MouseListener)
 	 *  @param c componrnt
 	 */
 	public void installUI (JComponent c)
