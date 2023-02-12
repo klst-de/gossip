@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
@@ -23,11 +23,16 @@ import org.compiere.util.Env;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.swingx.icon.JXIcon;
 
+import com.klst.gossip.GenericDataLoader;
+import com.klst.gossip.MXTable;
+import com.klst.gossip.SingleRowPanel;
 import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.gossip.wrapper.TabModel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
+import io.homebeaver.gossip.icon.IconFactory;
 
 public class Tab extends JPanel implements ComponentListener {
 
@@ -101,9 +106,9 @@ public class Tab extends JPanel implements ComponentListener {
  */	
 		
 		if(statusToTrafficlights.isEmpty()) {
-			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
-			statusToTrafficlights.put(StateValue.STARTED, frame.AIT.getImageIcon(frame.AIT.YLI, WindowFrame.SMALL_ICON_SIZE));
-			statusToTrafficlights.put(StateValue.DONE   , frame.AIT.getImageIcon(frame.AIT.GLI, WindowFrame.SMALL_ICON_SIZE));
+			statusToTrafficlights.put(StateValue.PENDING, IconFactory.getTLRED(JXIcon.SMALL_ICON));
+			statusToTrafficlights.put(StateValue.STARTED, IconFactory.getTLYELLOW(JXIcon.SMALL_ICON));
+			statusToTrafficlights.put(StateValue.DONE   , IconFactory.getTLGREEN(JXIcon.SMALL_ICON));
 		}
 		LOG.config("<<<<<<<<<<<<<<<<<<<<<<<< ctor fertig");
 	}

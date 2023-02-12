@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
@@ -26,13 +26,12 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker.StateValue;
 
-import org.compiere.apps.form.FormPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRefList;
-import org.compiere.swing.CTextField;
+//import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -45,9 +44,13 @@ import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
 
+import com.klst.gossip.GenericDataLoader;
+import com.klst.gossip.MXTable;
 import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.gossip.wrapper.TabModel;
 import com.klst.gossip.wrapper.WindowModel;
+
+import io.homebeaver.gossip.swingx.CTextField;
 
 /**
  *	Generic Form Panel

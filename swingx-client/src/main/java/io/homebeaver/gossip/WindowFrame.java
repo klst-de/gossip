@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -30,7 +30,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.SwingWorker.StateValue;
 
-import org.compiere.apps.form.FormPanel;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.MProcess;
@@ -41,12 +40,26 @@ import org.compiere.util.Trx;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXStatusBar;
+import org.jdesktop.swingx.demos.svg.FeatheRactivity;
+import org.jdesktop.swingx.demos.svg.FeatheRlog_out;
+import org.jdesktop.swingx.demos.svg.FeatheRpackage;
+import org.jdesktop.swingx.demos.svg.FeatheRpower;
+import org.jdesktop.swingx.demos.svg.FeatheRrefresh_cw;
+import org.jdesktop.swingx.demos.svg.FeatheRusers;
+import org.jdesktop.swingx.demos.svg.FeatheRx;
+import org.jdesktop.swingx.icon.ChevronIcon;
+import org.jdesktop.swingx.icon.ChevronsIcon;
+import org.jdesktop.swingx.icon.JXIcon;
+import org.jdesktop.swingx.icon.RadianceIcon;
 
+import com.klst.gossip.GenericDataModel;
+import com.klst.gossip.InfoDataModel;
+import com.klst.gossip.InfoPanel;
 import com.klst.gossip.wrapper.TabModel;
 import com.klst.gossip.wrapper.WindowModel;
-import com.klst.icon.AbstractImageTranscoder;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
+import io.homebeaver.gossip.icon.TangoRDialog_accept;
 
 /*
  - visualisiert MWindow mWindow
@@ -68,9 +81,9 @@ public class WindowFrame extends JXFrame implements WindowListener {
 	
 	public static final String P_SHOW_TRL = "#"+Ini.P_SHOW_TRL;
 	
-	static final int SMALL_ICON_SIZE = 16;
-	static final int LARGE_ICON_SIZE = 24;
-	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+//	static final int SMALL_ICON_SIZE = 16;
+//	static final int LARGE_ICON_SIZE = 24;
+//	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 	
 	private static int windowCounter = 0; // für windowNo, wird pro ctor hochgezählt
 	private int windowNo;
@@ -88,7 +101,7 @@ public class WindowFrame extends JXFrame implements WindowListener {
 	private List<TabModel> tabModels; // TODO verschieben nach WindowPane - wieso List statt Set
 	private List<Tab> tabs;
 //	Tab currentTab; // nur eine Tab kann es sein, die bekommen wir aus tabPane => getSelectedTab
-	protected ProcessPanel processWindow; 
+//	protected ProcessPanel processWindow; 
 	
 	/* ui:
 	 * WindowFrame aka (swing) Frames:
@@ -204,10 +217,10 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
  - protected void done()
 
  */
-			initProcessWindow((MProcess)object);
-			// TODO process icon statt java + this.processWindow.getName() liefert null
-			setTitle("["+this.windowNo+"] Process " + this.processWindow.getName());
-			pack();
+//			initProcessWindow((MProcess)object);
+//			// TODO process icon statt java + this.processWindow.getName() liefert null
+//			setTitle("["+this.windowNo+"] Process " + this.processWindow.getName());
+//			pack();
 			
 /*			MProcess mProcess = (MProcess)object;
 			LOG.config("object/MProcess:"+mProcess + " Classname="+mProcess.getClassname());
@@ -286,7 +299,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 		mEdit.setText("Edit");
         if(!Env.isMac()) { 
             // JMenuItem(String text) | JMenuItem(String text, int mnemonic) | JMenuItem(String text, Icon icon)
-            JMenuItem quitItem = new JMenuItem("Quit", AIT.getImageIcon(AIT.EXIT, SMALL_ICON_SIZE));
+            JMenuItem quitItem = new JMenuItem("Quit", FeatheRpower.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             quitItem.setName("quit");
             quitItem.setActionCommand("quit");
             quitItem.addActionListener(event -> {
@@ -294,16 +307,16 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mFile.add(quitItem);
             
-            JMenuItem logoutItem = new JMenuItem("Logout", AIT.getImageIcon(AIT.LOGOUT, SMALL_ICON_SIZE));
+            JMenuItem logoutItem = new JMenuItem("Logout", FeatheRlog_out.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             logoutItem.setName("logout");
             logoutItem.setActionCommand("logout");
             logoutItem.addActionListener(event -> {
             	LOG.config("logout");
-            	rootFrame.login();
+//            	rootFrame.login();
             });
             mFile.add(logoutItem);
             
-            JMenuItem infoProductlItem = new JMenuItem("Product Info", AIT.getImageIcon(AIT.PRODUCT, SMALL_ICON_SIZE));
+            JMenuItem infoProductlItem = new JMenuItem("Product Info", FeatheRpackage.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             infoProductlItem.setName("infoProduct");
             infoProductlItem.setActionCommand("infoProduct");
             infoProductlItem.addActionListener(event -> {
@@ -315,7 +328,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mInfo.add(infoProductlItem);
             
-            JMenuItem infoBPartnerItem = new JMenuItem("Business Partner Info", AIT.getImageIcon(AIT.BPARTNER, SMALL_ICON_SIZE));
+            JMenuItem infoBPartnerItem = new JMenuItem("Business Partner Info", FeatheRusers.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             infoBPartnerItem.setName("infoBPartner");
             infoBPartnerItem.setActionCommand("infoBPartner");
             infoBPartnerItem.addActionListener(event -> {
@@ -338,7 +351,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mInfo.add(infoBPartnerItem);
 // TEST TODO muss raus            
-            JMenuItem infoWFActivItem = new JMenuItem("WorkflowActivities TEST Info", AIT.getImageIcon(AIT.TASK, SMALL_ICON_SIZE));
+            JMenuItem infoWFActivItem = new JMenuItem("WorkflowActivities TEST Info", FeatheRactivity.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             infoWFActivItem.setName("infoWFActiv"); // TODO dieser Name ist auch der Frame Name TODO
             infoWFActivItem.setActionCommand("infoWFActiv");
             infoWFActivItem.addActionListener(event -> {
@@ -360,7 +373,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mInfo.add(infoWFActivItem);
             
-            JMenuItem cancelItem = new JMenuItem("Cancel", AIT.getImageIcon(AIT.CANCEL, SMALL_ICON_SIZE));
+            JMenuItem cancelItem = new JMenuItem("Cancel", FeatheRx.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             cancelItem.setName("cancel");
             cancelItem.setActionCommand("cancel");
             cancelItem.addActionListener(event -> {
@@ -371,14 +384,14 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             		this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             	} else if(c instanceof InfoPanel) {
             		InfoPanel i = (InfoPanel)c;
-            		i.cancel();
+//            		i.cancel(); TODO
             	} else {
             		LOG.warning("cancel on Component "+c);
             	}
             });
             mEdit.add(cancelItem);
             
-            JMenuItem refreshItem = new JMenuItem("Refresh", AIT.getImageIcon(AIT.REFRESH, SMALL_ICON_SIZE));
+            JMenuItem refreshItem = new JMenuItem("Refresh", FeatheRrefresh_cw.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             refreshItem.setName("refresh");
             refreshItem.setActionCommand("refresh");
             refreshItem.addActionListener(event -> {
@@ -399,7 +412,10 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mEdit.add(refreshItem);
 
-            JMenuItem firstItem = new JMenuItem("First", AIT.getImageIcon(AIT.FIRST, SMALL_ICON_SIZE));
+            // FeatheRchevrons_up ::ChevronsIcon rotated
+            RadianceIcon first = ChevronsIcon.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON);
+            first.setRotation(JXIcon.SOUTH);
+            JMenuItem firstItem = new JMenuItem("First", first);
             firstItem.setName("first");
             firstItem.setActionCommand("first");
             firstItem.addActionListener(event -> {
@@ -416,7 +432,9 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mEdit.add(firstItem);
 
-            JMenuItem previousItem = new JMenuItem("Previous", AIT.getImageIcon(AIT.PREVIOUS, SMALL_ICON_SIZE));
+            RadianceIcon previous = ChevronIcon.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON);
+            previous.setRotation(JXIcon.SOUTH);
+            JMenuItem previousItem = new JMenuItem("Previous", previous);
             previousItem.setName("previous");
             previousItem.setActionCommand("previous");
             previousItem.addActionListener(event -> {
@@ -433,7 +451,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mEdit.add(previousItem);
 
-            JMenuItem nextItem = new JMenuItem("Next", AIT.getImageIcon(AIT.NEXT, SMALL_ICON_SIZE));
+            JMenuItem nextItem = new JMenuItem("Next", ChevronIcon.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             nextItem.setName("next");
             nextItem.setActionCommand("next");
             nextItem.addActionListener(event -> {
@@ -450,7 +468,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             });
             mEdit.add(nextItem);
 
-            JMenuItem lastItem = new JMenuItem("Last", AIT.getImageIcon(AIT.LAST, SMALL_ICON_SIZE));
+            JMenuItem lastItem = new JMenuItem("Last", ChevronsIcon.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             lastItem.setName("last");
             lastItem.setActionCommand("last");
             lastItem.addActionListener(event -> {
@@ -541,9 +559,9 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 		return GridWindowVO.create(ctx, WindowNo, AD_Window_ID, AD_Menu_ID);
 	}
 
-	private void initProcessWindow(MProcess process) {
-		this.processWindow = new ProcessPanel(this, process);	
-	}
+//	private void initProcessWindow(MProcess process) {
+//		this.processWindow = new ProcessPanel(this, process);	
+//	}
 	private void initInfoWindow(GenericDataModel gdm) {
 		this.infoWindow = new InfoPanel(this, gdm);
 	}
@@ -635,10 +653,10 @@ WHERE w.AD_Window_ID=304 AND w.IsActive='Y'
 
     // überschreiben, damit beim DISPOSE_ON_CLOSE der Loader worker gestoppt wird : cancel
     public void dispose() {
-    	if(infoWindow!=null) infoWindow.cancel();
+//    	if(infoWindow!=null) infoWindow.cancel();
     	if(tabs!=null) {
     		tabs.forEach( (tab) -> {
-    			tab.cancel();
+//    			tab.cancel();
     		});
     		tabs = null;
 		} else {

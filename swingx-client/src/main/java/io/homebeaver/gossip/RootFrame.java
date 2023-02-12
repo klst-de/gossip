@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -27,13 +27,21 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.compiere.Adempiere;
 import org.compiere.model.GridWindow;
 import org.compiere.model.PO;
-import org.compiere.plaf.CompiereTheme;
-import org.compiere.plaf.CompiereThemeBlueMetal;
+//import org.compiere.plaf.CompiereTheme;
+//import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
+import org.jdesktop.swingx.demos.svg.FeatheRarchive;
+import org.jdesktop.swingx.demos.svg.FeatheRdollar_sign;
+import org.jdesktop.swingx.demos.svg.FeatheRglobe;
+import org.jdesktop.swingx.demos.svg.FeatheRusers;
+import org.jdesktop.swingx.icon.JXIcon;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
-import com.klst.client.LoginPanel;
+import com.klst.gossip.GenericDataLoader;
+import com.klst.gossip.GenericDataModel;
+import com.klst.gossip.MenuPanel;
+//import com.klst.client.LoginPanel;
 import com.klst.gossip.wrapper.WindowModel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
@@ -100,8 +108,8 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 	JRadioButtonMenuItem miGimpLaF; // GTK GIMP-Toolkit
 
 	HidableTabbedPane hidableTabbedPane; // hierin loginPanel und die (hidden) Demopanels
-	LoginPanel loginPanel;
-	MenuPanel menuPanel;
+//	LoginPanel loginPanel;
+//	MenuPanel menuPanel;
 
 /* Gegenüberstellung start gossip vs AD-client
 
@@ -126,7 +134,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
  */
 	public RootFrame() {
 		super(TITLE);
-		LOG.info("Java Web Start/JNLP CodeBase=" + Adempiere.getCodeBase());		
+		LOG.info("Java Web Start/JNLP CodeBase=" + Gossip.getCodeBase());		
 		LOG.config(TITLE + ", Component#:"+getContentPane().getComponentCount());
 		this.rootFrame = this;
 		
@@ -139,11 +147,11 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// button & msg controlPanel
 		JPanel controlPanel = (JPanel)getContentPane().getComponent(0);
 		
-		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
-		loginPanel = new LoginPanel();
-		
-		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
-		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
+//		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
+//		loginPanel = new LoginPanel();
+//		
+//		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
+//		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
 
 		updateLaF(NimbusLookAndFeel.class.getName(), false); // Nimbus als default LAF (statt Metal Ocean): 
 		miNimbusLaF.setSelected(true);
@@ -156,12 +164,12 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
     	LOG.config("ctor fertig. initialSize="+initialSize + " width="+this.getWidth() + " height="+this.getHeight()+ "\n");
 	}
 
-	void login() {
-		LOG.info(""+loginPanel);
-		hidableTabbedPane.addTab("login", loginPanel);
-		pack();
-		loginPanel.setVisible(true);
-	}
+//	void login() {
+//		LOG.info(""+loginPanel);
+//		hidableTabbedPane.addTab("login", loginPanel);
+//		pack();
+//		loginPanel.setVisible(true);
+//	}
 	
 	WindowFrame openNewFrame(PO po) { // zB MProcess po
 		WindowFrame frame = makeWindow(0, po);
@@ -208,21 +216,22 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// gemeinsame JMenuItem's z.B mFile."Quit" in Window
         
         mFile.addSeparator(); // -------------------------
-		miBank = new JMenuItem("zeige Banken (Demo)", AIT.getImageIcon(AIT.PAYMENT, SMALL_ICON_SIZE));
+        
+		miBank = new JMenuItem("zeige Banken (Demo)", FeatheRdollar_sign.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
 		miBank.addActionListener(event -> {
 			LOG.config("new frame Banken");
 			openNewFrame(158);
 		});
 		mFile.add(miBank);
 
-		miCountry = new JMenuItem("zeige Länder (Demo)", AIT.getImageIcon(AIT.ONLINE, SMALL_ICON_SIZE));
+		miCountry = new JMenuItem("zeige Länder (Demo)", FeatheRglobe.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
 		miCountry.addActionListener(event -> {
 			LOG.config("new frame Länder");
 			openNewFrame(122);
 		});
 		mFile.add(miCountry);
 		
-		miDocument = new JMenuItem("zeige Belege (Demo)", AIT.getImageIcon(AIT.ARCHIVE, SMALL_ICON_SIZE));
+		miDocument = new JMenuItem("zeige Belege (Demo)", FeatheRarchive.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
 		miDocument.addActionListener(event -> {
 			LOG.config("new frame Belege");
 			openNewFrame(135); // Document Type 
@@ -270,23 +279,23 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
        
         mLuf.addSeparator(); // ------------------------- 
         
-        miCompiereLaF = new JRadioButtonMenuItem("Compiere: BlueMetal");
-        miCompiereLaF.setMnemonic(KeyEvent.VK_B);
-        miCompiereLaF.addActionListener(event -> {
-        	updateLaF(crossPlatformLookAndFeelClassName, new CompiereTheme());
-        	miCompiereLaF.setSelected(true);
-        });
-        group.add(miCompiereLaF);
-        mLuf.add(miCompiereLaF);
-      
-        miCompiereIceLaF = new JRadioButtonMenuItem("Compiere: Ice");
-        miCompiereIceLaF.setMnemonic(KeyEvent.VK_I);
-        miCompiereIceLaF.addActionListener(event -> {
-        	updateLaF(crossPlatformLookAndFeelClassName, new CompiereThemeBlueMetal());
-        	miCompiereIceLaF.setSelected(true);
-        });
-        group.add(miCompiereIceLaF);
-        mLuf.add(miCompiereIceLaF);
+//        miCompiereLaF = new JRadioButtonMenuItem("Compiere: BlueMetal");
+//        miCompiereLaF.setMnemonic(KeyEvent.VK_B);
+//        miCompiereLaF.addActionListener(event -> {
+//        	updateLaF(crossPlatformLookAndFeelClassName, new CompiereTheme());
+//        	miCompiereLaF.setSelected(true);
+//        });
+//        group.add(miCompiereLaF);
+//        mLuf.add(miCompiereLaF);
+//      
+//        miCompiereIceLaF = new JRadioButtonMenuItem("Compiere: Ice");
+//        miCompiereIceLaF.setMnemonic(KeyEvent.VK_I);
+//        miCompiereIceLaF.addActionListener(event -> {
+//        	updateLaF(crossPlatformLookAndFeelClassName, new CompiereThemeBlueMetal());
+//        	miCompiereIceLaF.setSelected(true);
+//        });
+//        group.add(miCompiereIceLaF);
+//        mLuf.add(miCompiereIceLaF);
       
        mLuf.addSeparator(); // ------------------------- 
 
@@ -350,7 +359,7 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 	}
 
 	void refresh() {
-		menuPanel.setInitialTree();
+//		menuPanel.setInitialTree(); TODO
     	setSize(initialSize);
     	revalidate();
 	}

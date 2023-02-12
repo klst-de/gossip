@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 // ich will nicht (client)org.compiere.apps.form.FormFrame kopieren
 // wird für interface FormPanel benötigt
