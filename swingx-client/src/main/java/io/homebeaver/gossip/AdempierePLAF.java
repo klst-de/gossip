@@ -59,6 +59,7 @@ import org.jdesktop.swingx.color.ColorBlind;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.RadianceIcon;
 
+import io.homebeaver.gossip.icon.IconFactory;
 import io.homebeaver.gossip.icon.TangoRDialog_accept;
 import io.homebeaver.gossip.icon.TangoRDialog_error_round;
 
@@ -638,10 +639,7 @@ Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$
 	public static JXButton getOKButton()
 	{
 		JXButton b = new JXButton();
-//		RadianceIcon base = TangoRDialog_accept.factory().createNewIcon();
-//		base.setDimension(new Dimension(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON)); 
-		RadianceIcon icon = TangoRDialog_accept.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON);
-		b.setIcon(icon);
+		b.setIcon(IconFactory.getOK(JXIcon.ACTION_ICON));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("OK"));
 		return b;
@@ -654,7 +652,7 @@ Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$
 	public static JXButton getCancelButton()
 	{
 		JXButton b = new JXButton();
-		b.setIcon(TangoRDialog_error_round.of(JXIcon.ACTION_ICON, JXIcon.ACTION_ICON));
+		b.setIcon(IconFactory.getCANCEL(JXIcon.ACTION_ICON));
 		b.setMargin(new Insets(0,10,0,10));
 		b.setToolTipText (s_res.getString("Cancel"));
 		return b;

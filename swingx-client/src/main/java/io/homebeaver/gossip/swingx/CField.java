@@ -40,6 +40,8 @@ import org.adempiere.exceptions.ValueChangeListener;
 //import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.model.GridField;
 
+import io.homebeaver.gossip.AdempierePLAF;
+
 /**
  *  Adempiere Colored Field with external popup editor.
  *  It extends ComboBox for UI consistency purposes
@@ -47,13 +49,9 @@ import org.compiere.model.GridField;
  *  @author     Jorg Janke
  *  @version    $Id: CField.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
-public class CField extends JComboBox
-	implements CEditor, ActionListener
-{
+//copied from package org.compiere.swing
+public class CField extends JComboBox implements CEditor, ActionListener {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2570380982649145678L;
 
 	public static CField createNumeric(NumberFormat format)

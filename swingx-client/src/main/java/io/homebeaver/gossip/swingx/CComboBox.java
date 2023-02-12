@@ -53,6 +53,8 @@ import org.compiere.plaf.CompiereComboBoxUI;
 import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
 
+import io.homebeaver.gossip.AdempierePLAF;
+
 /**
  *  Adempiere Colored Combo Box.
  *

@@ -29,6 +29,8 @@ import org.adempiere.exceptions.ValueChangeListener;
 import org.compiere.model.GridField;
 import org.jdesktop.swingx.JXTextField;
 
+import io.homebeaver.gossip.AdempierePLAF;
+
 /**
  *  Adempiere Text Field
  *

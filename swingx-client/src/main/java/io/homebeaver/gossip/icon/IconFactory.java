@@ -1,5 +1,6 @@
 package io.homebeaver.gossip.icon;
 
+import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
 import org.jdesktop.swingx.demos.svg.FeatheRdatabase;
 import org.jdesktop.swingx.demos.svg.FeatheRfeather;
@@ -10,6 +11,7 @@ import org.jdesktop.swingx.icon.JXIcon;
 /*
 	SERVER	("server"),
 	DATABASE("database"),
+	CALENDAR("calendar"),
 	CANCEL	("x"), TangoRDialog_error_round
 	OK	("check"), TangoRDialog_accept
 	
@@ -32,6 +34,8 @@ public class IconFactory {
 			return getSERVER(size);
 		else if("DATABASE".equalsIgnoreCase(name))
 			return getDATABASE(size);
+		else if("CALENDAR".equalsIgnoreCase(name))
+			return getCALENDAR(size);
 		else if("CANCEL".equalsIgnoreCase(name))
 			return getCANCEL(size);
 		else if("OK".equalsIgnoreCase(name))
@@ -45,6 +49,9 @@ public class IconFactory {
 	}
 	public static JXIcon getDATABASE(int size) {
 		return monochrom ? FeatheRdatabase.of(size, size) : TangoRApplications_database.of(size, size);
+	}
+	public static JXIcon getCALENDAR(int size) {
+		return monochrom ? FeatheRcalendar.of(size, size) : TangoROffice_calendar.of(size, size);
 	}
 	public static JXIcon getCANCEL(int size) {
 		return monochrom ? FeatheRx.of(size, size) : TangoRDialog_error_round.of(size, size);

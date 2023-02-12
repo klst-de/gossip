@@ -19,9 +19,7 @@ package io.homebeaver.gossip;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,17 +43,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
 import org.adempiere.exceptions.ValueChangeListener;
-//import org.adempiere.plaf.AdempierePLAF;
-//import org.compiere.apps.AEnv;
-//import org.compiere.apps.RecordInfo;
 import org.compiere.model.GridField;
 import org.compiere.model.MRole;
-//import org.compiere.swing.CButton;
-//import org.compiere.swing.CTextField;
 import org.compiere.util.CLogger;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.jdesktop.swingx.icon.JXIcon;
 
+import io.homebeaver.gossip.icon.IconFactory;
 import io.homebeaver.gossip.swingx.CButton;
 import io.homebeaver.gossip.swingx.CTextField;
 
@@ -77,9 +71,7 @@ import io.homebeaver.gossip.swingx.CTextField;
 public class VDate extends JComponent
 	implements VEditor, ActionListener, KeyListener, FocusListener
 {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 5265412413586160999L;
 
 	/*****************************************************************************
@@ -177,7 +169,7 @@ public class VDate extends JComponent
 		setFormat();
 
 		//	***	Button	***
-		m_button.setIcon(Env.getImageIcon("Calendar10.gif"));
+		m_button.setIcon(IconFactory.getCALENDAR(JXIcon.SMALL_ICON));
 		m_button.setMargin(new Insets(0, 0, 0, 0));
 		m_button.setPreferredSize(new Dimension(height, height));
 		m_button.addActionListener(this);
