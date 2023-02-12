@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -37,6 +37,7 @@ import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
+import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.PainterIcon;
 import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
@@ -47,13 +48,14 @@ import org.jdesktop.swingx.renderer.WrappingIconPanel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
+import com.klst.gossip.GenericTableHeader;
+import com.klst.gossip.MenuTreeTableModel;
 //import com.klst.icon.AbstractImageTranscoder;
 //import com.klst.icon.TableColumnControlButton;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
-import io.homebeaver.gossip.RootFrame;
-import io.homebeaver.gossip.WindowFrame;
+import io.homebeaver.gossip.icon.IconFactory;
 
 public class MenuPanel extends JXPanel implements ActionListener {
 
@@ -234,8 +236,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         
         // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
         // das Icon austauschen
-        tree.setColumnControl(new TableColumnControlButton(tree));
-        tree.setColumnControlVisible(true);
+//        tree.setColumnControl(new TableColumnControlButton(tree));
+//        tree.setColumnControlVisible(true);
         
         //tree.setToolTipText("String ToolTipText text");
         	
@@ -377,7 +379,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 
 		private static final long serialVersionUID = 8601036402183751110L;
 
-		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+//		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
         public LazyLoadingIconValue(StringValue sv) {
         	stringValue = sv;
@@ -387,7 +389,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         private Map<Object, Icon> iconCache;
         private StringValue stringValue;
         
-		@Override
+		@Override // implements org.jdesktop.swingx.renderer.IconValue
 		public Icon getIcon(Object value) {
 			String imageIndicator = stringValue.getString(value);
 			Icon icon = iconCache.get(imageIndicator);
@@ -395,7 +397,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             	LOG.config("loadIcon for "+imageIndicator+" value:"+value); // z.B value:53108/0 1002 - Human Resource & Payroll
                 // loadIcon 
     			int imageIndex = MTreeNode.getImageIndex(imageIndicator);
-                icon = MTreeNode.getImageIcon(AIT, imageIndex, SMALL_ICON_SIZE);
+                icon = MTreeNode.getImageIcon(imageIndex, JXIcon.SMALL_ICON);
+//    			icon = IconFactory.get(imageIndicator, JXIcon.SMALL_ICON);
                 iconCache.put(imageIndicator, icon);
             }
             return icon;
@@ -405,8 +408,8 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     
     public static class FilteredIconValue implements IconValue {
 
-		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
-    	private Icon icon = manipulatedIcon(MTreeNode.getImageIcon(AIT, 5, SMALL_ICON_SIZE));
+//		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+    	private Icon icon = manipulatedIcon(MTreeNode.getImageIcon(5, JXIcon.SMALL_ICON));
 		
     	public FilteredIconValue(IconValue delegate) {
     		this.delegate = delegate;
