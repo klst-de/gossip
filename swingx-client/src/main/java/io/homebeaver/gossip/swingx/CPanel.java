@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.plaf.CompiereLookAndFeel;
 import org.compiere.plaf.LookAndFeelConstants;
+import org.jdesktop.swingx.JXPanel;
 
 import io.homebeaver.gossip.AdempierePLAF;
 
@@ -34,13 +35,9 @@ import io.homebeaver.gossip.AdempierePLAF;
  *  @version    $Id: CPanel.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
 //copied from package org.compiere.swing
-public class CPanel extends JPanel
-{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4153588317643163582L;
+public class CPanel extends JXPanel {
 
+	private static final long serialVersionUID = 4153588317643163582L;
 
 	/**
 	 * Creates a new AdempierePanel with the specified layout manager
@@ -82,13 +79,19 @@ public class CPanel extends JPanel
 	/**
 	 * Creates a new <code>CPanel</code> with a double buffer and a flow layout.
 	 */
-	public CPanel()
-	{
+	public CPanel() {
 		super ();
-		System.out.println("TODO: TODO TODO TODO"+toString()); // TODO
+		System.out.println("TODO: TODO TODO TODO "+toString()); // TODO use CPanel(String name)
 		init();
-	}   //  CPanel
+	}
 
+	public CPanel(String name) {
+		super ();
+		init();
+		setName(name);
+		System.out.println(toString());
+	}
+	
 	/**
 	 * Creates a new <code>CPanel</code> with a double buffer and a flow layout.
 	 * @param bc Initial Background Color

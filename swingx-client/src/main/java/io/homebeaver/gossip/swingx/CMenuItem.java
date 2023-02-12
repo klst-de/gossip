@@ -26,6 +26,7 @@ import javax.swing.JMenuItem;
  *  @author Jorg Janke
  *  @version $Id: CMenuItem.java,v 1.2 2006/07/30 00:52:24 jjanke Exp $
  */
+//copied from package org.compiere.swing
 public class CMenuItem extends JMenuItem
 {
 
