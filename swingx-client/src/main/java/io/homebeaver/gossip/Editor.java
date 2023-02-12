@@ -58,6 +58,8 @@ import org.compiere.util.Msg;
 import io.homebeaver.gossip.swingx.CDialog;
 import io.homebeaver.gossip.swingx.CMenuItem;
 import io.homebeaver.gossip.swingx.CPanel;
+import io.homebeaver.gossip.swingx.CTextArea;
+import io.homebeaver.gossip.swingx.CTextPane;
 
 /**
  *  Editor for Text (textArea) with HTML (textPane) View
