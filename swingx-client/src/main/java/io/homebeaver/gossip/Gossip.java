@@ -118,10 +118,11 @@ public final class Gossip
 	static {
 		System.out.println("static: ");
 		ClassLoader loader = Gossip.class.getClassLoader();
-		System.out.println("loader: "+loader);
+//		System.out.println("loader: "+loader);
 		InputStream inputStream = loader.getResourceAsStream("org/adempiere/version.properties");
-		if (inputStream != null)
-		{
+		if (inputStream == null) {
+			System.out.println("not found: org/adempiere/version.properties "+loader);
+		} else {
 			Properties properties = new Properties();
 			try {
 				properties.load(inputStream);
@@ -137,6 +138,7 @@ public final class Gossip
 					s_ImplementationVendor = properties.getProperty("IMPLEMENTATION_VENDOR"); 
 			} catch (IOException e) {
 			}
+			properties.list(System.out);
 		}
 	}
 	
@@ -491,8 +493,7 @@ public final class Gossip
 	 *	@param isClient true for client
 	 *  @return successful startup
 	 */
-	public static synchronized boolean startup (boolean isClient)
-	{
+	public static synchronized boolean startup (boolean isClient) {
 		//	Already started
 		if (log != null)
 			return true;
@@ -511,8 +512,8 @@ public final class Gossip
 		//  Load System environment
 	//	EnvLoader.load(Ini.ENV_PREFIX);
 
-		//  System properties
-		Ini.loadGossipProperties(false);
+		//  System properties - boolean reload
+		Ini.loadGossipProperties(false); // TODO (base) Ini
 		
 		//	Set up Log
 		CLogMgt.setLevel(Ini.getProperty(Ini.P_TRACELEVEL));
@@ -534,7 +535,7 @@ public final class Gossip
 		if (isClient)		//	don't test connection
 			return false;	//	need to call
 		
-		log.info("isClient="+isClient + " ... DO startupEnvironment("+isClient+")");
+		log.info("isClient="+isClient + " ... for Server connections: DO startupEnvironment("+isClient+")");
 		return startupEnvironment(isClient);
 	}
 	
@@ -563,13 +564,13 @@ public final class Gossip
 
 	/**
 	 * 	Startup Adempiere Environment.
-	 * 	Automatically called for Server connections
+	 * 	Automatically called for Server connections.
 	 * 	For testing call this method.
 	 *	@param isClient true if client connection
 	 *  @return successful startup
 	 */
-	public static boolean startupEnvironment (boolean isClient)
-	{
+	public static boolean startupEnvironment (boolean isClient) {
+		log.info("isClient="+isClient + " ... Startup Adempiere Environment: DO startupEnvironment("+isClient+")");
 		startup(isClient);		//	returns if already initiated
 		if (!DB.isConnected())
 		{
@@ -637,17 +638,16 @@ public final class Gossip
 	 *
 	 *  @param args optional start class
 	 */
-	public static void main (String[] args)
-	{
+	public static void main (String[] args) {
 		System.out.println("Splash: ");
 //		Splash.getSplash(); // TODO
-		startup(true);     //  error exit and initUI
+		boolean successful = startup(true);     // boolean isClient) error exit and initUI
+		System.out.println("startup "+(successful ? "successful" : "NOT successful : don't test connection, need to call"));
 
 		//  Start with class as argument - or if nothing provided with Client
 		String className = "io.homebeaver.gossip.AMenu";
-//		String className = "io.homebeaver.gossip.db.CConnectionDialog";
-		for (int i = 0; i < args.length; i++)
-		{
+//	per args:	String className = "io.homebeaver.gossip.db.CConnectionDialog";
+		for (int i = 0; i < args.length; i++) {
 			if (!args[i].equals("-debug"))  //  ignore -debug
 			{
 				className = args[i];
@@ -657,6 +657,7 @@ public final class Gossip
 		//
 		try
 		{
+			System.out.println("startClass: "+className);
 			Class<?> startClass = Class.forName(className);
 			startClass.getDeclaredConstructor().newInstance();
 		}
@@ -665,7 +666,7 @@ public final class Gossip
 			System.err.println("ADempiere starting: " + className + " - " + e.toString());
 			e.printStackTrace();
 		}
-	}   //  main
+	}
 	
 	/**
 	 * If enabled, everything will run database decoupled.

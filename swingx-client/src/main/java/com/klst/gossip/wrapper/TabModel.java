@@ -3,6 +3,7 @@ package com.klst.gossip.wrapper;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.adempiere.core.domains.models.X_AD_PInstance_Log;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
@@ -10,7 +11,6 @@ import org.compiere.model.GridTabVO;
 import org.compiere.model.GridTable;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MultiMap;
-import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.util.Env;
 
 public class TabModel extends GridTab {

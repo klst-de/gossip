@@ -123,14 +123,14 @@ public final class ALogin extends CDialog
 	private CPanel mainPanel = new CPanel(new BorderLayout());
 	private CTabbedPane loginTabPane = new CTabbedPane();
 //	private BorderLayout conTabLayout = new BorderLayout();
-	private CPanel connectionPanel = new CPanel();
+	private CPanel connectionPanel = new CPanel("connectionPanel");
 	private CLabel hostLabel = new CLabel();
 	private CConnectionEditor hostField = new CConnectionEditor();
 	private CLabel userLabel = new CLabel();
 	private CTextField userTextField = new CTextField();
 	private CLabel passwordLabel = new CLabel();
 	private JPasswordField passwordField = new JPasswordField();
-	private CPanel defaultPanel = new CPanel();
+	private CPanel defaultPanel = new CPanel("defaultPanel");
 //	private BorderLayout defaultLayout = new BorderLayout();
 	private CLabel clientLabel = new CLabel();
 	private CLabel orgLabel = new CLabel();
@@ -153,9 +153,9 @@ public final class ALogin extends CDialog
 	private CLabel languageLabel = new CLabel();
 	private VComboBox languageCombo = new VComboBox(Language.getNames());
 	private CLabel compileDate = new CLabel();
-	private CPanel southPanel = new CPanel();
+	private CPanel southPanel = new CPanel("southPanel");
 	private BorderLayout southLayout = new BorderLayout();
-	private StatusBar statusBar = new StatusBar(); // StatusBar extends CPanel implements IStatusBar
+	private StatusBar statusBar = new StatusBar("statusBar"); // StatusBar extends CPanel implements IStatusBar
 	// in WindowFrame besteht statusBar aus 5 elementen TODO
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true, false, false, false, false, false, false);
 
@@ -370,7 +370,7 @@ public final class ALogin extends CDialog
 		m_cc = CConnection.get(Gossip.getCodeBaseHost());
 		hostField.setValue(m_cc);
 		
-		if ( Ini.isPropertyBool(Ini.P_VALIDATE_CONNECTION_ON_STARTUP)) {
+		if (Ini.isPropertyBool(Ini.P_VALIDATE_CONNECTION_ON_STARTUP)) {
 			validateConnection();
 		} 
 

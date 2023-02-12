@@ -21,7 +21,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.wrapper.GridTableModel;
-import com.klst.icon.TableColumnControlButton;
+//import com.klst.icon.TableColumnControlButton;
 
 public class MXTable extends JXTable { // JXTable extends JTable implements TableColumnModelExtListener
 
@@ -123,7 +123,7 @@ public class MXTable extends JXTable { // JXTable extends JTable implements Tabl
 LOG.config("nach super(dataModel, dataModel.getFields())");
 		tcme = (TableColumnModelExt)columnModel;
 		
-		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
+//		setColumnControl(new TableColumnControlButton(this)); // TableColumnControlButton tauscht das Icon
 		setColumnControlVisible(isColumnControlVisible); // column control to the trailing corner of the scroll pane 
 
 		// replace grid lines with striping 

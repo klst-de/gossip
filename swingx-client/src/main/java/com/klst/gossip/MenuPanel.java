@@ -47,10 +47,13 @@ import org.jdesktop.swingx.renderer.WrappingIconPanel;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
-import com.klst.icon.AbstractImageTranscoder;
-import com.klst.icon.TableColumnControlButton;
+//import com.klst.icon.AbstractImageTranscoder;
+//import com.klst.icon.TableColumnControlButton;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
+
+import io.homebeaver.gossip.RootFrame;
+import io.homebeaver.gossip.WindowFrame;
 
 public class MenuPanel extends JXPanel implements ActionListener {
 

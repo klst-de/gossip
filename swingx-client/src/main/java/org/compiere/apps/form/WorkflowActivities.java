@@ -5,8 +5,9 @@ import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
-import com.klst.gossip.GenericFormPanel;
 import com.klst.gossip.MXTable;
+
+import io.homebeaver.gossip.GenericFormPanel;
 
 /**
  *	subclasses Generic Form Panel

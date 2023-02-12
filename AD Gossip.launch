@@ -95,6 +95,7 @@
         <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry path=&quot;5&quot; projectName=&quot;org.eevolution.distribution&quot; type=&quot;1&quot;/&gt;&#13;&#10;"/>
         <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry path=&quot;5&quot; projectName=&quot;org.eevolution.warehouse&quot; type=&quot;1&quot;/&gt;&#13;&#10;"/>
         <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry path=&quot;5&quot; projectName=&quot;org.eevolution.freight&quot; type=&quot;1&quot;/&gt;&#13;&#10;"/>
+        <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry externalArchive=&quot;C:/Users/homeb/.m2/repository/org/jdesktop/beansbinding/1.2.1/beansbinding-1.2.1.jar&quot; path=&quot;5&quot; type=&quot;2&quot;/&gt;&#13;&#10;"/>
         <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;runtimeClasspathEntry externalArchive=&quot;C:/Users/homeb/.m2/repository/io/github/homebeaver/swingx-core/1.7.6/swingx-core-1.7.6.jar&quot; path=&quot;5&quot; type=&quot;2&quot;/&gt;&#13;&#10;"/>
     </listAttribute>
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
@@ -106,5 +107,5 @@
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-debug"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gossip"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${workspace_loc}/adempiere/Adempiere/Gossip.properties&#13;&#10;-DADEMPIERE_HOME=${workspace_loc}/adempiere/Adempiere&#13;&#10;-Xms128M&#13;&#10;-Xmx256M&#10;-Dorg.adempiere.server.embedded=true&#10;-Dsun.awt.disablegrab=true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${workspace_loc}/adempiere/Adempiere/Gossip.properties&#13;&#10;-DADEMPIERE_HOME=${workspace_loc}/adempiere/Adempiere&#13;&#10;-Xms128M&#13;&#10;-Xmx256M&#13;&#10;&#10;-Dorg.adempiere.server.embedded=true&#10;&#13;&#10;-Dsun.awt.disablegrab=true"/>
 </launchConfiguration>

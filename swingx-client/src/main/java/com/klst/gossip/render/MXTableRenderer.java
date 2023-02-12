@@ -18,6 +18,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.renderer.ComponentProvider;
 import org.jdesktop.swingx.renderer.DefaultTableRenderer;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
@@ -29,7 +30,8 @@ import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.MXTable;
 import com.klst.gossip.wrapper.GridTableModel;
-import com.klst.icon.AbstractImageTranscoder;
+
+import io.homebeaver.gossip.icon.IconFactory;
 
 public class MXTableRenderer extends DefaultTableRenderer { // extends (swingx)AbstractRenderer implements (swing)TableCellRenderer
 
@@ -69,8 +71,8 @@ in package org.jdesktop.swingx.renderer gibt es folgende renderer
         super(componentProvider);
     }
 
-	static final int SMALL_ICON_SIZE = 16;
-	static AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+//	static final int SMALL_ICON_SIZE = 16;
+//	static AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
     /**
      * {@inheritDoc}
@@ -198,7 +200,7 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 					Integer key = (Integer) value;
 					NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
 					
-					Icon icon = AIT.getImageIcon(AIT.ZOOM, SMALL_ICON_SIZE);
+					Icon icon = IconFactory.getZOOM(JXIcon.SMALL_ICON);
 					JXButton ic = new JXButton((np == null ? "<" + key + ">" : np.getName()), icon);	
 
 //					ActionListener tut nicht! Untersuchen TODO
@@ -240,7 +242,7 @@ field.getDisplayType | col WorkflowActivities | value.getClass()=Integer  value.
 					Integer key = (Integer) value;
 					NamePair np = lookup.getDirect(value, true, true); // nut used in Lookup.getDirect: boolean saveInCache, boolean cacheLocal
 					
-					Icon icon = AIT.getImageIcon(AIT.ZOOM, SMALL_ICON_SIZE);
+					Icon icon = IconFactory.getZOOM(JXIcon.SMALL_ICON);
 					JXButton ic = new JXButton((np == null ? "<" + key + ">" : np.getName()), icon);	
 
 //					ActionListener tut nicht! Untersuchen TODO

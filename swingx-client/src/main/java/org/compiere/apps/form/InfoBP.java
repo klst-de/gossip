@@ -22,11 +22,12 @@ import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTaskPane;
 
 import com.klst.gossip.GenericDataLoader;
-import com.klst.gossip.GenericFormPanel;
 import com.klst.gossip.MXTable;
 import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.gossip.wrapper.TabModel;
 import com.klst.gossip.wrapper.WindowModel;
+
+import io.homebeaver.gossip.GenericFormPanel;
 
 /**
  *	subclasses Generic Form Panel

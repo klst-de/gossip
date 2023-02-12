@@ -111,7 +111,7 @@ public final class AMenu extends CFrame
 		super();
 //		Splash splash = Splash.getSplash();
 //		//
-//		m_WindowNo = Env.createWindowNo(this);
+		m_WindowNo = Env.createWindowNo(this); // aus (base) WindowManager
 //		//	Login
 //		initSystem (splash);        //	login
 		initSystem();
@@ -119,32 +119,34 @@ public final class AMenu extends CFrame
 //		splash.toFront();
 //		splash.paint(splash.getGraphics());
 //		
-//		//
-//		if (!Adempiere.startupEnvironment(true)) // Load Environment
-//			System.exit(1);		
-//		MSession.get (Env.getCtx(), true);		//	Start Session
-//
-//		// Setting close operation/listener - teo_sarca [ 1684168 ]
-//		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-//		addWindowListener(new WindowListener() {
-//			public void windowClosing(WindowEvent e) {
-//				if (!ADialog.ask(0, null, "ExitApplication?"))
-//					return;
-//				dispose();
-//			}
-//			public void windowActivated(WindowEvent e) {}
-//			public void windowClosed(WindowEvent e) {}
-//			public void windowDeactivated(WindowEvent e) {}
-//			public void windowDeiconified(WindowEvent e) {}
-//			public void windowIconified(WindowEvent e) {}
-//			public void windowOpened(WindowEvent e) {}
-//		});
-//		
-//		//	Preparation
+		log.info("Load Environment");
+		if (!Gossip.startupEnvironment(true)) // Load Environment
+			System.exit(1);		
+		log.info("Start Session");
+		MSession.get (Env.getCtx(), true);		//	Start Session
+
+		// Setting close operation/listener - teo_sarca [ 1684168 ]
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		
+		addWindowListener(new WindowListener() {
+			public void windowClosing(WindowEvent e) {
+				if (!ADialog.ask(0, null, "ExitApplication?"))
+					return;
+				dispose();
+			}
+			public void windowActivated(WindowEvent e) {}
+			public void windowClosed(WindowEvent e) {}
+			public void windowDeactivated(WindowEvent e) {}
+			public void windowDeiconified(WindowEvent e) {}
+			public void windowIconified(WindowEvent e) {}
+			public void windowOpened(WindowEvent e) {}
+		});
+		
+		new RootFrame();
+		//	Preparation
 //		wfActivity = new WFActivity(this); 
 //		wfPanel = new WFPanel(this);
 //		treePanel = new VTreePanel (m_WindowNo, true, false);	//	!editable & hasBar
-//
 //		try
 //		{
 //			jbInit();
@@ -235,7 +237,7 @@ public final class AMenu extends CFrame
 //	private void initSystem (Splash splash)
 	private void initSystem()
 	{
-		//  Default Image
+		//  Default Adempiere Image
 		this.setIconImage(Gossip.getImage16());
 
 		//  Focus Traversal
@@ -244,7 +246,7 @@ public final class AMenu extends CFrame
 		/**
 		 *	Show Login Screen - if not successful - exit
 		 */
-		log.finer("Login");
+		log.info("Login");
 
 //		ALogin login = new ALogin(splash);
 		ALogin login = new ALogin(null);
@@ -263,13 +265,14 @@ public final class AMenu extends CFrame
 				AEnv.exit(1);
 		}
 
-		//  Check Build
+		log.info("Check Build");	
 		if (!DB.isBuildOK(m_ctx))
 			AEnv.exit(1);
 
+		log.info("Check DB");
 		//  Check DB	(AppsServer Version checked in Login)
 		DB.isDatabaseOK(m_ctx);
-	}	//	initSystem
+	}
 
 //	//	UI
 //	private CPanel mainPanel = new CPanel();

@@ -73,36 +73,30 @@ public class StatusBar extends CPanel implements IStatusBar
 		}
 	}   //  StatusBar_mouseAdapter
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1465783013058042860L;
 
 	/**
 	 *	Standard Status Bar
 	 */
-	public StatusBar()
-	{
-		this(false);
-	}	//	StatusBar
+	public StatusBar(String name) {
+		this(false, name);
+	}
 
 	/**
 	 *	Status Bar with additional info
 	 *  @param withInfo with info
 	 */
-	public StatusBar (boolean withInfo)
-	{
-		super();
+	public StatusBar (boolean withInfo, String name){
+		super(name);
 		try
 		{
 			jbInit();
 		}
 		catch (Exception e)
 		{}
-		this.setName("statusBar");
 		if (!withInfo)
 			infoLine.setVisible(false);
-	}	//	StatusBar
+	}
 
 	private BorderLayout mainLayout = new BorderLayout();
 	private JLabel statusLine = new JLabel();

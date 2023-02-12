@@ -227,8 +227,9 @@ public class Tab extends JPanel implements ComponentListener {
 	}
 
 	private Dimension getSingleRowPanelSize() {
-		srp = new SingleRowPanel(this.gridTableModel); // darin VPanel gekapselt!
-		return srp.getSingleRowPanelSize();
+//		srp = new SingleRowPanel(this.gridTableModel); // darin VPanel gekapselt!
+//		return srp.getSingleRowPanelSize();
+		return new Dimension(200,200);
 	}
 	
 	private Dimension initModelAndTable(Dimension useDim) {

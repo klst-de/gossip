@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
-import org.compiere.grid.VPanel;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridField;
@@ -14,6 +13,8 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
 import com.klst.gossip.wrapper.GridTableModel;
+
+import io.homebeaver.gossip.VPanel;
 
 public class SingleRowPanel extends JPanel {
 

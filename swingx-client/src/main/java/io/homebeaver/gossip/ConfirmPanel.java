@@ -492,10 +492,9 @@ public final class ConfirmPanel extends CPanel
 		boolean withZoomButton,
 		boolean withText)
 	{
-		super();
+		super("confirmPanel");
 		BorderLayout mainLayout = new BorderLayout();
 		this.setLayout(mainLayout);
-		this.setName("confirmPanel");
 		//
 		CPanel okCancel = new CPanel(new FlowLayout(FlowLayout.RIGHT));
 		okCancel.setOpaque(false);

@@ -25,15 +25,10 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-//import org.compiere.swing.CButton;
-//import org.compiere.swing.CCheckBoxMenuItem;
-//import org.compiere.swing.CMenuItem;
-//import org.compiere.swing.CToggleButton;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 
@@ -101,14 +96,13 @@ public final class AppsAction extends AbstractAction {
 		int pos = toolTipText.indexOf('&');
 		if (pos != -1  && toolTipText.length() > pos)	//	We have a nemonic - creates ALT-_
 		{
-			Character ch = new Character(toolTipText.toUpperCase().charAt(pos+1));
+			Character ch = Character.valueOf(toolTipText.toUpperCase().charAt(pos+1));
 			if (ch != ' ')
 			{
 				toolTipText = toolTipText.substring(0, pos) + toolTipText.substring(pos+1);
 				putValue(Action.MNEMONIC_KEY, Integer.valueOf(ch.hashCode()));
 			}
 		}
-		System.out.println("AppsAction: TODO getIcon(action="+action +" "+toString()); // TODO
 		Icon small = getIcon(action, true);
 		Icon large = getIcon(action, false);
 		Icon largePressed = null;
@@ -183,8 +177,6 @@ public final class AppsAction extends AbstractAction {
 	 */
 	private Icon getIcon(String name, boolean small) {
 		return IconFactory.get(name, (small ? 16 : 24));
-//		String fullName = name + (small ? "16" : "24");
-//		return Env.getImageIcon2(fullName); // Env ist in (base) getImageIcon2 hat dort nichts zu suchen
 	}
 
 	/**

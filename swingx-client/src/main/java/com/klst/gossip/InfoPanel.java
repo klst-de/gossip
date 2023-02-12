@@ -19,6 +19,7 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
+import io.homebeaver.gossip.WindowFrame;
 
 // ? InfoPanel ist eine R/O-Variante von MuliRowPanel extends JXTable, bzw Tab extends JPanel, das MuliRowPanel enthält 
 // in AD heißt es MiniTable

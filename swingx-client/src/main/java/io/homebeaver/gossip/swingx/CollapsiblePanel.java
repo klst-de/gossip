@@ -20,13 +20,13 @@ import java.awt.Insets;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
 import org.jdesktop.swingx.JXCollapsiblePane;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.VerticalLayout;
 
 import io.homebeaver.gossip.AdempierePLAF;
@@ -40,11 +40,9 @@ import io.homebeaver.gossip.AdempierePLAF;
  * @author hengsin
  */
 //copied from package org.compiere.swing
-public class CollapsiblePanel extends JPanel {
+// TODO change to CCollapsiblePanel extends JXCollapsiblePane 
+public class CollapsiblePanel extends JXPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7372966868790589720L;
 	private Color titleBackgroundColor;
 	private Color titleForegroundColor;
