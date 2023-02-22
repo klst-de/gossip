@@ -23,6 +23,11 @@ import java.awt.HeadlessException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.compiere.util.CLogger;
+import org.jdesktop.swingx.JXFrame;
+
+import io.homebeaver.gossip.AMenu;
+
 /**
  * 	Adempiere Frame
  *	
@@ -33,21 +38,20 @@ import javax.swing.JPanel;
  *		@see https://github.com/adempiere/adempiere/issues/114
  */
 //copied from package org.compiere.swing
-public class CFrame extends JFrame
-{
-	/**
-	 * 
-	 */
+public class CFrame extends JXFrame {
+
 	private static final long serialVersionUID = 6282268921005682543L;
+	private static CLogger log = CLogger.getCLogger(CFrame.class);
 
 	/**
 	 * 	CFrame
 	 *	@throws HeadlessException
 	 */
-	public CFrame () throws HeadlessException
-	{
+	public CFrame () throws HeadlessException {
 		super ();
-	}	//	CFrame
+		log.info("info ...");
+		log.warning("warning ...");
+	}
 
 	/**
 	 * 	CFrame

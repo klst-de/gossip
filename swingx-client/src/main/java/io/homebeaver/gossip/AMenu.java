@@ -73,6 +73,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
+import org.jdesktop.swingx.JXFrame;
 
 import io.homebeaver.gossip.swingx.CFrame;
 //import org.compiere.util.Splash;
@@ -91,7 +92,7 @@ import io.homebeaver.gossip.swingx.CFrame;
  * 
  */
 //copied from package org.compiere.apps
-public final class AMenu extends CFrame
+public final class AMenu extends CFrame // CFrame extends JXFrame
 //	implements ActionListener, PropertyChangeListener, ChangeListener
 {
 	/**
@@ -119,10 +120,10 @@ public final class AMenu extends CFrame
 //		splash.toFront();
 //		splash.paint(splash.getGraphics());
 //		
-		log.info("Load Environment");
+		log.warning("Load Environment");
 		if (!Gossip.startupEnvironment(true)) // Load Environment
 			System.exit(1);		
-		log.info("Start Session");
+		log.warning("Start Session");
 		MSession.get (Env.getCtx(), true);		//	Start Session
 
 		// Setting close operation/listener - teo_sarca [ 1684168 ]
@@ -142,20 +143,23 @@ public final class AMenu extends CFrame
 			public void windowOpened(WindowEvent e) {}
 		});
 		
-		new RootFrame();
+//		new RootFrame(); // sieht gut aus - TODO:
+//		log.info("TODO ------- new MenuPanel(new RootFrame());");
+		new MenuPanel(new RootFrame());
+		
 		//	Preparation
 //		wfActivity = new WFActivity(this); 
 //		wfPanel = new WFPanel(this);
 //		treePanel = new VTreePanel (m_WindowNo, true, false);	//	!editable & hasBar
-//		try
-//		{
-//			jbInit();
-//			createMenu();
-//		}
-//		catch(Exception ex)
-//		{
-//			log.log(Level.SEVERE, "AMenu", ex);
-//		}
+		try
+		{
+			jbInit();
+			createMenu();
+		}
+		catch(Exception ex)
+		{
+			log.log(Level.SEVERE, "AMenu", ex);
+		}
 //
 //		//	initialize & load tree
 //		int AD_Role_ID = Env.getAD_Role_ID(Env.getCtx());
@@ -246,7 +250,7 @@ public final class AMenu extends CFrame
 		/**
 		 *	Show Login Screen - if not successful - exit
 		 */
-		log.info("Login");
+		log.warning("Login");
 
 //		ALogin login = new ALogin(splash);
 		ALogin login = new ALogin(null);
@@ -265,13 +269,14 @@ public final class AMenu extends CFrame
 				AEnv.exit(1);
 		}
 
-		log.info("Check Build");	
+		log.warning("Check Build");	
 		if (!DB.isBuildOK(m_ctx))
 			AEnv.exit(1);
 
-		log.info("Check DB");
+		log.warning("Check DB");
 		//  Check DB	(AppsServer Version checked in Login)
-		DB.isDatabaseOK(m_ctx);
+		boolean isDatabaseOK = DB.isDatabaseOK(m_ctx);
+		log.info("DB.isDatabaseOK(m_ctx) returns "+isDatabaseOK);		
 	}
 
 //	//	UI
@@ -293,29 +298,29 @@ public final class AMenu extends CFrame
 //	private WFActivity	wfActivity = null;
 //	private WFPanel		wfPanel = null;
 //	private WindowMenu m_WindowMenu;
-//
-//	/**
-//	 *	Static Init.
-//	 *  <pre>
-//	 *  - mainPanel
-//	 * 		- centerPane
-//	 *      	- treePanel
-//	 * 			- wfActivity
-//	 * 			- wfPanel
-//	 *      - southPanel
-//	 *          - infoPanel
-//	 *              - bNotes
-//	 *              - bTask
-//	 *              - memoryBar
-//	 *          - wfPanel
-//	 *          - progressBar
-//	 *  </pre>
-//	 *  @throws Exception
-//	 */
-//	void jbInit() throws Exception
-//	{
-//		this.setName("Menu");
-//		this.setLocale(Language.getLoginLanguage().getLocale());
+
+	/**
+	 *	Static Init.
+	 *  <pre>
+	 *  - mainPanel
+	 * 		- centerPane
+	 *      	- treePanel
+	 * 			- wfActivity
+	 * 			- wfPanel
+	 *      - southPanel
+	 *          - infoPanel
+	 *              - bNotes
+	 *              - bTask
+	 *              - memoryBar
+	 *          - wfPanel
+	 *          - progressBar
+	 *  </pre>
+	 *  @throws Exception
+	 */
+	void jbInit() throws Exception
+	{
+		this.setName("Menu");
+		this.setLocale(Language.getLoginLanguage().getLocale());
 //		this.setJMenuBar(menuBar);
 //		//
 //		mainPanel.setLayout(mainLayout);
@@ -387,8 +392,8 @@ public final class AMenu extends CFrame
 //		int loc = Ini.getDividerLocation();
 //		if (loc > 0)
 //			treePanel.setDividerLocation(loc);
-//	}	//	jbInit
-//
+	}	//	jbInit
+
 //	/**
 //	 * 	Get Preferred Size
 //	 * 	@return preferred Size
@@ -401,12 +406,12 @@ public final class AMenu extends CFrame
 //		return dim;
 //	}	//	getPreferredSize
 //
-//
-//	/**
-//	 *  Create Menu
-//	 */
-//	private void createMenu()
-//	{
+
+	/**
+	 *  Create Menu
+	 */
+	private void createMenu()
+	{
 //		//      File
 //		JMenu mFile = AEnv.getMenu("File");
 //		menuBar.add(mFile);
@@ -507,8 +512,8 @@ public final class AMenu extends CFrame
 //		AEnv.addMenuItem("Online", null, null, mHelp, this);
 //		AEnv.addMenuItem("EMailSupport", null, null, mHelp, this);
 //		AEnv.addMenuItem("About", null, null, mHelp, this);
-//	}   //  createMenu
-//
+	}   //  createMenu
+
 //	/**
 //	 *	Dispose - end system
 //	 */

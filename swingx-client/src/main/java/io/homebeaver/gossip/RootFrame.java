@@ -26,7 +26,9 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import org.compiere.Adempiere;
 import org.compiere.model.GridWindow;
+import org.compiere.model.MSession;
 import org.compiere.model.PO;
+import org.compiere.util.DB;
 //import org.compiere.plaf.CompiereTheme;
 //import org.compiere.plaf.CompiereThemeBlueMetal;
 import org.compiere.util.Env;
@@ -40,13 +42,13 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
 import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.GenericDataModel;
-import com.klst.gossip.MenuPanel;
 //import com.klst.client.LoginPanel;
 import com.klst.gossip.wrapper.WindowModel;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
+import io.homebeaver.gossip.swingx.CFrame;
 
-public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
+public class RootFrame extends WindowFrame {  // WindowFrame extends JXFrame
 	
 	private static final long serialVersionUID = -400920856924947621L;
 
@@ -54,6 +56,10 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 
 	private static final String TITLE = "Gossip";
 	private static final String METAL = "Metal";
+	
+	static {
+		AdempierePLAF.setPLAF ();
+	}
 	
 	String crossPlatformLookAndFeelClassName = UIManager.getCrossPlatformLookAndFeelClassName();
 
@@ -109,13 +115,23 @@ public class RootFrame extends WindowFrame {  // WindowFrame extends JFrame
 
 	HidableTabbedPane hidableTabbedPane; // hierin loginPanel und die (hidden) Demopanels
 //	LoginPanel loginPanel;
-//	MenuPanel menuPanel;
+	MenuPanel menuPanel;
 
 /* Gegenüberstellung start gossip vs AD-client
 
    (base) org.compiere.Adempiere.main ist jeweils die start methode mit programm argument
-   gossip: "com.klst.gossip.RootFrame"       | AD-client: <nix> - dauault ist className = "org.compiere.apps.AMenu"
-                        main:625:  startClass.newInstance();
+   (client) public final class org.adempiere.Adempiere , Start with class as argument - or "org.compiere.apps.AMenu"
+   (gossip) public final class io.homebeaver.gossip.Gossip , Start with class as argument - or "org.compiere.apps.AMenu"
+   gossip: "com.klst.gossip.RootFrame"       | AD-client: <nix> - dafault ist className = "org.compiere.apps.AMenu"
+                                             |  main:625:  startClass.newInstance();
+   public class RootFrame extends WindowFrame // WindowFrame extends JXFrame
+   "io.homebeaver.gossip.AMenu"                                              
+   public final class AMenu extends CFrame // CFrame extends JXFrame
+	static {
+		AdempierePLAF.setPLAF ();
+	}
+                                             
+                                             
                                              |
                                              | log.info("CodeBase=" + Adempiere.getCodeBase());	// Get JNLP CodeBase aka Java Web Start
                                              | ... splash ...
@@ -132,12 +148,64 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
                                              | MTree vTree = new MTree (Env.getCtx(), treeId, editable, allNodes=false, whereClause, trxName=null);
 
  */
+// ---- aus AMenu
+	private int 		m_WindowNo;
+	private Properties  m_ctx = Env.getCtx();
+//	private void initSystem (Splash splash)
+	private void initSystem()
+	{
+		//  Default Adempiere Image
+		this.setIconImage(Gossip.getImage16());
+
+		//  Focus Traversal
+//		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
+
+		/**
+		 *	Show Login Screen - if not successful - exit
+		 */
+		LOG.config("Login");
+//		ALogin login = new ALogin(splash);
+		ALogin login = new ALogin(null);
+		if (!login.initLogin())		//	no automatic login
+		{
+			//	Center the window
+			try
+			{
+				AEnv.showCenterScreen(login);	//	HTML load errors
+			}
+			catch (Exception ex)
+			{
+				LOG.severe(ex.toString());
+			}
+			if (!login.isConnected() || !login.isOKpressed())
+				AEnv.exit(1);
+		}
+
+		LOG.config("Check Build");	
+		if (!DB.isBuildOK(m_ctx))
+			AEnv.exit(1);
+
+		LOG.config("Check DB");
+		//  Check DB	(AppsServer Version checked in Login)
+		boolean isDatabaseOK = DB.isDatabaseOK(m_ctx);
+		LOG.info("DB.isDatabaseOK(m_ctx) returns "+isDatabaseOK);		
+	}
+// ----
 	public RootFrame() {
 		super(TITLE);
 		LOG.info("Java Web Start/JNLP CodeBase=" + Gossip.getCodeBase());		
 		LOG.config(TITLE + ", Component#:"+getContentPane().getComponentCount());
 		this.rootFrame = this;
-		
+// ---- aus AMenu
+		m_WindowNo = Env.createWindowNo(this); // aus (base) WindowManager
+		initSystem();
+		LOG.config("m_WindowNo="+m_WindowNo + " -- Load Environment ...");
+		if (!Gossip.startupEnvironment(true)) // Load Environment
+			System.exit(1);		
+		LOG.config("Start Session");
+		MSession.get (Env.getCtx(), true);		//	Start Session
+		//setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // TODO
+// ----
 		frames = new ArrayList<JFrame>(RootFrame.FRAMES_INITIAL_CAPACITY);
 		frames.add(this);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -147,11 +215,11 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 		// button & msg controlPanel
 		JPanel controlPanel = (JPanel)getContentPane().getComponent(0);
 		
-//		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
+		menuPanel = new MenuPanel(this); // MenuPanel extends JXPanel
 //		loginPanel = new LoginPanel();
-//		
-//		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
-//		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
+		
+		hidableTabbedPane = new HidableTabbedPane("HidableTabbedPane/menu",menuPanel);
+		controlPanel.add(hidableTabbedPane, BorderLayout.CENTER); //.PAGE_START); // aka NORTH
 
 		updateLaF(NimbusLookAndFeel.class.getName(), false); // Nimbus als default LAF (statt Metal Ocean): 
 		miNimbusLaF.setSelected(true);

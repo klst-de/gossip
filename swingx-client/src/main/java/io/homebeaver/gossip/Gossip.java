@@ -516,8 +516,26 @@ public final class Gossip
 		Ini.loadGossipProperties(false); // TODO (base) Ini
 		
 		//	Set up Log
+		log.info(" - " + Ini.P_TRACELEVEL + "=" + Ini.getProperty(Ini.P_TRACELEVEL)); // == private Ini.DEFAULT_TRACELEVEL
+		log.info(" - " + "isClient" + "=" + isClient);
+		log.info(" - " + Ini.P_TRACEFILE + "=" + Ini.isPropertyBool(Ini.P_TRACEFILE));
+		
 		CLogMgt.setLevel(Ini.getProperty(Ini.P_TRACELEVEL));
-		if (isClient && Ini.isPropertyBool(Ini.P_TRACEFILE)
+		/* See java.util.logging.Level :
+		 * "OFF",Integer.MAX_VALUE
+		 * "SEVERE",1000
+		 * "WARNING", 900
+		 * "INFO", 800
+		 * "CONFIG", 700
+		 * "FINE", 500
+		 */
+		if(CLogMgt.getLevelAsInt()>800) { // more then INFO/800 is silent
+			log.warning(" - " + "CLogMgt.getLevel()" + "=" + CLogMgt.getLevel());
+			log.warning(" - " + "CLogMgt.getLevelAsInt()" + "=" + CLogMgt.getLevelAsInt());
+			CLogMgt.setLevel(Level.CONFIG);
+		}
+		if (isClient 
+			&& Ini.isPropertyBool(Ini.P_TRACEFILE)
 			&& CLogFile.get(false, null, isClient) == null)
 			CLogMgt.addHandler(CLogFile.get (true, Ini.findAdempiereHome(), isClient));
 
@@ -563,14 +581,14 @@ public final class Gossip
 	}
 
 	/**
-	 * 	Startup Adempiere Environment.
+	 * 	Startup Adempiere/Gossip Environment.
 	 * 	Automatically called for Server connections.
 	 * 	For testing call this method.
 	 *	@param isClient true if client connection
 	 *  @return successful startup
 	 */
 	public static boolean startupEnvironment (boolean isClient) {
-		log.info("isClient="+isClient + " ... Startup Adempiere Environment: DO startupEnvironment("+isClient+")");
+		log.info("Startup Adempiere Environment: startupEnvironment(isClient="+isClient+")");
 		startup(isClient);		//	returns if already initiated
 		if (!DB.isConnected())
 		{
@@ -645,7 +663,8 @@ public final class Gossip
 		System.out.println("startup "+(successful ? "successful" : "NOT successful : don't test connection, need to call"));
 
 		//  Start with class as argument - or if nothing provided with Client
-		String className = "io.homebeaver.gossip.AMenu";
+//		String className = "io.homebeaver.gossip.AMenu";
+		String className = "io.homebeaver.gossip.RootFrame";
 //	per args:	String className = "io.homebeaver.gossip.db.CConnectionDialog";
 		for (int i = 0; i < args.length; i++) {
 			if (!args[i].equals("-debug"))  //  ignore -debug
@@ -684,4 +703,4 @@ public final class Gossip
 
 	private static boolean unitTestMode = false;
 
-}	//	Adempiere
+}

@@ -45,6 +45,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
+import org.compiere.util.CLogMgt;
 //import org.compiere.plaf.CompiereLookAndFeel;
 //import org.compiere.plaf.CompiereThemeBlueMetal;
 //import org.compiere.plaf.CompiereThemeIce;
@@ -591,9 +592,11 @@ public final class AdempierePLAF
 	/**
 	 *  Print current UIDefaults
 	 */
-	public static void printPLAFDefaults ()
-	{
-		System.out.println(UIManager.getLookAndFeel());
+	public static void printPLAFDefaults (){
+		log.info("LookAndFeel:"+UIManager.getLookAndFeel());
+		if(CLogMgt.getLevelAsInt()>=700) return; // do not print keys for logging.Level CONFIG/700 or higher
+		
+		// print UI keys for logging.Level FINE/500 or lower:
 		Object[] keys = UIManager.getLookAndFeelDefaults().keySet().toArray();
 /* wg.
 Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$LCDContrastKey cannot be cast to class java.lang.Comparable (sun.awt.SunHints$LCDContrastKey is in module java.desktop of loader 'bootstrap'; java.lang.Comparable is in module java.base of loader 'bootstrap')
@@ -612,12 +615,12 @@ Exception in thread "main" java.lang.ClassCastException: class sun.awt.SunHints$
 			sb.append(keys[i]).append(" = ").append(UIManager.get(keys[i]));
 			if (keys[i].toString().charAt(0) != lastStart)
 			{
-				System.out.println();
+				//System.out.println();
 				lastStart = keys[i].toString().charAt(0);
 			}
 			System.out.println(sb);
 		}
-	}   //  printPLAFDefaults
+	}
 
 	/**
 	 *  Is AdempiereL&F the active L&F

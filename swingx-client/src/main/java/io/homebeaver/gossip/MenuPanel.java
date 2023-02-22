@@ -18,6 +18,7 @@ import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
+import javax.swing.Painter;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -39,6 +40,8 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.PainterIcon;
+import org.jdesktop.swingx.icon.RadianceIcon;
+import org.jdesktop.swingx.painter.AbstractAreaPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
 import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
 import org.jdesktop.swingx.renderer.IconValue;
@@ -49,9 +52,6 @@ import org.jdesktop.swingx.treetable.TreeTableModel;
 
 import com.jhlabs.image.InvertFilter;
 import com.klst.gossip.GenericTableHeader;
-import com.klst.gossip.MenuTreeTableModel;
-//import com.klst.icon.AbstractImageTranscoder;
-//import com.klst.icon.TableColumnControlButton;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
@@ -135,18 +135,34 @@ public class MenuPanel extends JXPanel implements ActionListener {
 //		add(control, BorderLayout.PAGE_END);
 	}
 
+    private boolean initialized = false; 
     /**
      * Overridden to create and install the component tree model.
      */
-    // ist für das TreeTableDemo notwendig
-//    @Override // javax.swing.JComponent.addNotify
-//    public void addNotify() {
-//        super.addNotify();
+    // ist für das TreeTableDemo notwendig?
+    @Override // javax.swing.JComponent.addNotify
+	public void addNotify() {
+		super.addNotify();
 //        if (tree.getModel() == null) {
 //            tree.setTreeTableModel(createTreeModel());
 //        }
-//    }
+		if (!initialized) {
+			initialized = true;
+			refreshModel();
+		}
+//        installInputEventListener();
+	}
 
+    private void refreshModel() {
+//    	createModelImCtor();
+//      tree.setTreeTableModel(treeTableModel);
+    	
+//        tree.expandAll();
+        // or
+//        tree.expandPath(...);
+        
+        tree.packColumn(tree.getHierarchicalColumn(), -1);
+    } 
 /*
                                              | AD_Tree_ID = per SQL: (default 10)
 SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
@@ -177,26 +193,86 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		ctx.setProperty("#AD_Role_ID", "102");	// GardenWorld Admin
 
     	vTree = new MTree(ctx, treeId, editable, allNodes, whereClause, trxName);
+    	LOG.info("-------------------");
     	LOG.info(vTree.getName() + " isMenu="+vTree.isMenu()
     			+ " rootNode=" + vTree.getRootNode());
     	MTreeNode rootNode = vTree.getRootNode();
+    	LOG.info("------------------->MenuTreeTableModel");
     	treeTableModel = new MenuTreeTableModel(rootNode);
+    	LOG.info("<-------------------MenuTreeTableModel");
     }
     
     private void configureComponents() {
+        tree.setColumnControlVisible(true);
+        
+        tree.addTreeSelectionListener(event -> { // implements TreeSelectionListener
+			if(event.getSource() instanceof JXTree) {
+				JXTree tree = (JXTree)event.getSource();
+				TreePath treePath = event.getPath(); // first path element
+				MTreeNode node = (MTreeNode)treePath.getLastPathComponent();
+				
+				if(node.isWindow()) {
+					MMenu mMenu = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					rootFrame.openNewFrame(mMenu.getAD_Window_ID());
+				} else if(node.isProcess()) {
+					MMenu mm1 = new MMenu(Env.getCtx(), node.getNode_ID(), null); // gleichwertig zu MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					MMenu mm2 = MMenu.getFromId(Env.getCtx(), node.getNode_ID());
+					// mm.getAD_Window_ID()==0
+//					MProcess mp = MProcess.get(Env.getCtx(), node.getNode_ID());
+					LOG.config("TODO Process Node_ID="+node.getNode_ID() + " MMenu ID="+mm1.get_ID() + "/"+mm2.get_ID() + " OptionId="+mm1.getOptionId());// TODO Process, siehe AMenuStartItem.startProcess
+					MProcess mp = MProcess.get(Env.getCtx(), mm1.getAD_Process_ID());
+					WindowFrame pd = rootFrame.openNewFrame(mp);
+					LOG.config("WindowFrame pd/aka ProcessDialog:"+pd);
+					pd.getContentPane().invalidate();
+					pd.getContentPane().validate();
+					pd.pack();
+					pd.setLocationRelativeTo(null); // oben links würde es sonst angezeigt
+					pd.setVisible(true);
+/* in (client) org.compiere.apps.AMenuStartItem extends Thread
+		private void startProcess (int AD_Process_ID, boolean isSOTrx) {
+			SwingUtilities.invokeLater(updateProgressBar);			//	1
+			timer.stop();
+			ProcessDialog pd = new ProcessDialog (menu.getGraphicsConfiguration(), AD_Process_ID, isSOTrx);
+			    // ProcessDialog extends (base)CFrame extends JFrame implements IProcessDialog, ASyncProcess
+			if (!pd.init())
+				return;
+			timer.start();
+			menu.getWindowManager().add(pd);
 
+			SwingUtilities.invokeLater(updateProgressBar);			//	2
+			pd.getContentPane().invalidate();
+			pd.getContentPane().validate();
+			pd.pack();
+			//	Center the window
+			SwingUtilities.invokeLater(updateProgressBar);			//	3
+			AEnv.showCenterScreen(pd);
+		}
+ */
+				} else {
+					if(tree.getExpandsSelectedPaths()) {
+						if(!tree.isExpanded(treePath)) {
+							tree.expandPath(treePath);
+						} else {
+							tree.collapsePath(treePath);
+						}
+					}
+				}
+			}
+        });
+
+    }
+    
+    private void configureComponentsXXX() {
         // <snip> JXTree rendering
         // StringValue provides node text: concat several 
         StringValue sv = new StringValue() {
             
             @Override
             public String getString(Object value) {
-                if(value instanceof MTreeNode) {
-                	MTreeNode node = (MTreeNode)value;
-//                	node.getName();
-//                	node.toString();
+            	if(value instanceof MTreeNode mtn) {
+            		LOG.config("MTreeNode mtn:"+mtn);
                 	// dieser Name wird neben dem Icon angezeigt
-                	return StringValues.TO_STRING.getString(node.getName());
+                	return StringValues.TO_STRING.getString(mtn.getName());
                 } else {
                 	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
                 }
@@ -211,10 +287,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             @Override
             public String getString(Object value) {
                 if (value == null) return "";
-            	if(value instanceof MTreeNode) {
-            		MTreeNode node = (MTreeNode)value;
-//            		LOG.info(">>>>>>>>>ICON "+node.getImageIndicator() + node.getImageIndex());
-            		return node.getImageIndicator(); //node.getImageIcon();
+            	if(value instanceof MTreeNode mtn) {
+            		String ii = mtn.getImageIndicator(); 
+            		LOG.config("MTreeNode mtn:"+mtn);
+            		return ii;
             	}
                 String simpleClassName = value.getClass().getSimpleName();
                 if (simpleClassName.length() == 0){
@@ -230,7 +306,6 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // create and set a tree renderer using the custom Icon-/StringValue
         // welche Renderer gibt es sonst noch? Wie kann ich meine icons als iv definieren?
         tree.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
-//        tree.setCellRenderer(new DefaultTreeRenderer(iv, sv));
         // </snip>
 //        tree.setRowHeight(-1);
         
@@ -244,7 +319,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
         // <snip> JXTree rollover
         // enable and register a highlighter
         tree.setRolloverEnabled(true);
-        tree.addHighlighter(createRolloverIconHighlighter(iv));
+        tree.addHighlighter(createRolloverIconHighlighter());
         // </snip>
         	
 //        refreshButton.addActionListener(event -> {
@@ -331,13 +406,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     }
     
     // <snip> JXTree rollover
-    // custom implementation of Highlighter which highlights 
-    // by changing the node icon on rollover
-    private Highlighter createRolloverIconHighlighter(IconValue delegate) {
-        // the icon look-up is left to an IconValue
-        final IconValue iv = new FilteredIconValue(delegate); // FilteredIconValue versteckt in TreeDemoIconValues
-        AbstractHighlighter hl = new AbstractHighlighter(HighlightPredicate.ROLLOVER_CELL) {
-        	// geht weder mit ROLLOVER_ROW noch mit ROLLOVER_CELL
+    // custom implementation of Highlighter which highlights by changing the node icon on rollover
+    private Highlighter createRolloverIconHighlighter() {
+    	HighlightPredicate ROLLOVER_CELL = HighlightPredicate.ROLLOVER_CELL;
+    	// with boolean isHighlighted(Component renderer, ComponentAdapter adapter)
+        AbstractHighlighter hl = new AbstractHighlighter(ROLLOVER_CELL) {
             /**
              * {@inheritDoc} <p>
              * 
@@ -345,13 +418,22 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
              */
             @Override // muss implementiert werden
             // JXTree tree : funktioniert es
-            // JXTreetable tree : nicht
+            // JXTreetable tree : nicht                                  ==> TODO testen
             protected Component doHighlight(Component component, ComponentAdapter adapter) {
-            	LOG.config("component:"+component + " ComponentAdapter:"+adapter);
-                Icon icon = iv.getIcon(adapter.getValue());
-                if (icon != null) {
-                    ((WrappingIconPanel) component).setIcon(icon);
-                }
+            	Icon icon = ((WrappingIconPanel) component).getIcon();
+            	PainterIcon painterIcon = new PainterIcon(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+            	BufferedImage image = null;
+            	if(icon instanceof RadianceIcon ri) {
+            		image = ri.toImage(1);
+            	} else if(icon instanceof ImageIcon ii) {
+            		image = (BufferedImage)ii.getImage();
+            	} else {
+            		LOG.warning("no highlighting for "+icon);
+            	}
+                AbstractAreaPainter<Component> delegate = new ImagePainter(image);
+                delegate.setFilters(new InvertFilter());
+                painterIcon.setPainter((Painter<Component>)delegate);
+                ((WrappingIconPanel) component).setIcon(painterIcon);
                 return component;
             }
             // </snip>
@@ -373,13 +455,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     }
 
     // --------------------
-	static final int SMALL_ICON_SIZE = 16;
-    
     public static class LazyLoadingIconValue implements IconValue {
 
 		private static final long serialVersionUID = 8601036402183751110L;
-
-//		AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
 
         public LazyLoadingIconValue(StringValue sv) {
         	stringValue = sv;
@@ -396,9 +474,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
             if(icon==null) {
             	LOG.config("loadIcon for "+imageIndicator+" value:"+value); // z.B value:53108/0 1002 - Human Resource & Payroll
                 // loadIcon 
-    			int imageIndex = MTreeNode.getImageIndex(imageIndicator);
-                icon = MTreeNode.getImageIcon(imageIndex, JXIcon.SMALL_ICON);
-//    			icon = IconFactory.get(imageIndicator, JXIcon.SMALL_ICON);
+//    			int imageIndex = MTreeNode.getImageIndex(imageIndicator);
+//                icon = MTreeNode.getImageIcon(imageIndex, JXIcon.SMALL_ICON);
+    			icon = IconFactory.get(imageIndicator, JXIcon.SMALL_ICON);
                 iconCache.put(imageIndicator, icon);
             }
             return icon;
@@ -425,9 +503,10 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		}
 
         // wraps the given icon into an ImagePainter with a filter effect
-        private Icon manipulatedIcon(Icon icon) {
+        private Icon manipulatedIcon(JXIcon icon) {
             PainterIcon painterIcon = new PainterIcon(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-            BufferedImage image = (BufferedImage) ((ImageIcon) icon).getImage();
+            BufferedImage image = ((RadianceIcon)icon).toImage(1);
+//            BufferedImage image = (BufferedImage) ((ImageIcon) icon).getImage();
             ImagePainter delegate = new ImagePainter(image);
             delegate.setFilters(new InvertFilter()); // com.jhlabs.image.InvertFilter.InvertFilter() 
             // ==> JH Labs is the alias of Jerry Huxtable .. image processing stuff. @see http://www.jhlabs.com/

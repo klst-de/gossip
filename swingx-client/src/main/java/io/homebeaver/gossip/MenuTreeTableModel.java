@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.util.Enumeration;
 import java.util.logging.Logger;
@@ -8,7 +8,7 @@ import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 import com.klst.model.MTreeNode;
 
 /*
-To create a concreate instance of TreeTableModel you need only to provide implementations for thefollowing methods: 
+To create a concreate instance of TreeTableModel you need only to provide implementations for the following methods: 
  public int getColumnCount();
  public Object getValueAt(Object node, int column);
  public Object getChild(Object parent, int index);
@@ -25,6 +25,7 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 	public MenuTreeTableModel(MTreeNode root) {
 		super(root);
 		this.root = root;
+		LOG.info(""+this.root + " with "+getChildCount(this.root)+" childs.");
 	}
 	
     @Override
@@ -58,6 +59,10 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 		
 		// This should not return null if index is a valid index for parent (that is index >= 0 && index < getChildCount(parent)).
 //		LOG.config("ChildCount="+c.getChildCount() + " for "+c);
+//		
+//		org.jdesktop.swingx.treetable.TreeTableNode ttn = c.getChildAt(index);
+//		LOG.config("Child "+index+" of "+c.getChildCount() + " for "+c + " is "+ttn);
+		
 		return c.getChildAt(index);
 	}
 
