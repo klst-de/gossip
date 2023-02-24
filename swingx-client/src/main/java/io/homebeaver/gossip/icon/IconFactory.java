@@ -1,5 +1,6 @@
 package io.homebeaver.gossip.icon;
 
+import org.jdesktop.swingx.demos.svg.FeatheRactivity;
 import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
 import org.jdesktop.swingx.demos.svg.FeatheRcrosshair;
@@ -12,6 +13,7 @@ import org.jdesktop.swingx.demos.svg.FeatheRserver;
 import org.jdesktop.swingx.demos.svg.FeatheRsettings;
 import org.jdesktop.swingx.demos.svg.FeatheRsidebar;
 import org.jdesktop.swingx.demos.svg.FeatheRx;
+import org.jdesktop.swingx.demos.svg.FeatheRx_circle;
 import org.jdesktop.swingx.demos.svg.FeatheRx_square;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.TrafficLightGreenIcon;
@@ -143,6 +145,33 @@ public class IconFactory {
 			return getCANCEL(size);
 		else if("OK".equalsIgnoreCase(name))
 			return getOK(size);
+		/* zur INFO aus X_AD_Menu :
+		public static final int ACTION_AD_Reference_ID=104;
+		public static final String ACTION_Form        = "X"; z.B. Tree Maintenance
+		public static final String ACTION_Process     = "P";
+		public static final String ACTION_Report      = "R";
+		public static final String ACTION_SmartBrowse = "S"; z.B. User Browser
+		public static final String ACTION_Task        = "T";
+		public static final String ACTION_Window      = "W";
+		public static final String ACTION_WorkFlow    = "F";
+		public static final String ACTION_Workbench   = "B";
+	 */
+//		else if("X".equalsIgnoreCase(name))
+//			return getFORM(size);
+		else if("P".equalsIgnoreCase(name))
+			return getPROCESS(size);
+		else if("R".equalsIgnoreCase(name))
+			return getREPORT(size);
+//		else if("S".equalsIgnoreCase(name))
+//			return getSMARTBROWSE(size);
+		else if("T".equalsIgnoreCase(name))
+			return getTASK(size);
+		else if("W".equalsIgnoreCase(name))
+			return getMENU_WINDOW(size);
+		else if("F".equalsIgnoreCase(name))
+			return getWORKFLOW(size);
+//		else if("B".equalsIgnoreCase(name))
+//			return getWORKBENCH(size);
 		else return FeatheRfeather.of(size, size);
 			
 	}
@@ -173,22 +202,26 @@ public class IconFactory {
 
 	public static JXIcon getMENU_WINDOW(int size) {
 		return monochrom ? FeatheRsidebar.of(size, size) : 
-			TangoRDialog_error_round.of(size, size); // TODO
+			TangoRPreferences_system_windows.of(size, size);
 	}
 	public static JXIcon getREPORT(int size) {
 		return monochrom ? FeatheRfile_text.of(size, size) : 
-			TangoRDialog_error_round.of(size, size); // TODO
+			TangoRText_x_generic.of(size, size);
 	}
 	public static JXIcon getPROCESS(int size) {
 		return monochrom ? FeatheRsettings.of(size, size) : 
-			TangoRDialog_error_round.of(size, size); // TODO
+			TangoRApplications_system.of(size, size);
+	}
+	public static JXIcon getTASK(int size) {
+		return monochrom ? FeatheRactivity.of(size, size) : 
+			TangoRUtilities_system_monitor.of(size, size);
 	}
 	public static JXIcon getWORKFLOW(int size) {
 		return monochrom ? FeatheRgit_pull_request.of(size, size) : 
 			TangoRDialog_error_round.of(size, size); // TODO
 	}
 	public static JXIcon getEND(int size) {
-		return monochrom ? FeatheRx_square.of(size, size) : // FeatheRx_circle fehlt ???????
+		return monochrom ? FeatheRx_circle.of(size, size) :
 			TangoRDialog_error_round.of(size, size); // TODO
 	}
 	public static JXIcon getFOLDER(int size) {
