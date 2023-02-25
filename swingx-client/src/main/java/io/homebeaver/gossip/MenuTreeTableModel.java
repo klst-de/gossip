@@ -25,7 +25,7 @@ public class MenuTreeTableModel extends AbstractTreeTableModel {
 	public MenuTreeTableModel(MTreeNode root) {
 		super(root);
 		this.root = root;
-		LOG.info(""+this.root + " with "+getChildCount(this.root)+" childs.");
+//		LOG.info(""+this.root + " with "+getChildCount(this.root)+" childs.");
 	}
 	
     @Override
