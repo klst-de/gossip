@@ -1,6 +1,5 @@
 package io.homebeaver.gossip.icon;
 
-import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.demos.svg.FeatheRactivity;
 import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
@@ -15,13 +14,10 @@ import org.jdesktop.swingx.demos.svg.FeatheRsettings;
 import org.jdesktop.swingx.demos.svg.FeatheRsidebar;
 import org.jdesktop.swingx.demos.svg.FeatheRx;
 import org.jdesktop.swingx.demos.svg.FeatheRx_circle;
-import org.jdesktop.swingx.demos.svg.FeatheRx_square;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.TrafficLightGreenIcon;
 import org.jdesktop.swingx.icon.TrafficLightRedIcon;
 import org.jdesktop.swingx.icon.TrafficLightYellowIcon;
-
-import com.klst.model.MTreeNode;
 
 /*
 //	Name	Wert		// Beschreibung siehe http://wiki.idempiere.org/de/Toolbar
