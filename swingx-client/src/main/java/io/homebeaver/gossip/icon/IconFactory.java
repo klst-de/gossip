@@ -1,5 +1,6 @@
 package io.homebeaver.gossip.icon;
 
+import org.compiere.wf.MWFNode;
 import org.jdesktop.swingx.demos.svg.FeatheRactivity;
 import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
@@ -19,6 +20,8 @@ import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.TrafficLightGreenIcon;
 import org.jdesktop.swingx.icon.TrafficLightRedIcon;
 import org.jdesktop.swingx.icon.TrafficLightYellowIcon;
+
+import com.klst.model.MTreeNode;
 
 /*
 //	Name	Wert		// Beschreibung siehe http://wiki.idempiere.org/de/Toolbar
@@ -145,16 +148,21 @@ public class IconFactory {
 			return getCANCEL(size);
 		else if("OK".equalsIgnoreCase(name))
 			return getOK(size);
-		/* zur INFO aus X_AD_Menu :
-		public static final int ACTION_AD_Reference_ID=104;
-		public static final String ACTION_Form        = "X"; z.B. Tree Maintenance
+		/* zur INFO aus X_AD_Menu : 
+ TODO besser MTreeNode.getImageIcon(MTreeNode.getImageIndex(imageIndicator), int size)
+		public static final String ACTION_Form        = "X"; z.B. Tree Maintenance ==> icon wie W
 		public static final String ACTION_Process     = "P";
 		public static final String ACTION_Report      = "R";
-		public static final String ACTION_SmartBrowse = "S"; z.B. User Browser
-		public static final String ACTION_Task        = "T";
+		public static final String ACTION_SmartBrowse = "S"; z.B. User Browser, wie MWFNode.ACTION_SmartBrowse
+		public static final String ACTION_Task        = "T";                       ==> icon wie P
 		public static final String ACTION_Window      = "W";
 		public static final String ACTION_WorkFlow    = "F";
-		public static final String ACTION_Workbench   = "B";
+		public static final String ACTION_Workbench   = "B"; ===> obsolet
+		                MWFNode.ACTION_SetVariable      "V" 
+		                MWFNode.ACTION_UserChoice       "C"
+		                MWFNode.ACTION_DocumentAction   "D" MTreeNode.TYPE_DOCACTION
+		                MWFNode.ACTION_SmartBrowse      "S" MTreeNode.TYPE_DOCACTION
+		                MWFNode.ACTION_WaitSleep        "Z" ====> keine Abbildung
 	 */
 //		else if("X".equalsIgnoreCase(name))
 //			return getFORM(size);

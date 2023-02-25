@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -13,16 +14,21 @@ import java.util.logging.Logger;
 
 import javax.sql.RowSet;
 
+import org.adempiere.core.domains.models.X_AD_Menu;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MClient;
 import org.compiere.model.MRole;
 import org.compiere.model.MTable;
 //import org.compiere.model.MTreeNode;
-import org.compiere.model.X_AD_Menu;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.ResultSetIterable;
+
+import io.vavr.Tuple;
+import io.vavr.Tuple4;
+import io.vavr.control.Try;
 
 /*
  * ich will für die Darstellung von Bäumen ein neueres jdesktop.swingx nutzen und 
@@ -56,7 +62,7 @@ public class MTree extends org.compiere.model.MTree {
 	// ctor muss nicht public sein
 	MTree(Properties ctx, int AD_Tree_ID, String trxName) {
 		super(ctx, AD_Tree_ID, trxName);
-		LOG.config("AD_Tree_ID=" + AD_Tree_ID + " trxName:"+trxName + " \nctx:"+ctx);
+		LOG.info("AD_Tree_ID=" + AD_Tree_ID + " trxName:"+trxName + " \nctx:"+ctx);
 		if (AD_Tree_ID == 0) {
 			setIsAllNodes(true); // complete tree
 			setIsDefault(false);
@@ -82,6 +88,10 @@ public class MTree extends org.compiere.model.MTree {
 		loadNodes(userId, whereClause);
 	}
 
+	public org.compiere.model.MTreeNode getRoot() {
+		LOG.warning("DO NOT USE!!! use getRootNode()");
+		return null;
+	}
 	public MTreeNode getRootNode() {
 		return rootNode;
 	}
@@ -102,114 +112,112 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 -- liefert 949 Zeilen
  */
 	private void loadNodes (int userId, String whereClause) {
+		List<Object> parameters = new ArrayList<>();
 		String fromClause = getSourceTableName();
 		//  SQL for TreeNodes
-		StringBuffer sql = new StringBuffer("\nSELECT "
-			+ "tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive "
-			+ "\nFROM ").append(getNodeTableName()).append(" tn ")
-			.append("\nLEFT JOIN ")
+		StringBuilder sql = new StringBuilder("\nSELECT tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive \nFROM ")
+				.append(getNodeTableName())
+				.append(" tn ")
+				.append("LEFT JOIN ")
 				.append(fromClause).append(" ON(")
-					.append(fromClause).append(".").append(fromClause + "_ID").append(" = tn.Node_ID) ")
-			//
-			.append(" \nLEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID"
-			+ " AND tn.Node_ID=tb.Node_ID "
-			+ (userId != -1 ? " AND tb.AD_User_ID=? ": "") 	//	#1 (conditional)
-			+ ") "
-			+ "\nWHERE tn.AD_Tree_ID=?");								//	#2
-		if (!isTreeEditable)
-			sql.append(" AND tn.IsActive='Y'");
+				.append(fromClause).append(".").append(fromClause).append("_ID").append(" = tn.Node_ID) ")
+				.append(" LEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID AND tn.Node_ID=tb.Node_ID ")
+				.append(userId != -1 ? " AND tb.AD_User_ID=? " : "").append(") ").append("\nWHERE tn.AD_Tree_ID=?"); //	#2
+		if (userId != -1) {
+			parameters.add(userId);
+		}
+		parameters.add(getAD_Tree_ID());
+		if (!isTreeEditable) {
+			sql.append(" AND tn.IsActive=?");
+			parameters.add(true);
+		}
 		//	Add GridTab Where Class
 		if(whereClause != null
 				&& whereClause.length() > 0)
 			sql.append(" AND ").append(whereClause);
 		//	End Yamel Senih
-		sql.append(" \nORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
-		LOG.config(sql.toString());
+
+		//suppress duplicated items
+		sql.append(" GROUP BY tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive ");
+		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
+		log.info(sql.toString());
+
+		// load Node details - addToTree -> getNodeDetail
+		getNodeDetails();
+		rootNode = new MTreeNode (0, 0, getName(), getDescription(), 0, true, null, false, null);
 		//  The Node Loop
-		try
-		{
-			// load Node details - addToTree => getNodeDetail
-			getNodeDetails(); 
-			//
-			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-			int idx = 1;
-			if (userId != -1)
-				pstmt.setInt(idx++, userId);
-			pstmt.setInt(idx++, getAD_Tree_ID());
-			//	Get Tree & Bar
-			ResultSet rs = pstmt.executeQuery();
-			rootNode = new MTreeNode (0, 0, getName(), getDescription(), 0, true, null, false, null);
-			while (rs.next())
-			{ 
-				int node_ID = rs.getInt(1);
-				int parent_ID = rs.getInt(2);
-				int seqNo = rs.getInt(3);
-				boolean onBar = (rs.getString(4) != null); // tb.IsActive 
-				//
-				if (node_ID == 0 && parent_ID == 0)
-					;
-				else
-					addToTree (node_ID, parent_ID, seqNo, onBar);	//	calls getNodeDetail (nodeId, parentId, seqNo, onBar)
-			}
-			rs.close();
-			pstmt.close();
-			//
-			//closing the rowset will also close connection for oracle rowset implementation
-			//nodeRowSet.close();
+		Try<Void> addToTree = DB.runResultSetFunction.apply(get_TrxName(), sql.toString(), io.vavr.collection.List.ofAll(parameters), resultSet -> {
+			ResultSetIterable<Tuple4<Integer, Integer, Integer, String>> records = new ResultSetIterable<>(resultSet, row -> {
+				return Tuple.of(
+						row.getInt(1),
+						row.getInt(2),
+						row.getInt(3),
+						row.getString(4));
+			});
+			records.stream()
+			// Node_ID != 0 || Parent_ID Id != 0
+			.filter(node -> node._1  != 0 || node._2 != 0)
+			// addToTree (Node_ID , Parent_ID , SeqNo , IsActive)
+			.forEach(node -> addToTree(node._1, node._2, node._3, node._4 != null));
+		}).andFinally(() -> {
 			nodeRowSet = null;
 			nodeIdMap = null;
-		}
-		catch (SQLException e)
-		{
-			LOG.log(Level.SEVERE, sql.toString(), e);
-			nodeRowSet = null;
-			nodeIdMap = null;
-		}
-			
+		}).onFailure(throwable -> {
+			log.log(Level.SEVERE, sql.toString(), throwable);
+		});
+
+		if (addToTree.isFailure())
+			return;
+
 		//  Done with loading - add remainder from buffer
 		if (treeNodes.size() != 0)
 		{
-			LOG.config("Done with loading - add remainder from buffer/clearing buffer (expected size=45) treeNodes.size="+treeNodes.size()+"- Adding to: " + rootNode);
-			treeNodes.forEach(c -> {
-				MTreeNode p = rootNode.findNode(c.getParent_ID());
-				if(p!=null) {
-					LOG.fine(p + " ist parant für "+c);
-					p.add(c);
-					treeNodeMap.remove(c.getNode_ID());
+			log.finest("clearing buffer - Adding to: " + rootNode);
+			for (int i = 0; i < treeNodes.size(); i++)
+			{
+				MTreeNode node = (MTreeNode) treeNodes.get(i);
+				MTreeNode parent = rootNode.findNode(node.getParent_ID());
+				if (parent != null && parent.getAllowsChildren())
+				{
+					parent.add(node);
+					int sizeBeforeCheckBuffer = treeNodes.size();
+					checkBuffer(node);
+					if (sizeBeforeCheckBuffer == treeNodes.size())
+						treeNodes.remove(i);
+					i = -1;		//	start again with i=0
 				}
-			});
-			LOG.config("nach clearing buffer treeNodeMap.Size="+treeNodeMap.size());
+			}
 		}
 
 		//	Nodes w/o parent
 		if (treeNodes.size() != 0)
-		{ // TODO 
-			LOG.warning(""+treeNodes.size()+" nodes w/o parent - NO!!!!!!! adding to root)  - "); // + treeNodes);
+		{
+			log.severe ("Nodes w/o parent - adding to root - " + treeNodes);
+			for (int i = 0; i < treeNodes.size(); i++)
+			{
+				MTreeNode node = (MTreeNode) treeNodes.get(i);
+				rootNode.add(node);
+				int sizeBeforeCheckBuffer = treeNodes.size();
+				checkBuffer(node);
+				if (sizeBeforeCheckBuffer == treeNodes.size())
+					treeNodes.remove(i);
+				i = -1;
+			}
+			if (treeNodes.size() != 0)
+				log.severe ("Still nodes in Buffer - " + treeNodes);
 		}	//	nodes w/o parents
 
 		//  clean up
-		if (!isTreeEditable && rootNode.getChildCount() > 0) {
-			//trimTree();
-		}
+		if (!isTreeEditable && rootNode.getChildCount() > 0)
+			trimTree();
 //		diagPrintTree();
 		if (CLogMgt.isLevelFinest() || rootNode.getChildCount() == 0)
-			LOG.fine("ChildCount=" + rootNode.getChildCount());
+			log.fine("ChildCount=" + rootNode.getChildCount());
 	}   //  loadNodes
 
-	/**
-	 *	Get Node TableName
-	 *	@return node table name, e.g. AD_TreeNode
-	 */
 	public String getNodeTableName() {
-		//	Yamel Senih, 2015-11-14
-		//	Add support to old version
-		String tableName = org.compiere.model.MTree.getNodeTableName(getTreeType());
-		if(tableName == null) {
-			tableName = org.compiere.model.MTree.getNodeTableName(getAD_Table_ID());
-		}
-		//	Return
-		return tableName;
-	}	//	getNodeTableName
+		return super.getNodeTableName();
+	}
 
 	/**************************************************************************
 	 *  Get Node Detail.
@@ -227,19 +235,18 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 	 */
 	private void getNodeDetails () {
 		//  SQL for Node Info
-		StringBuffer sqlNode = new StringBuffer();
+		StringBuilder sqlNode = new StringBuilder();
 		String sourceTable = "t";
 		String fromClause = getSourceTableName();
 		String color = getActionColorName();
-		LOG.config("fromClause aka SourceTableName:"+fromClause + " color aka ActionColorName:"+color);
 		if (getTreeType().equals(TREETYPE_Menu)) {
 			boolean base = Env.isBaseLanguage(p_ctx, "AD_Menu");
 			sourceTable = "m";
 			if (base) {
-				sqlNode.append("\nSELECT m.AD_Menu_ID, m.Name,m.Description,m.IsSummary,m.Action, "
+				sqlNode.append("SELECT m.AD_Menu_ID, m.Name,m.Description,m.IsSummary,m.Action, "
 					+ "m.AD_Window_ID, m.AD_Process_ID, m.AD_Form_ID, m.AD_Workflow_ID, m.AD_Task_ID, m.AD_Workbench_ID "
 					+ ", m.AD_Browse_ID "
-					+ "\nFROM AD_Menu m\n");
+					+ "FROM AD_Menu m");
 			} else {
 				sqlNode.append("SELECT m.AD_Menu_ID,  t.Name,t.Description,m.IsSummary,m.Action, "
 					+ "m.AD_Window_ID, m.AD_Process_ID, m.AD_Form_ID, m.AD_Workflow_ID, m.AD_Task_ID, m.AD_Workbench_ID "
@@ -256,20 +263,19 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			if (!MClient.get(getCtx()).isUseBetaFunctions())
 			{
 				boolean hasWhere = sqlNode.indexOf(" WHERE ") != -1;
-				sqlNode.append(hasWhere ? "\n AND " : " WHERE ");
+				sqlNode.append(hasWhere ? " AND " : " WHERE ");
 				sqlNode.append("(m.AD_Window_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Window w WHERE m.AD_Window_ID=w.AD_Window_ID AND w.IsBetaFunctionality='N'))")
-					.append("\n AND (m.AD_Process_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Process p WHERE m.AD_Process_ID=p.AD_Process_ID AND p.IsBetaFunctionality='N'))")
-					.append("\n AND (m.AD_Workflow_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Workflow wf WHERE m.AD_Workflow_ID=wf.AD_Workflow_ID AND wf.IsBetaFunctionality='N'))")
-					.append("\n AND (m.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE m.AD_Form_ID=f.AD_Form_ID AND f.IsBetaFunctionality='N'))")
-					.append("\n AND (m.AD_Browse_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Browse b WHERE m.AD_Browse_ID=b.AD_Browse_ID AND b.IsBetaFunctionality='N'))");
+					.append(" AND (m.AD_Process_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Process p WHERE m.AD_Process_ID=p.AD_Process_ID AND p.IsBetaFunctionality='N'))")
+					.append(" AND (m.AD_Workflow_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Workflow wf WHERE m.AD_Workflow_ID=wf.AD_Workflow_ID AND wf.IsBetaFunctionality='N'))")
+					.append(" AND (m.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE m.AD_Form_ID=f.AD_Form_ID AND f.IsBetaFunctionality='N'))")
+					.append(" AND (m.AD_Browse_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Browse b WHERE m.AD_Browse_ID=b.AD_Browse_ID AND b.IsBetaFunctionality='N'))");
 			}
 			//	In R/O Menu - Show only defined Forms
 			if (!isTreeEditable) {
 				boolean hasWhere = sqlNode.indexOf(" WHERE ") != -1;
-				sqlNode.append(hasWhere ? "\n AND " : " WHERE ");
+				sqlNode.append(hasWhere ? " AND " : " WHERE ");
 				sqlNode.append("(m.AD_Form_ID IS NULL OR EXISTS (SELECT 1 FROM AD_Form f WHERE m.AD_Form_ID=f.AD_Form_ID AND (f.Classname IS NOT NULL OR f.JSPURL IS NOT NULL)))");
 			}
-			LOG.config("fertig mit TreeType:"+getTreeType() + ", isBaseLanguage="+base);
 		} 
 		//	Yamel Senih [ 9223372036854775807 ]
 		//	Load for Custom Tree
@@ -313,11 +319,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			if (!isTreeEditable)
 				sqlNode.append(" WHERE t.IsActive='Y'");
 		}
-		sqlNode.append("\n");
 		String sql = sqlNode.toString();
 		if (!isTreeEditable)	//	editable = menu/etc. window
-			sql = MRole.getDefault(getCtx(), false).addAccessSQL(sql, sourceTable, MRole.SQL_FULLYQUALIFIED, isTreeEditable);
-		LOG.config(sql);
+			sql = MRole.getDefault(getCtx(), false).addAccessSQL(sql, 
+				sourceTable, MRole.SQL_FULLYQUALIFIED, isTreeEditable);
+		log.fine(sql);
 		nodeRowSet = DB.getRowSet (sql);
 		nodeIdMap = new HashMap<Integer, ArrayList<Integer>>(50);
 		try 
@@ -337,10 +343,9 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 				}
 				list.add(Integer.valueOf(i));
 			}
-			LOG.config("#nodes aka i="+i + " nodeIdMap#:"+nodeIdMap.size() + " nodeIdMap[218]:"+nodeIdMap.get(Integer.valueOf(218)).size());
 		} catch (SQLException e) 
 		{
-			LOG.log(Level.SEVERE, "", e);
+			log.log(Level.SEVERE, "", e);
 		}
 	}   //  getNodeDetails
 
@@ -386,40 +391,28 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 	 *  @param seqNo SeqNo
 	 *  @param onBar on bar
 	 */
-	private void addToTree(int nodeId, int parentId, int seqNo, boolean onBar) {
-		// Create new Node
-		MTreeNode child = getNodeDetail(nodeId, parentId, seqNo, onBar);
+	private void addToTree (int nodeId, int parentId, int seqNo, boolean onBar)
+	{
+		//  Create new Node
+		MTreeNode child = getNodeDetail (nodeId, parentId, seqNo, onBar);
 		if (child == null)
 			return;
 
-		// Add to Tree
+		//  Add to Tree
 		MTreeNode parent = null;
 		if (rootNode != null)
-			parent = rootNode.findNode(parentId);
-
-		if(parent==null) { // in Liste eintragen, da im Baum parent nicht gefunden!
-			LOG.fine("parent with id "+parentId+" not in tree! Adding ("+child+") to treeNodes #:"+treeNodes.size());
+			parent = rootNode.findNode (parentId);
+		//  Parent found
+		if (parent != null && parent.getAllowsChildren())
+		{
+			parent.add(child);
+			//  see if we can add nodes from buffer
+			if (treeNodes.size() > 0)
+				checkBuffer(child);
+		}
+		else
 			treeNodes.add(child);
-			treeNodeMap.put(child.getNode_ID(), child);
-		} else {
-			// parent ist möglicherweise gar nicht parent von child !!
-			if(parent.getAllowsChildren()) {
-				parent.add(child);
-				LOG.fine("added child:"+child + " to parent:"+parent);
-				assert(treeNodeMap.size()==treeNodes.size());
-				// durch das Einfügen kann findNode andere Ergenisse liefern
-				treeNodes.forEach(c -> {
-					MTreeNode p = rootNode.findNode(c.getParent_ID());
-					if(p!=null) {
-						// TODO clearing buffer schon hier
-						LOG.fine(" nach ADD findet sich parent "+p+" für "+c);
-					}
-				});
-			} else {
-				LOG.warning("?????????????? parent does not allow Children "+parentId);
-			}
-		}		
-	}
+	}   //  addToTree
 
 	/**
 	 *  Get Menu Node Details.
@@ -521,5 +514,35 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		}
 		return retValue;
 	}   //  getNodeDetails
+
+	/**
+	 *  Check the buffer for nodes which have newNode as Parents
+	 *  @param newNode new node
+	 */
+	private void checkBuffer (MTreeNode newNode)
+	{
+		//	Ability to add nodes
+		if (!newNode.isSummary() || !newNode.getAllowsChildren())
+			return;
+		//
+		for (int i = 0; i < treeNodes.size(); i++)
+		{
+			MTreeNode node = (MTreeNode) treeNodes.get(i);
+			if (node.getParent_ID() == newNode.getNode_ID())
+			{
+				try
+				{
+					newNode.add(node);
+				}
+				catch (Exception e)
+				{
+					log.severe("Adding " + node.getName() 
+						+ " to " + newNode.getName() + ": " + e.getMessage());
+				}
+				treeNodes.remove(i);
+				i--;
+			}
+		}
+	}   //  checkBuffer
 
 }

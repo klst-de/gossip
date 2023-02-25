@@ -7,12 +7,13 @@ import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 
-import org.compiere.model.X_AD_Menu;
+import org.adempiere.core.domains.models.X_AD_Menu;
 import org.compiere.wf.MWFNode;
+import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
-import com.klst.icon.AbstractImageTranscoder;
+import io.homebeaver.gossip.icon.IconFactory;
 
 /*
  *  Mutable Tree Node (not a PO).
@@ -130,7 +131,6 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		setImageIndicator(imageIndicator);
 		m_onBar = onBar;
 		m_color = color;
-		setUserObject(this); //(name + " img:"+imageIndicator); // statt im super ctor
 	}   //  MTreeNode
 
 	private int     	m_node_ID;
@@ -182,6 +182,9 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	public static final String ACTION_WorkFlow    = "F";
 	public static final String ACTION_Workbench   = "B";
  */
+	public boolean isProcess() {
+		return X_AD_Menu.ACTION_Process.equals(m_imageIndicator);
+	}
 	public boolean isWindow() {
 		return X_AD_Menu.ACTION_Window.equals(m_imageIndicator);
 	}
@@ -231,31 +234,31 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	public static final int TYPE_USERCHOICE = 7;
 	public static final int TYPE_DOCACTION = 8;
 
-	static final int SMALL_ICON_SIZE = 16;
-	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
-	public ImageIcon getImageIcon() {
-		return getImageIcon(AIT, m_imageIndex, SMALL_ICON_SIZE);
+//	static final int SMALL_ICON_SIZE = 16;
+//	AbstractImageTranscoder AIT = AbstractImageTranscoder.getInstance();
+	public JXIcon getImageIcon() {
+		return getImageIcon(m_imageIndex, JXIcon.SMALL_ICON);
 	}
-	public static ImageIcon getImageIcon(AbstractImageTranscoder AIT, int index, int iconSize) {
+	public static JXIcon getImageIcon(int index, int iconSize) {
 	      switch (index) {
 	      case TYPE_WINDOW:
-	    	  return AIT.getImageIcon(AIT.MENU_WINDOW, iconSize);
+	    	  return IconFactory.getMENU_WINDOW(iconSize);
 	      case TYPE_REPORT:
-	    	  return AIT.getImageIcon(AIT.REPORT, iconSize);
+	    	  return IconFactory.getREPORT(iconSize);
 	      case TYPE_PROCESS:
-	    	  return AIT.getImageIcon(AIT.PROCESS, iconSize);
+	    	  return IconFactory.getPROCESS(iconSize);
 	      case TYPE_WORKFLOW:
-	    	  return AIT.getImageIcon(AIT.WORKFLOW, iconSize);
+	    	  return IconFactory.getWORKFLOW(iconSize);
 	      case TYPE_WORKBENCH:
-	    	  return AIT.getImageIcon(AIT.END, iconSize);
+	    	  return IconFactory.getEND(iconSize);
 	      case TYPE_SETVARIABLE:
-	    	  return AIT.getImageIcon(AIT.REPORT, iconSize);
+	    	  return IconFactory.getREPORT(iconSize);
 	      case TYPE_USERCHOICE:
-	    	  return AIT.getImageIcon(AIT.PROCESS, iconSize);
+	    	  return IconFactory.getPROCESS(iconSize);
 	      case TYPE_DOCACTION:
-	    	  return AIT.getImageIcon(AIT.WORKFLOW, iconSize);
+	    	  return IconFactory.getWORKFLOW(iconSize);
 	      default:
-	    	  return AIT.getImageIcon(AIT.FOLDER, iconSize);
+	    	  return IconFactory.getFOLDER(iconSize);
 	      }
 	}
 	
@@ -366,5 +369,36 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		}
 		return null;
 	}
+	
+//	/*************************************************************************/
+//
+//	/**	Last found ID				*/
+//	private int                 m_lastID = -1;
+//	/** Last found Node				*/
+//	private MTreeNode           m_lastNode = null;
+//	/*
+//	 *	findNode aus (base) org.compiere.model.MTreeNode : (zur Info)
+//	 */
+//	public MTreeNode findNodeXXX (int ID)
+//	{
+//		if (m_node_ID == ID)
+//			return this;
+//		//
+//		if (ID == m_lastID && m_lastNode != null)
+//			return m_lastNode;
+//		//
+//		Enumeration<TreeNode> en = preorderEnumeration();
+//		while (en.hasMoreElements())
+//		{
+//			MTreeNode nd = (MTreeNode)en.nextElement();
+//			if (ID == nd.getNode_ID())
+//			{
+//				m_lastID = ID;
+//				m_lastNode = nd;
+//				return nd;
+//			}
+//		}
+//		return null;
+//	}   //  findNode
 
 }
