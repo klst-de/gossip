@@ -40,8 +40,6 @@ import org.jdesktop.swingx.icon.JXIcon;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.SkyBluer;
-import com.klst.gossip.GenericDataLoader;
-import com.klst.gossip.GenericDataModel;
 //import com.klst.client.LoginPanel;
 import com.klst.gossip.wrapper.WindowModel;
 
@@ -239,6 +237,10 @@ SELECT COALESCE(r.AD_Tree_Menu_ID, ci.AD_Tree_Menu_ID)
 //		loginPanel.setVisible(true);
 //	}
 	
+	WindowFrame openNewFFrame(PO po) { // zB MProcess po
+		WindowFrame frame = makeWindow(0, po);
+		return frame;
+	}
 	WindowFrame openNewFrame(PO po) { // zB MProcess po
 		WindowFrame frame = makeWindow(0, po);
 		return frame;

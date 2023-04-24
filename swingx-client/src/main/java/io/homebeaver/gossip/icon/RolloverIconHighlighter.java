@@ -1,8 +1,14 @@
 package io.homebeaver.gossip.icon;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.Painter;
 
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -11,40 +17,53 @@ import org.jdesktop.swingx.icon.PainterIcon;
 import org.jdesktop.swingx.icon.RadianceIcon;
 import org.jdesktop.swingx.painter.AbstractAreaPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
+import org.jdesktop.swingx.plaf.UIDependent;
 import org.jdesktop.swingx.renderer.WrappingIconPanel;
 
 import com.jhlabs.image.BumpFilter;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.util.logging.Logger;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.Painter;
-
-public class RolloverIconHighlighter extends IconHighlighter {
+public class RolloverIconHighlighter extends IconHighlighter implements UIDependent {
 
 	private static final Logger LOG = Logger.getLogger(RolloverIconHighlighter.class.getName());
 
-    public RolloverIconHighlighter() {
-        this((HighlightPredicate) null);
+	private JComponent comp;
+//	
+//    public RolloverIconHighlighter(JComponent comp) {
+//        this((HighlightPredicate) null, comp);
+//    }
+//    public RolloverIconHighlighter(HighlightPredicate predicate, JComponent comp) {
+//        this(predicate, null, comp);
+//    }
+//    public RolloverIconHighlighter(Icon icon, JComponent comp) {
+//        this(null, icon, comp);
+//    }
+//    public RolloverIconHighlighter(HighlightPredicate predicate, Icon icon, JComponent comp) {
+//        super(predicate);
+//        setIcon(icon);
+//	this.comp = comp;
+//    }
+
+    public RolloverIconHighlighter(JComponent comp) {
+        this((HighlightPredicate) null, comp);
     }
-    public RolloverIconHighlighter(HighlightPredicate predicate) {
-        this(predicate, null);
+    public RolloverIconHighlighter(HighlightPredicate predicate, JComponent comp) {
+        this(predicate, null, comp);
     }
-    public RolloverIconHighlighter(Icon icon) {
-        this(null, icon);
+    public RolloverIconHighlighter(Icon icon, JComponent comp) {
+        this(null, icon, comp);
     }
-    public RolloverIconHighlighter(HighlightPredicate predicate, Icon icon) {
+    public RolloverIconHighlighter(HighlightPredicate predicate, Icon icon, JComponent comp) {
         super(predicate);
         setIcon(icon);
     }
 
     @Override
     protected boolean canHighlight(Component component, ComponentAdapter adapter) {
-        return component instanceof WrappingIconPanel;
+    	if(component instanceof WrappingIconPanel wip) {
+        	comp = wip;
+        	return true;
+    	}
+        return super.canHighlight(component, adapter);
     }
 
     @Override
@@ -64,6 +83,8 @@ public class RolloverIconHighlighter extends IconHighlighter {
         	delegate.setFilters(new BumpFilter());
         	painterIcon.setPainter((Painter<? extends Component>)delegate);
         	wip.setIcon(painterIcon);
+//        	wip.updateUI();
+        	comp = wip;
         	return wip;
     	}
         return super.doHighlight(component, adapter);
@@ -77,5 +98,11 @@ public class RolloverIconHighlighter extends IconHighlighter {
 //        }
 //        return component;
     }
+    
+	@Override
+	public void updateUI() {
+		if(comp==null) return;
+		comp.updateUI();
+	}
 
 }

@@ -14,13 +14,18 @@ import java.util.logging.Logger;
 
 import javax.sql.RowSet;
 
+import org.adempiere.core.domains.models.I_AD_Tree;
 import org.adempiere.core.domains.models.X_AD_Menu;
+import org.adempiere.core.domains.models.X_AD_Tree;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_Persistent;
 import org.compiere.model.MClient;
 import org.compiere.model.MRole;
 import org.compiere.model.MTable;
+import org.compiere.model.PO;
 //import org.compiere.model.MTreeNode;
 import org.compiere.print.MPrintColor;
+import org.compiere.util.CCache;
 import org.compiere.util.CLogMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -34,12 +39,27 @@ import io.vavr.control.Try;
  * ich will für die Darstellung von Bäumen ein neueres jdesktop.swingx nutzen und 
  * kann die Member rootNode, loadNodes, ... aus super nicht überschreiben, da sie private sind.
  * Also überschreibe ich die ganze Klasse.
+ * 
+ * org.compiere.model.MTree extends X_AD_Tree
+ *                            class X_AD_Tree extends PO implements I_AD_Tree, I_Persistent
  */
 public class MTree extends org.compiere.model.MTree {
 
 	private static final long serialVersionUID = -4802325261417990860L;
 	private static final Logger LOG = Logger.getLogger(MTree.class.getName());
 	
+	private static CCache<Integer,MTree> s_cache = new CCache<Integer, MTree>("AD_Tree", 10);
+	public static MTree get(Properties ctx, int AD_Tree_ID, String trxName) {
+//		return org.compiere.model.MTree.get(ctx, AD_Tree_ID, trxName);
+		Integer key = Integer.valueOf(AD_Tree_ID);
+		MTree retValue = (MTree) s_cache.get (key);
+		if (retValue != null)
+			return retValue;
+		retValue = new MTree(ctx, AD_Tree_ID, trxName);
+		if(retValue.get_ID () != 0)
+			s_cache.put(key, retValue);
+		return retValue;
+	}
 	// alle Member in super private - Um zu überschreiben, muss ich neu definieren
 	boolean isTreeEditable = false;
 	
@@ -54,13 +74,13 @@ public class MTree extends org.compiere.model.MTree {
 
 	MTreeNode rootNode = null; // in super MTreeNode extends javax.swing.tree.DefaultMutableTreeNode, ich will
 	// org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode nutzen.
-	// DefaultMutableTreeTableNode ist nur zum Testen da, "Thisimplementation is designed mainly for testing. It is NOT recommended to usethis implementation.",
+	// DefaultMutableTreeTableNode ist nur zum Testen da, "This implementation is designed mainly for testing. It is NOT recommended to usethis implementation.",
 	// ich muss daher von AbstractMutableTreeTableNode direkt ableiten
 
 	private HashMap<Integer, ArrayList<Integer>> nodeIdMap;
 
 	// ctor muss nicht public sein
-	MTree(Properties ctx, int AD_Tree_ID, String trxName) {
+	public MTree(Properties ctx, int AD_Tree_ID, String trxName) {
 		super(ctx, AD_Tree_ID, trxName);
 		LOG.info("AD_Tree_ID=" + AD_Tree_ID + " trxName:"+trxName + " \nctx:"+ctx);
 		if (AD_Tree_ID == 0) {
@@ -141,6 +161,7 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 		sql.append(" GROUP BY tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive ");
 		sql.append(" ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo");
 		log.info(sql.toString());
+		LOG.info(sql.toString());
 
 		// load Node details - addToTree -> getNodeDetail
 		getNodeDetails();
@@ -351,11 +372,11 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 
 	/**
 	 * 	Get Source TableName
-	 *	@param treeType tree typw
+	 *	@param treeType tree type
 	 *	@return source table name, e.g. AD_Org or null 
 	 */
 	public String getSourceTableName() {
-		if(getTreeType().equals(TREETYPE_CustomTree)) {
+		if(getTreeType().equals(TREETYPE_CustomTree)) { // "CU"
 			if(getAD_Table_ID() == 0) {
 				throw new AdempiereException("@AD_Table_ID@ @NotFound@");
 			}
@@ -366,9 +387,16 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
 			//	Default
 			return table.getTableName();
 		}
-		//	Get Tree Type
+		/*	Get Tree Type
+		 * liefert zu String aus Spalte ad_tree.TreeType den TabellenNamen
+		 * "MM" ==> "AD_Menu"
+		 * "PR" ==> "M_Product"
+		 * "BP" ==> "C_BPartner"
+		 * "OO" ==> "AD_Org"
+		 * ... dh es geht auch mit static map
+		 */
 		return org.compiere.model.MTree.getSourceTableName(getTreeType());
-	}	//	getSourceTableName
+	}
 
 	/**
 	 * 	Get fully qualified Name of Action/Color Column

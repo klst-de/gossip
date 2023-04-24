@@ -41,6 +41,7 @@ import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXStatusBar;
 import org.jdesktop.swingx.demos.svg.FeatheRactivity;
+import org.jdesktop.swingx.demos.svg.FeatheRdollar_sign;
 import org.jdesktop.swingx.demos.svg.FeatheRlog_out;
 import org.jdesktop.swingx.demos.svg.FeatheRpackage;
 import org.jdesktop.swingx.demos.svg.FeatheRpower;
@@ -52,9 +53,6 @@ import org.jdesktop.swingx.icon.ChevronsIcon;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.RadianceIcon;
 
-import com.klst.gossip.GenericDataModel;
-import com.klst.gossip.InfoDataModel;
-import com.klst.gossip.InfoPanel;
 import com.klst.gossip.wrapper.TabModel;
 import com.klst.gossip.wrapper.WindowModel;
 
@@ -94,7 +92,7 @@ public class WindowFrame extends JXFrame implements WindowListener {
 	private MWindow mWindow; // eigentlich sollten alle mWindow Daten aus gridWindow kommen
 	// GridWindow is ein wrapper für MWindow
 	protected GridWindow windowModel; // WindowModel extends GridWindow
-//	protected GridWindow gridWindow; //                 (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
+//	protected GridWindow gridWindow; // (base)GridWindow implements Serializable, contains GridWindowVO ArrayList<GridTab> Set<GridTab>
 	protected InfoPanel infoWindow; 
 	// in List sind alle / in Set die initalisierten!!!
 	// TODO Set<GridTab> initTabs =/= List<GridTab> gridTabs , List<Tab> tabs
@@ -161,14 +159,14 @@ public class WindowFrame extends JXFrame implements WindowListener {
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.config("mWindow:"+mWindow);
 			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
-		} else if(object instanceof GridWindow) {
+		} else if(object instanceof GridWindow gridWindow) {
 			LOG.warning("DAS SOLL NICHT SEIN GridWindow object:"+object);
-			initWindow((WindowModel)object);
+			initWindow(gridWindow);
 			mWindow = new MWindow(ctx, this.window_ID, trxName);
 			LOG.warning("DAS SOLL NICHT SEIN mWindow:"+mWindow);
 			setTitle("["+this.windowNo+"] " + this.windowModel.getName());
-		} else if(object instanceof GenericDataModel) {
-			initInfoWindow((GenericDataModel)object);
+		} else if(object instanceof GenericDataModel genericDataModel) {
+			initInfoWindow(genericDataModel);
 			setTitle("["+this.windowNo+"] Info " + this.infoWindow.getName());
 		} else if(object instanceof GenericFormPanel && object.getClass() != GenericFormPanel.class) {
 			// object is subclass of GenericFormPanel
@@ -177,6 +175,10 @@ public class WindowFrame extends JXFrame implements WindowListener {
 			formPanel.setStatusBar(statusBar);
 		} else if(object instanceof GenericFormPanel) {
 			LOG.config(">>>>>>>>>>>>>>>>>>> object instanceof GenericFormPanel "+object);
+		} else if(object instanceof TreeMaintenance treeMaintenance) {
+			LOG.config(">>>>>>>>>>>>>>>>>>> object instanceof TreeMaintenance "+object);
+			int treeDataSize = treeMaintenance.getTreeData().length;
+			LOG.info(">>>>>>>>>>>>>>>>>>> treeDataSize="+treeDataSize);
 		} else if(object instanceof MProcess) {
 /* Allgemein: MProcess extends X_AD_Process extends PO implements I_AD_Process, I_Persistent
                                                                   I_AD_Process.Table_Name = "AD_Process" 
@@ -333,7 +335,7 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
             infoBPartnerItem.setActionCommand("infoBPartner");
             infoBPartnerItem.addActionListener(event -> {
             	LOG.config("item:"+infoBPartnerItem);
-//				LOG.config("canAccessInfo:"+InfoDataModel.canAccessInfo("BPartner"));
+				LOG.info("canAccessInfo:"+InfoDataModel.canAccessInfo("BPartner"));
 //				GenericDataModel tm = new InfoDataModel("BPartner", INFO_WINDOW_ID);
 //				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
             	int AD_Form_ID = 1000001; 
@@ -350,6 +352,52 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 				}
             });
             mInfo.add(infoBPartnerItem);
+            
+            JMenuItem infoOrderItem = new JMenuItem("Order Info", FeatheRusers.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
+            infoOrderItem.setName("infoOrder");
+            infoOrderItem.setActionCommand("infoOrder");
+            infoOrderItem.addActionListener(event -> {
+            	LOG.config("item:"+infoOrderItem);
+				LOG.info("canAccessInfo:"+InfoDataModel.canAccessInfo("Order"));
+//				GenericDataModel tm = new InfoDataModel("Order", INFO_WINDOW_ID);
+//				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
+            	int AD_Form_ID = 1000001; 
+            	String className = "org.compiere.apps.form.InfoOrder";
+            	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
+            	FormPanel m_panel;
+				try {
+					// Create instance w/o parameters
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // === new className()
+					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+					m_panel.init(frame.getWindowNo(), frame);
+				} catch (Exception e) {
+					LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+				}
+            });
+            mInfo.add(infoOrderItem);
+            
+            JMenuItem infoTreeItem = new JMenuItem("Tree Info", FeatheRusers.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
+            infoTreeItem.setName("infoTree");
+            infoTreeItem.setActionCommand("infoTree");
+            infoTreeItem.addActionListener(event -> {
+            	LOG.config("item:"+infoTreeItem);
+				LOG.info("canAccessInfo:"+InfoDataModel.canAccessInfo("Tree"));
+//				GenericDataModel tm = new InfoDataModel("Tree", INFO_WINDOW_ID);
+//				rootFrame.openNewFrame(INFO_WINDOW_ID, tm);
+            	int AD_Form_ID = 1000001; 
+            	String className = "org.compiere.apps.form.InfoTree";
+            	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
+            	FormPanel m_panel;
+				try {
+					// Create instance w/o parameters
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // === new className()
+					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+					m_panel.init(frame.getWindowNo(), frame);
+				} catch (Exception e) {
+					LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+				}
+            });
+            mInfo.add(infoTreeItem);
 // TEST TODO muss raus            
             JMenuItem infoWFActivItem = new JMenuItem("WorkflowActivities TEST Info", FeatheRactivity.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             infoWFActivItem.setName("infoWFActiv"); // TODO dieser Name ist auch der Frame Name TODO
@@ -372,6 +420,25 @@ d.h. nirgends wird die swing worker funktionalotät erwartet:
 				}
             });
             mInfo.add(infoWFActivItem);
+            
+            JMenuItem miBaum = new JMenuItem("zeige Bäume (Demo)", FeatheRdollar_sign.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
+    		miBaum.addActionListener(event -> {
+            	int AD_Form_ID = 1000000; // ????? 163
+            	String className = "io.homebeaver.gossip.TreeMaintenancePanel";
+            	LOG.info("AD_Form_ID=" + AD_Form_ID + " - Class=" + className);
+            	FormPanel m_panel;
+				try {
+					// Create instance w/o parameters
+					m_panel = (FormPanel) Class.forName(className).newInstance(); // ctor new TreeMaintenancePanel()
+					FormFrame frame = this.rootFrame.makeFormFrame(AD_Form_ID, m_panel);
+					m_panel.init(frame.getWindowNo(), frame);
+				} catch (Exception e) {
+					LOG.log(Level.SEVERE, "Class=" + className + ", AD_Form_ID=" + AD_Form_ID, e);
+				}
+    		});
+    		mInfo.add(miBaum);
+
+
             
             JMenuItem cancelItem = new JMenuItem("Cancel", FeatheRx.of(JXIcon.SMALL_ICON, JXIcon.SMALL_ICON));
             cancelItem.setName("cancel");

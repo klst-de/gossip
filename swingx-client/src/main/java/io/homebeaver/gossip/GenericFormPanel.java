@@ -44,7 +44,6 @@ import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTextField;
 
-import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.MXTable;
 import com.klst.gossip.wrapper.GridTableModel;
 import com.klst.gossip.wrapper.TabModel;
@@ -345,6 +344,11 @@ GridBagConstraints Parameters:
 		for(int c = 0; c < gridTableModel.getColumnCount(); c++) {
 			GridField field = gridTableModel.getGridField(c);
 			if(field.isSelectionColumn()) {
+				if(field.getDisplayType()==DisplayType.Search) {
+					LOG.warning("wg. 75/92 DT=30/DisplayType.Search in "+field.getColumnName());
+//				} else {
+//					addSelection(field); 
+				}
 				addSelection(field); 
 			}								
 		}
@@ -390,6 +394,11 @@ GridBagConstraints Parameters:
 //		case DisplayType.DateTime:
 //			selectionFld = makeSelectionDate(field);
 //			break;
+		case DisplayType.Search: // 30
+			LOG.warning("kein WHERE für "+header+" displayType=Search/" + displayType);
+			LOG.config(header + " DisplayLength=" + field.getDisplayLength() + " FieldLength=" + field.getFieldLength()); // beide60
+			selection = makeSelectionTextField(field);
+			break;
 		default:
 			LOG.warning("kein WHERE für "+header+" displayType=" + displayType);
 			return;

@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,15 +9,17 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
+import org.adempiere.core.domains.models.I_AD_Role;
+import org.adempiere.core.domains.models.I_C_BPartner;
+import org.adempiere.core.domains.models.I_M_Product;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+
+import com.klst.gossip.GridFieldBridge;
 
 public class InfoDataModel extends GenericDataModel {
 

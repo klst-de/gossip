@@ -25,7 +25,6 @@ import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.swingx.icon.JXIcon;
 
-import com.klst.gossip.GenericDataLoader;
 import com.klst.gossip.MXTable;
 import com.klst.gossip.SingleRowPanel;
 import com.klst.gossip.wrapper.GridTableModel;

@@ -18,10 +18,11 @@ import io.homebeaver.gossip.icon.IconFactory;
 /*
  *  Mutable Tree Node (not a PO).
  *
- *  Ersetzt org.compiere.model.MTreeNode , das von javax.swing.tree.DefaultMutableTreeNode ableitet
+ *  Ersetzt (base) org.compiere.model.MTreeNode , das von javax.swing.tree.DefaultMutableTreeNode ableitet
  *                                         und MutableTreeNode implementiert : ... implements Cloneable, MutableTreeNode, Serializable
  *                                         
- *  Ich leite ab von jdesktop DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
+ *  Ich leite ab von jdesktop DefaultMutableTreeTableNode extends AbstractMutableTreeTableNode 
+ *  AbstractMutableTreeTableNode implements MutableTreeTableNode extends TreeTableNode extends TreeNode
  *
  */
 public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeModel {
@@ -119,7 +120,7 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 		int parent_ID, boolean isSummary, String imageIndicator, boolean onBar, Color color)
 	{
 		super();
-		LOG.fine( "MTreeNode Node_ID="+node_ID + ", seqNo="+seqNo + ", Parent_ID="+parent_ID + ", isSummary="+isSummary + ", imageIndicator="+imageIndicator+ " - " + name);
+		LOG.config( "MTreeNode Node_ID="+node_ID + ", seqNo="+seqNo + ", Parent_ID="+parent_ID + ", isSummary="+isSummary + ", imageIndicator="+imageIndicator+ " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
 		m_name = name;
@@ -187,6 +188,9 @@ public class MTreeNode extends DefaultMutableTreeTableNode { // implements NodeM
 	}
 	public boolean isWindow() {
 		return X_AD_Menu.ACTION_Window.equals(m_imageIndicator);
+	}
+	public boolean isForm() {
+		return X_AD_Menu.ACTION_Form.equals(m_imageIndicator);
 	}
 
 	public int getImageIndex() {

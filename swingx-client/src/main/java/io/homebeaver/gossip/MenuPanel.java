@@ -1,75 +1,58 @@
 package io.homebeaver.gossip;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.swing.ActionMap;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.Painter;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
+import javax.swing.JTable;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.compiere.model.MMenu;
 import org.compiere.model.MProcess;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXButton;
+import org.jdesktop.swingx.JXList;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
-import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.Highlighter;
+import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.icon.JXIcon;
 import org.jdesktop.swingx.icon.PainterIcon;
 import org.jdesktop.swingx.icon.RadianceIcon;
-import org.jdesktop.swingx.painter.AbstractAreaPainter;
 import org.jdesktop.swingx.painter.ImagePainter;
-import org.jdesktop.swingx.renderer.DefaultTreeRenderer;
+import org.jdesktop.swingx.renderer.DefaultListRenderer;
 import org.jdesktop.swingx.renderer.IconValue;
 import org.jdesktop.swingx.renderer.StringValue;
 import org.jdesktop.swingx.renderer.StringValues;
-import org.jdesktop.swingx.renderer.WrappingIconPanel;
-import org.jdesktop.swingx.rollover.RolloverProducer;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 
-import com.jhlabs.image.BumpFilter;
 import com.jhlabs.image.InvertFilter;
-import com.klst.gossip.GenericTableHeader;
 import com.klst.model.MTree;
 import com.klst.model.MTreeNode;
 
 import io.homebeaver.gossip.icon.IconFactory;
-import io.homebeaver.gossip.icon.RolloverIconHighlighter;
+import io.homebeaver.gossip.swingx.CTree;
 
 public class MenuPanel extends JXPanel implements ActionListener, TreeSelectionListener {
 
@@ -142,37 +125,42 @@ public class MenuPanel extends JXPanel implements ActionListener, TreeSelectionL
 	public MenuPanel(RootFrame rootFrame) {
         super(new BorderLayout());
         this.rootFrame = rootFrame;
-        createModelImCtor(); // treeModel + treeTableModel
-        
-        // TODO buttons raus
-		JComponent control = new JXPanel();
-		refreshButton = new JXButton("Refresh");
-		refreshButton.setName("refreshButton");
-
-		expandButton = new JXButton("Expand All Nodes");
-		expandButton.setName("expandButton");
-
-		collapseButton = new JXButton("Collapse All Nodes");
-		collapseButton.setName("collapseButton");
-
-        control.add(refreshButton);
-		control.add(expandButton);
-		control.add(collapseButton);
-		add(control, BorderLayout.PAGE_END);
-        
-        add(createTree(), BorderLayout.WEST);
-        add(createTreeTable(), BorderLayout.CENTER);
-        
-        // nur Test:
-        ActionMap am = treeTable.getActionMap();
-        Object[] actionMapKeys = am.allKeys();
-        for(int i=0; i<actionMapKeys.length; i++) {
-        	LOG.config("key "+i + " : "+ actionMapKeys[i]);
-        }
-    	LOG.config("ctor fertig.\n");
+        // Versuch mit XList: 
+        //add(createList(), BorderLayout.WEST);
+        // -----------------
+//        createModelImCtor(); // treeModel + treeTableModel
+//        
+//        // TODO buttons raus
+//		JComponent control = new JXPanel();
+//		refreshButton = new JXButton("Refresh");
+//		refreshButton.setName("refreshButton");
+//
+//		expandButton = new JXButton("Expand All Nodes");
+//		expandButton.setName("expandButton");
+//
+//		collapseButton = new JXButton("Collapse All Nodes");
+//		collapseButton.setName("collapseButton");
+//
+//        control.add(refreshButton);
+//		control.add(expandButton);
+//		control.add(collapseButton);
+//		add(control, BorderLayout.PAGE_END);
+//        
+        add(createTree(), BorderLayout.CENTER);
+//        createTreeTable();
+//        add(treeTable, BorderLayout.EAST);
+//        
+//        // nur Test:
+//        ActionMap am = treeTable.getActionMap();
+//        Object[] actionMapKeys = am.allKeys();
+//        for(int i=0; i<actionMapKeys.length; i++) {
+//        	LOG.config("key "+i + " : "+ actionMapKeys[i]);
+//        }
+//    	LOG.config("ctor fertig.\n");
 	}
 	
 	RootFrame rootFrame;
+	private List<MTreeNode> list;
 	private TreeTableModel treeTableModel;
 	private MTree vTree;
 	private JXTree tree;
@@ -202,260 +190,110 @@ public class MenuPanel extends JXPanel implements ActionListener, TreeSelectionL
 //
 //    }
 
-	private JComponent createTree() {
-        tree = new JXTree(treeTableModel==null? createModelImCtor() : treeTableModel) {
-        	
-            @Override // defined in javax.swing.JComponent
-            public Insets getInsets() {
-                return new Insets(5,5,5,5);
-            }
+	private JComponent createList() {
+		initMenuModels(); // init List and treeTableModel for Menu
+		DefaultComboBoxModel<MTreeNode> model = new DefaultComboBoxModel<MTreeNode>();
+		for (MTreeNode mtn : list) {
+			model.addElement(mtn);
+		}
 
-            /**
-             * {@inheritDoc} <p>
-             * 
-             * Overridden to set name and icon.
-             */
-            @Override // defined in javax.swing.JTree
-			public String convertValueToText(Object value, boolean selected, 
-					boolean expanded, boolean leaf, int row, boolean hasFocus) {
-		    	if(value instanceof MTreeNode mtn) {
-		    		String ii = mtn.getImageIndicator();
-		    		String text = mtn.getName()+(ii==null?"":" / "+ii);
-//		        	LOG.info("-"+(hasFocus?"hasFocus":"--------")+"->>"+text);
-		    		if(ii!=null) {
-		    			this.setLeafIcon(IconFactory.get(ii, JXIcon.SMALL_ICON));
-		    		}
-		    		return text;
-		    	}
-		    	// in super:
-//				if (value != null) {
-//					String sValue = value.toString();
-//					if (sValue != null) {
-//						return sValue;
-//					}
-//				}
-//				return "";
-		    	return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
+		JXList<MTreeNode> xlist = new JXList<MTreeNode>();
+		StringValue sv = (Object value) -> {
+			if (value instanceof MTreeNode c) {
+				return c.getName() + " " + c.getImageIndicator() + " (" + c.getNode_ID() + "/" + c.getParent_ID() + ")";
 			}
-
-            protected void updateHighlighterUI() {
-            	if(compoundHighlighter == null) {
-                	LOG.config("add RolloverIconHighlighter ...");
-            		setRolloverEnabled(true);
-            		addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null));
-            	} else {
-                	LOG.info("!!!!!!!!!!!!!!! compoundHighlighter:"+compoundHighlighter);
-            	}
-            	super.updateHighlighterUI();
-                if (compoundHighlighter == null) return;
-                compoundHighlighter.updateUI();
-            }
-
-        };         
-        // rollover support: enabled to show album cover, a "live" rollover behaviour: TODO
-        tree.setRolloverEnabled(true);
-//        tree.addPropertyChangeListener(RolloverProducer.ROLLOVER_KEY, propertyChangeEvent -> {
-//        	JXTree source = (JXTree)propertyChangeEvent.getSource();
-//        	source.setToolTipText(null);
-//			Point newPoint = (Point)propertyChangeEvent.getNewValue();
-//			if(newPoint!=null && newPoint.y>-1) {
-//				TreePath treePath = source.getPathForRow(newPoint.y);
-//				if(treePath.getPathCount()==4) { // Album / Record / Style 
-//					Object o = treePath.getLastPathComponent();
-////					LOG.info("PathFor newPoint.y: "+source.getPathForRow(newPoint.y) + " PropertyChangeEvent:"+propertyChangeEvent);
-//					// show https://en.wikipedia.org/wiki/File:My_Name_Is_Albert_Ayler.jpg
-//					DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode)o;	
-//					Album album = (Album)dmtn.getUserObject();
-//					source.setToolTipText(album.getHtmlSrc());
-//				}
-//			}
-//        });
-        tree.addTreeSelectionListener(this);
-        
-        tree.setOpaque(true);
-        
-        // <snip> JXTree rollover
-        // enable and register a highlighter
-//        tree.setRolloverEnabled(true);
-    	tree.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null)); //TODO funktioniert nicht - warum?
-        // auch das tut nicht ????:
-//        tree.addPropertyChangeListener(RolloverProducer.ROLLOVER_KEY, propertyChangeEvent -> {
-//        	JXTree tree = (JXTree)propertyChangeEvent.getSource();
-//        	Point newPoint = (Point)propertyChangeEvent.getNewValue();
-//        	if(newPoint!=null && newPoint.y>-1) {
-//        		TreePath treePath = tree.getPathForRow(newPoint.y);
-//        		LOG.info("TreePath treePath.LastPathComponent() ="+treePath.getLastPathComponent());
-//        		if(treePath.getLastPathComponent() instanceof MTreeNode mtn) {
-//        			String ii = mtn.getImageIndicator();
-//                	TreeCellRenderer tcr = tree.getCellRenderer();
-//    ???            	tcr.getTreeCellRendererComponent(tree, mtn, false, false, leaf, row, false);
-//        		}
-//        	}
-//        	// ...
-//        });
-        // </snip>
-        
-//        LOG.info("Tree.CellRenderer for menu tree:"+tree.getCellRenderer());
-//        DefaultTreeCellRenderer renderer = new MenuTreeCellRenderer();
-//        tree.setCellRenderer(renderer);
-        
-//        tree.setCellRenderer(new DefaultTreeRenderer((IconValue)null, new StringValue() {
-//			private static final long serialVersionUID = 1L;
-//			public String getString(Object value) {
-//				if(value instanceof MTreeNode mtn) {
-//		    		String ii = mtn.getImageIndicator();
-//		    		value = mtn.getName()+(ii==null?"":" / "+ii);
-////		        	LOG.fine("-"+(hasFocus?"hasFocus":"--------")+"->>"+value);
-////		    		if(ii!=null) {
-////		    			this.ic.setsetLeafIcon(IconFactory.get(ii, JXIcon.SMALL_ICON));
-////		    		}
-//				} else {
-//                	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
-//				}
-//                return StringValues.TO_STRING.getString(value);
-//            }
-//        }, true));
-        tree.getSelectionModel().getSelectionMode();
-		LOG.config("tree SelectionMode="+tree.getSelectionModel().getSelectionMode());
-		// is == DISCONTIGUOUS_TREE_SELECTION = 4
-		// set SINGLE_TREE_SELECTION = 1 , TreeSelectionModel is interface!
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+			return StringValues.TO_STRING.getString(value);
+		};
+		IconValue iv = (Object value) -> {
+			if (value instanceof MTreeNode c) {
+				return c.getImageIcon();
+			}
+			return IconValue.NULL_ICON;
+		};		
+		xlist.setCellRenderer(new DefaultListRenderer<MTreeNode>(sv, iv));
+		xlist.setVisibleRowCount(20);
+//		xlist.setAutoCreateRowSorter(true);
+		xlist.setModel(model);
+		return new JScrollPane(xlist);
+	}
+	
+	private JComponent createTree() {
+    	tree = new CTree((TreeTableModel)initMenuModels());
+    	
+		Highlighter redText = new ColorHighlighter(HighlightPredicate.ROLLOVER_CELL, null, Color.RED);
+		tree.addHighlighter(redText);
 
 //        tree.setEditable(true);
+		tree.addTreeSelectionListener(this);
         return new JScrollPane(tree);
     }
 
+    // class JXTreeTable.TreeTableCellRenderer extends JXTree implements TableCellRenderer
+    class MusicTreeTableCellRenderer extends JXTreeTable.TreeTableCellRenderer {
+    	MusicTreeTableCellRenderer(TreeTableModel model) {
+    		super(model);  		
+    	}
+    	public TreeCellRenderer getCellRenderer() { 
+            StringValue nameValue = (Object value) -> {
+            	//LOG.info("---"+value); // null ???????????????????????
+                if(value instanceof MTreeNode c) {
+                    return c.getName();
+                }
+                return StringValues.TO_STRING.getString(value);        	
+            };
+            return new JXTree.DelegatingRenderer(nameValue); 
+    	}
+	    @Override // to log
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+        	LOG.info("----- r/c:"+row+"/"+column +" value:"+value + " " + value.getClass());
+        	return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+    class MusicTreeTable extends JXTreeTable {
+		MusicTreeTable(JXTreeTable.TreeTableCellRenderer renderer) {
+			super(renderer);
+			assert ((JXTreeTable.TreeTableModelAdapter) getModel()).getTree() == renderer;
+			  		
+    		// UI-Dependent Striping 
+    		Highlighter alternateStriping = HighlighterFactory.createAlternateStriping();
+    		if(alternateStriping instanceof AbstractHighlighter ah) {
+        		ah.setHighlightPredicate(HighlightPredicate.ALWAYS);
+    		}
+    		addHighlighter(alternateStriping);
+    		
+			Highlighter redText = new ColorHighlighter(HighlightPredicate.ROLLOVER_CELL, null, Color.RED);
+			addHighlighter(redText);		}
+    }
 	private JComponent createTreeTable() {
-    	treeTable = new JXTreeTable() {
-    	    @Override
-    	    protected JTableHeader createDefaultTableHeader() {
-    	        return new GenericTableHeader(columnModel);
-    	    }
-    
-    	    @Override
-    	    protected void processMouseEvent(MouseEvent e) {
-    	    	super.processMouseEvent(e);
-    	    }
-    	    
-    	    @Override
-    	    protected Component applyRenderer(Component component, ComponentAdapter adapter) {
-    	        if (component == null) {
-    	            throw new IllegalArgumentException("null component");
-    	        }
-    	        if (adapter == null) {
-    	            throw new IllegalArgumentException("null component data adapter");
-    	        }
-
-				if (component instanceof JXTree tree) {
-//					LOG.info("------------>\n component:"+component);
-//					tree.setRolloverEnabled(true);
-//					tree.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null));
-					// TODO funktioniert nicht - warum?
-/*
-habe die Bemerkung gefunden:
-
-    static class TreeTableCellRenderer extends JXTree implements TableCellRenderer
-        // need to implement RolloverRenderer
-        // PENDING JW: method name clash rolloverRenderer.isEnabled and
-        // component.isEnabled .. don't extend, use? And change
-        // the method name in rolloverRenderer? 
-        // commented - so doesn't show the rollover cursor.
-        // 
-//      ,  RolloverRenderer 
-
- */
-				}
-
-    	        if (isHierarchical(adapter.column)) {
-    	            // After all decorators have been applied, make sure that relevant
-    	            // attributes of the table cell renderer are applied to the
-    	            // tree cell renderer before the hierarchical column is rendered!
-    	            TreeCellRenderer tcr = super.getTreeCellRenderer();
-//    	            LOG.info("------------>\n component:"+component
-//    	            		+"\n adapter.row/column="+adapter.row+"/"+adapter.column+" adapter:"+adapter
-//    	            		+"\n TreeCellRenderer tcr:"+tcr
-//    	            		+"\n ColumnName(2):"+adapter.getColumnName(2) 
-//    	            		+ " ColumnIdentifierAt:"+adapter.getColumnIdentifierAt(2) 
-//    	            		+ " ValueAt:"+adapter.getValueAt(adapter.row, 2) + " hasFocus="+adapter.hasFocus()
-//    	            		);
-    	            if (tcr instanceof JXTree.DelegatingRenderer) {
-    	                tcr = ((JXTree.DelegatingRenderer) tcr).getDelegateRenderer();
-    	            }
-    	            if (tcr instanceof DefaultTreeCellRenderer dtcr) {
-    	                Object ii = adapter.getValueAt(adapter.row, 2);
-    	                if(ii instanceof String imageIndicator) {
-    	                	Icon icon = MTreeNode.getImageIcon(MTreeNode.getImageIndex(imageIndicator), JXIcon.SMALL_ICON);
-//    	                	LOG.info("Icon:"+icon + (adapter.hasFocus() ? " hasFocus" : ""));
-    	                	dtcr.setLeafIcon(icon);
-    	                }   	                
-    	                // this effectively overwrites the dtcr settings
-    	                if (adapter.isSelected()) {
-    	                    dtcr.setTextSelectionColor(component.getForeground());
-    	                    dtcr.setBackgroundSelectionColor(component.getBackground());
-    	                } else {
-    	                    dtcr.setTextNonSelectionColor(component.getForeground());
-    	                    dtcr.setBackgroundNonSelectionColor(component.getBackground());
-    	                }
-//    	                if(adapter.hasFocus() && dtcr.getIcon()!=null) {
-//    	            		Icon icon = dtcr.getIcon();
-//    	                	LOG.info(">>>>>>>>>Icon:"+icon);
-//    	            		PainterIcon painterIcon = new PainterIcon(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-//    	                	BufferedImage image = null;
-//    	                	if(icon instanceof RadianceIcon ri) {
-//    	                		image = ri.toImage(1);
-//    	                	} else if(icon instanceof ImageIcon imageIcon) {
-//    	                		image = (BufferedImage)imageIcon.getImage();
-//    	                	} else {
-//    	                		LOG.warning("no highlighting for "+icon);
-//    	                	}
-//    	                	AbstractAreaPainter<Component> delegate = new ImagePainter(image);
-//    	                	delegate.setFilters(new BumpFilter());
-//    	                	painterIcon.setPainter((Painter<? extends Component>)delegate);
-//    	                	dtcr.setIcon(painterIcon);
-//    	                }
-    	            }
-    	        }
-    	        return component;
-    	    }
-//    	    public Component prepareRenderer(TableCellRenderer renderer, int row,
-//    	        int column) {
-//    	        Component component = super.prepareRenderer(renderer, row, column);
-//    	        return applyRenderer(component, getComponentAdapter(row, column)); 
-//    	    }
-
-    	};
-		treeTable.setTreeTableModel(treeTableModel);
-        treeTable.setName(COMPONENT_NAME);
-        treeTable.setColumnControlVisible(true);      
-        treeTable.addTreeSelectionListener(this);
-//        treeTable.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null));
-        
-        // made columns as wide as it needs:
-        treeTable.packColumn(treeTable.getHierarchicalColumn(), -1);
-        
-		LOG.config("treeTable SelectionMode="+treeTable.getSelectionMode()); //  javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : 2
-//		treeTable.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION); // : 1
+    	JXTreeTable.TreeTableCellRenderer renderer = null; // = new MusicTreeTableCellRenderer(initMenuModels());
+    	
+//		/*
+//		 * use small person icon for Composer (use And Predicate)
+//		 */
+//		Highlighter personIcon = new IconHighlighter(
+//				new HighlightPredicate.AndHighlightPredicate(HighlightPredicate.IS_LEAF, new HighlightPredicate.DepthHighlightPredicate(2)),
+//				FeatheRuser.of(SizingConstants.SMALL_ICON, SizingConstants.SMALL_ICON));
+//		renderer.addHighlighter(personIcon);
+//		
+//		/*
+//		 * use small disc icon for records/Albums
+//		 */
+//		Highlighter discIcon = new IconHighlighter(new HighlightPredicate.DepthHighlightPredicate(3), 
+//				FeatheRdisc.of(SizingConstants.SMALL_ICON, SizingConstants.SMALL_ICON));
+//		renderer.addHighlighter(discIcon);
+//		
+//		/*
+//		 * use very small XS music icon instead the default for songs/compositions
+//		 */
+//		Highlighter musicIcon = new IconHighlighter(new HighlightPredicate.DepthHighlightPredicate(4),  
+//				FeatheRmusic.of(SizingConstants.XS, SizingConstants.XS));
+//		renderer.addHighlighter(musicIcon);
+//		
+//		renderer.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_CELL, null));
 		
-        // <snip> JXTree rendering
-        // StringValue provides node text: concat several 
-//        StringValue sv = new StringValue() {
-//            
-//            @Override
-//            public String getString(Object value) {
-//            	if(value instanceof MTreeNode mtn) {
-//            		LOG.config("MTreeNode mtn:"+mtn);
-//                	// dieser Name wird neben dem Icon angezeigt
-//                	return StringValues.TO_STRING.getString(mtn.getName());
-//                } else {
-//                	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
-//                }
-//                return StringValues.TO_STRING.getString(value);
-//            }
-//        };
-        // </snip>
-//		DefaultTreeRenderer renderer = new DefaultTreeRenderer(sv);
-//		treeTable.setTreeCellRenderer(renderer);
-		
+    	treeTable = new MusicTreeTable(renderer);
+    	treeTable.setColumnControlVisible(true);
         return new JScrollPane(treeTable);
 	}
 	
@@ -465,14 +303,14 @@ habe die Bemerkung gefunden:
     @Override // overrides javax.swing.JComponent.addNotify
     public void addNotify() {
         super.addNotify();
-        TreeModel model = tree.getModel();
-        LOG.info("tree.Model.Root:"+(model==null?"null":model.getRoot()));
-        // der Vergleich mit null ist nicht sinnvoll, denn ein "leeres Modell" liefert nicht null, 
-        // sondern DefaultTreeModel mit JTree: colors, sports, food
-        if (model == null || model.getRoot() == null|| "JTree".equals(model.getRoot().toString())) {
-            tree.setModel(createModelImCtor());
-            treeTable.setTreeTableModel(treeTableModel);
-        }
+//        TreeModel model = tree.getModel();
+//        LOG.info("tree.Model.Root:"+(model==null?"null":model.getRoot()));
+//        // der Vergleich mit null ist nicht sinnvoll, denn ein "leeres Modell" liefert nicht null, 
+//        // sondern DefaultTreeModel mit JTree: colors, sports, food
+//        if (model == null || model.getRoot() == null|| "JTree".equals(model.getRoot().toString())) {
+//            tree.setModel(createModelImCtor());
+////            treeTable.setTreeTableModel(treeTableModel);
+//        }
     }     
 
 /*
@@ -491,7 +329,8 @@ WHERE tn.AD_Tree_ID=10 AND tn.IsActive='Y'
 ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
  */
     private static final int DEFAULT_TREE_ID = 10;
-    private TreeModel createModelImCtor() {
+    private TreeTableModel initMenuModels() {
+    	if(treeTableModel!=null) return treeTableModel;
     	int treeId = DEFAULT_TREE_ID;
     	boolean editable = false;
     	boolean allNodes = false;
@@ -516,98 +355,124 @@ ORDER BY COALESCE(tn.Parent_ID, -1), tn.SeqNo
     			+ " rootNode=" + vTree.getRootNode());
     	MTreeNode rootNode = vTree.getRootNode();
     	LOG.info("------------------->MenuTreeTableModel");
+//    	DefaultMutableTreeNode rootDMTN = new DefaultMutableTreeNode(rootNode);
     	treeTableModel = new MenuTreeTableModel(rootNode);
-    	LOG.info("<-------------------MenuTreeTableModel");
+    	Object root = treeTableModel.getRoot();
+    	LOG.info("<-------------------MenuTreeTableModel getColumnCount="+treeTableModel.getColumnCount()
+    		+ ",\n root:"+treeTableModel.getRoot()
+    		+ ",\n root.ValueAt 0:"+treeTableModel.getValueAt(root, 0)
+    		+ ",\n root.ValueAt 1:"+treeTableModel.getValueAt(root, 1)
+    		+ ",\n root.ValueAt 2:"+treeTableModel.getValueAt(root, 2)
+    		+ ",\n root.ValueAt 3:"+treeTableModel.getValueAt(root, 3)
+    	);
+    	list = new LinkedList<MTreeNode>();
+    	list.add(rootNode);
+    	for(int c=0; c<treeTableModel.getChildCount(root); c++) {
+    		Object ch = treeTableModel.getChild(root, c);
+    		if(ch instanceof MTreeNode mtn) {
+    			LOG.info("child "+c+" is MTreeNode:"+mtn);
+            	list.add(mtn);
+            	if(mtn.getNode_ID()==153) { // Application Dictionary
+            		for(int d=0; d<treeTableModel.getChildCount(mtn); d++) {
+            			Object dch = treeTableModel.getChild(mtn, d);
+            			list.add((MTreeNode)dch);
+            		}
+            	}
+    		} else {
+            	LOG.info("child "+c+"="+ch);
+    		}
+    	}
+//    	return rootDMTN;
     	return treeTableModel;
     }
     
-    private void configureComponentsXXX() {
-        // <snip> JXTree rendering
-        // StringValue provides node text: concat several 
-        StringValue sv = new StringValue() {
-            
-            @Override
-            public String getString(Object value) {
-            	if(value instanceof MTreeNode mtn) {
-            		LOG.config("MTreeNode mtn:"+mtn);
-                	// dieser Name wird neben dem Icon angezeigt
-                	return StringValues.TO_STRING.getString(mtn.getName());
-                } else {
-                	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
-                }
-                return StringValues.TO_STRING.getString(value);
-            }
-        };
-        // </snip>
-        
-        // StringValue for lazy icon loading
-        StringValue keyValue = new StringValue() {
-            
-            @Override
-            public String getString(Object value) {
-                if (value == null) return "";
-            	if(value instanceof MTreeNode mtn) {
-            		String ii = mtn.getImageIndicator(); 
-            		LOG.config("MTreeNode mtn:"+mtn);
-            		return ii;
-            	}
-                String simpleClassName = value.getClass().getSimpleName();
-                if (simpleClassName.length() == 0){
-                    // anonymous class
-                    simpleClassName = value.getClass().getSuperclass().getSimpleName();
-                }
-                return simpleClassName + ".png";
-            }
-        };
-        // <snip> JXTree rendering
-        // IconValue provides node icon 
-        IconValue iv = new LazyLoadingIconValue(keyValue);
-        // create and set a tree renderer using the custom Icon-/StringValue
-        // welche Renderer gibt es sonst noch? Wie kann ich meine icons als iv definieren?
-        treeTable.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
-        // </snip>
-//        tree.setRowHeight(-1);
-        
-        // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
-        // das Icon austauschen
-//        tree.setColumnControl(new TableColumnControlButton(tree));
-//        tree.setColumnControlVisible(true);
-        
-        //tree.setToolTipText("String ToolTipText text");
-        	
-        // <snip> JXTree rollover
-        // enable and register a highlighter
-        treeTable.setRolloverEnabled(true);
-        treeTable.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null));
-//        treeTable.addHighlighter(createRolloverIconHighlighter(HighlightPredicate.ROLLOVER_CELL));
-        // </snip>
-        	
-        refreshButton.addActionListener(event -> {
-        	LOG.config("event "+event); // TODO initial size merken
-        	rootFrame.refresh();  // =======================> WindowFrame.refreshItem
-        });
-
-//        expandButton.addActionListener(event -> {
-//        	tree.expandAll();
+//    private void configureComponentsXXX() {
+//        // <snip> JXTree rendering
+//        // StringValue provides node text: concat several 
+//        StringValue sv = new StringValue() {
+//            
+//            @Override
+//            public String getString(Object value) {
+//            	if(value instanceof MTreeNode mtn) {
+//            		LOG.config("MTreeNode mtn:"+mtn);
+//                	// dieser Name wird neben dem Icon angezeigt
+//                	return StringValues.TO_STRING.getString(mtn.getName());
+//                } else {
+//                	LOG.config("value "+value+" is instance of "+(value==null ? "null" : value.getClass()));
+//                }
+//                return StringValues.TO_STRING.getString(value);
+//            }
+//        };
+//        // </snip>
+//        
+//        // StringValue for lazy icon loading
+//        StringValue keyValue = new StringValue() {
+//            
+//            @Override
+//            public String getString(Object value) {
+//                if (value == null) return "";
+//            	if(value instanceof MTreeNode mtn) {
+//            		String ii = mtn.getImageIndicator(); 
+//            		LOG.config("MTreeNode mtn:"+mtn);
+//            		return ii;
+//            	}
+//                String simpleClassName = value.getClass().getSimpleName();
+//                if (simpleClassName.length() == 0){
+//                    // anonymous class
+//                    simpleClassName = value.getClass().getSuperclass().getSimpleName();
+//                }
+//                return simpleClassName + ".png";
+//            }
+//        };
+//        // <snip> JXTree rendering
+//        // IconValue provides node icon 
+//        IconValue iv = new LazyLoadingIconValue(keyValue);
+//        // create and set a tree renderer using the custom Icon-/StringValue
+//        // welche Renderer gibt es sonst noch? Wie kann ich meine icons als iv definieren?
+//        treeTable.setTreeCellRenderer(new DefaultTreeRenderer(iv, sv));
+//        // </snip>
+////        tree.setRowHeight(-1);
+//        
+//        // ColumnControl == der kleine Controler ColumnControlButton rechts bei den Tabellenüberschriften
+//        // das Icon austauschen
+////        tree.setColumnControl(new TableColumnControlButton(tree));
+////        tree.setColumnControlVisible(true);
+//        
+//        //tree.setToolTipText("String ToolTipText text");
+//        	
+//        // <snip> JXTree rollover
+//        // enable and register a highlighter
+//        treeTable.setRolloverEnabled(true);
+//        treeTable.addHighlighter(new RolloverIconHighlighter(HighlightPredicate.ROLLOVER_ROW, null));
+////        treeTable.addHighlighter(createRolloverIconHighlighter(HighlightPredicate.ROLLOVER_CELL));
+//        // </snip>
+//        	
+//        refreshButton.addActionListener(event -> {
+//        	LOG.config("event "+event); // TODO initial size merken
+//        	rootFrame.refresh();  // =======================> WindowFrame.refreshItem
 //        });
 //
-//        collapseButton.addActionListener(event -> {
-//        	tree.collapseAll();
-//        });
-        
-        LOG.config("isRootVisible:"+treeTable.isRootVisible());
-        treeTable.setRootVisible(true); // default is false
-//        tree.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN); tut nicht
-        treeTable.sizeColumnsToFit(0); // Breite der menu spalten anpassen
-        treeTable.sizeColumnsToFit(2); // tut nicht
-        
-//      treeTable.addMouseListener(mouseListener);
-    }
-    
-    void setInitialTree() {
-    	treeTable.collapseAll();
-    	treeTable.expandRow(0);   	
-    }
+////        expandButton.addActionListener(event -> {
+////        	tree.expandAll();
+////        });
+////
+////        collapseButton.addActionListener(event -> {
+////        	tree.collapseAll();
+////        });
+//        
+//        LOG.config("isRootVisible:"+treeTable.isRootVisible());
+//        treeTable.setRootVisible(true); // default is false
+////        tree.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN); tut nicht
+//        treeTable.sizeColumnsToFit(0); // Breite der menu spalten anpassen
+//        treeTable.sizeColumnsToFit(2); // tut nicht
+//        
+////      treeTable.addMouseListener(mouseListener);
+//    }
+//    
+//    void setInitialTree() {
+//    	treeTable.collapseAll();
+//    	treeTable.expandRow(0);   	
+//    }
     
     // --------------------
     public static class LazyLoadingIconValue implements IconValue {

@@ -27,12 +27,14 @@ import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 //import org.adempiere.controller.RecordInfoController;
 //import org.compiere.grid.VTable;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridField;
+//import org.compiere.swing.CTable;
 //import org.compiere.swing.CDialog;
 //import org.compiere.swing.CMenuItem;
 //import org.compiere.swing.CPanel;
@@ -41,10 +43,13 @@ import org.compiere.model.GridField;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.jdesktop.swingx.JXTable;
 
 import io.homebeaver.gossip.swingx.CDialog;
 import io.homebeaver.gossip.swingx.CMenuItem;
 import io.homebeaver.gossip.swingx.CPanel;
+import io.homebeaver.gossip.swingx.CScrollPane;
+import io.homebeaver.gossip.swingx.CTextArea;
 
 /**
  * Record Info (Who) With Change History
@@ -60,7 +65,7 @@ import io.homebeaver.gossip.swingx.CPanel;
  *		<li> FR [ 146 ] Remove unnecessary class, add support for info to specific column
  *		@see https://github.com/adempiere/adempiere/issues/146
  */
-//copied from package org.compiere.apps
+//copied from (client) package org.compiere.apps
 public class RecordInfo extends RecordInfoController
 {
 	public static final String CHANGE_LOG_COMMAND = "ChangeLog";
@@ -128,7 +133,11 @@ public class RecordInfo extends RecordInfoController
 
 	private CPanel	mainPanel	= new CPanel (new BorderLayout(0,0));
 	private CScrollPane	scrollPane = new CScrollPane ();
-	private VTable table = new VTable ();
+//	private VTable table = new VTable ();
+	/* Table Grid based on CTable: org.compiere.grid.VTable extends CTable, CTable extends JTable
+	 * ich versuche es mit JXTable:
+	 */
+	private JXTable table = new JXTable();
 	private ConfirmPanel confirmPanel = new ConfirmPanel (false);
 
 	/**	Logger			*/
@@ -171,7 +180,7 @@ public class RecordInfo extends RecordInfoController
 	protected void dynInit() {
 		DefaultTableModel model = new DefaultTableModel(getData(), getColumnNames());
 		table.setModel(model);
-		table.autoSize(false);
+		table.setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
 	}	//	dynInit
 	
 	/**

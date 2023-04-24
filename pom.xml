@@ -85,8 +85,8 @@
                 <version>3.8.1</version>
                 <configuration>
                 	<release>16</release>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
@@ -367,5 +367,13 @@
 			<artifactId>gpx-parser</artifactId>
 			<version>1.13</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/io.vavr/vavr -->
+		<dependency>
+		    <groupId>io.vavr</groupId>
+		    <artifactId>vavr</artifactId>
+		    <version>1.0.0-alpha-4</version>
+		</dependency>
+		
 	</dependencies>
 </project>

@@ -10,8 +10,11 @@ In gossip leite ich das Meiste von swingx ab, aka jdesktop, swingset3
 
 Bsp.:
 CTextField extends JXTextField implements CEditor, KeyListener
+CTree extends JXTree
 aber
 public class CCheckBox extends JCheckBox implements CEditor ... weil in swingx JCheckBox nicht erweitert wurde
 
  */
 package io.homebeaver.gossip.swingx;
+
+import org.jdesktop.swingx.JXTree;

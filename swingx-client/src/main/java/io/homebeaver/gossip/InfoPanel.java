@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ;
 
@@ -17,9 +17,10 @@ import javax.swing.SwingWorker.StateValue;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.BindingGroup;
 import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.swingx.icon.JXIcon;
 
 import gov.nasa.arc.mct.gui.impl.HidableTabbedPane;
-import io.homebeaver.gossip.WindowFrame;
+import io.homebeaver.gossip.icon.IconFactory;
 
 // ? InfoPanel ist eine R/O-Variante von MuliRowPanel extends JXTable, bzw Tab extends JPanel, das MuliRowPanel enthält 
 // in AD heißt es MiniTable
@@ -67,9 +68,9 @@ public class InfoPanel extends JPanel implements ComponentListener {
 //		srp = new SingleRowPanel(this.dataModel); // darin VPanel gekapselt!
 
 		if(statusToTrafficlights.isEmpty()) {
-			statusToTrafficlights.put(StateValue.PENDING, frame.AIT.getImageIcon(frame.AIT.RLI, WindowFrame.SMALL_ICON_SIZE));
-			statusToTrafficlights.put(StateValue.STARTED, frame.AIT.getImageIcon(frame.AIT.YLI, WindowFrame.SMALL_ICON_SIZE));
-			statusToTrafficlights.put(StateValue.DONE   , frame.AIT.getImageIcon(frame.AIT.GLI, WindowFrame.SMALL_ICON_SIZE));
+			statusToTrafficlights.put(StateValue.PENDING, IconFactory.getTLRED(JXIcon.SMALL_ICON));
+			statusToTrafficlights.put(StateValue.STARTED, IconFactory.getTLYELLOW(JXIcon.SMALL_ICON));
+			statusToTrafficlights.put(StateValue.DONE   , IconFactory.getTLGREEN(JXIcon.SMALL_ICON));
 		}
 	}
 	

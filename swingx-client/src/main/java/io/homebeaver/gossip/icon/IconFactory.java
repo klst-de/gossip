@@ -1,5 +1,7 @@
 package io.homebeaver.gossip.icon;
 
+import javax.swing.UIManager;
+
 import org.jdesktop.swingx.demos.svg.FeatheRactivity;
 import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
@@ -14,7 +16,9 @@ import org.jdesktop.swingx.demos.svg.FeatheRsettings;
 import org.jdesktop.swingx.demos.svg.FeatheRsidebar;
 import org.jdesktop.swingx.demos.svg.FeatheRx;
 import org.jdesktop.swingx.demos.svg.FeatheRx_circle;
+import org.jdesktop.swingx.icon.FolderIcon;
 import org.jdesktop.swingx.icon.JXIcon;
+import org.jdesktop.swingx.icon.RadianceIcon;
 import org.jdesktop.swingx.icon.TrafficLightGreenIcon;
 import org.jdesktop.swingx.icon.TrafficLightRedIcon;
 import org.jdesktop.swingx.icon.TrafficLightYellowIcon;
@@ -176,7 +180,8 @@ public class IconFactory {
 			return getWORKFLOW(size);
 //		else if("B".equalsIgnoreCase(name))
 //			return getWORKBENCH(size);
-		else return FeatheRfeather.of(size, size);
+//		else return FeatheRfeather.of(size, size);
+		else return getFOLDER(size);
 			
 	}
 	
@@ -229,8 +234,10 @@ public class IconFactory {
 			TangoRDialog_error_round.of(size, size); // TODO
 	}
 	public static JXIcon getFOLDER(int size) {
-		return monochrom ? FeatheRfolder.of(size, size) : 
-			TangoRDialog_error_round.of(size, size); // TODO
+		return monochrom ? FeatheRfolder.of(size, size) :
+			FolderIcon.of(size, size);
+//			UIManager.getIcon("Tree.closedIcon");
+//			TangoRDialog_error_round.of(size, size); // TODO
 	}
 	
 	public static JXIcon getCANCEL(int size) {

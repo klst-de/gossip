@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.io.Serializable;
 import java.sql.Blob;

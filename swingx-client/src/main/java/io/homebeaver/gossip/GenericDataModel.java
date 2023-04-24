@@ -1,4 +1,4 @@
-package com.klst.gossip;
+package io.homebeaver.gossip;
 
 import java.util.Hashtable;
 import java.util.List;
@@ -14,6 +14,9 @@ import org.compiere.util.DisplayType;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
+
+import com.klst.gossip.GridFieldBridge;
+import com.klst.gossip.GridFields;
 
 // TableModel bedeutet Java Swing Table, nicht DB Table!
 // in AD: (base)GridTable extends AbstractTableModel mit Loader
@@ -62,12 +65,11 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 		((GridFields)fields).addColumn(gfb);
 	}
 	
-	// name wie in DefaultTableModel, dort: public Vector getDataVector() ( return dataVector; }
+	// name wie in DefaultTableModel, dort: public Vector<Vector> getDataVector() ( return dataVector; }
 	@Override // DefaultTableModel
-	public Vector<Object[]> getDataVector() {
-//		Vector dv = super.getDataVector();
+	public Vector<Vector> getDataVector() {
 		LOG.config("dataVector.size="+dataVector.size() + " " + (dataVector.isEmpty() ? "empty" : dataVector.get(0)));
-		return (Vector<Object[]>) dataVector;
+		return (Vector<Vector>) dataVector;
 	}
 
     /*
@@ -95,16 +97,16 @@ public class GenericDataModel extends DefaultTableModel { // extends AbstractTab
 	@Override
 	public Object getValueAt(int row, int column) {
 		// in DefaultTableModel
-//        Vector rowVector = (Vector)dataVector.elementAt(row);
+//        Vector<Object> rowVector = dataVector.elementAt(row);
 //        return rowVector.elementAt(column);
-
 		if(row >= getRowCount()) {
 			return null;
 //			return new Object();
 		}
 		if(column < getColumnCount()) {
-			Vector<Object[]> dv = this.getDataVector();
-			LOG.config("TEST ret:"+getRow(row)[column] + "================ dv:"+dv.get(row)[column]);
+			Vector<Vector> dv = this.getDataVector();
+			Vector v = dv.get(column);
+			LOG.config("TEST ret:"+getRow(row)[column] + "================ dv["+column+"]:"+v.get(row));
 			return getRow(row)[column];
 		}
         return null;
@@ -205,7 +207,9 @@ Exception in thread "AWT-EventQueue-0" java.lang.ClassCastException: [Ljava.lang
 	}
 	
     Object[] getRow(int rowIndex) {
-        return getDataVector().get(rowIndex);
+    	Object[] a = new Object[getRowCount()];
+    	getDataVector().toArray(a);
+        return a;
     }
 
     /*
@@ -260,18 +264,18 @@ Exception in thread "AWT-EventQueue-0" java.lang.ClassCastException: [Ljava.lang
     }
     
     // wird im Loader.process benötigt : bankTableModel.add(chunks); chunks == rows(der JTable)
-    public void add(List<Object[]> chunks) {
-        int first = getDataVector().size();
-        int last = first + chunks.size() - 1;
-        getDataVector().addAll(chunks);
-        fireTableRowsInserted(first, last);
-    }
-
-    public void add(Object[] row) {
-        int index = getDataVector().size();
-        getDataVector().add(row);
-        fireTableRowsInserted(index, index);
-    }
+//    public void add(List<Object[]> chunks) {
+//        int first = getDataVector().size();
+//        int last = first + chunks.size() - 1;
+//        getDataVector().addAll(chunks);
+//        fireTableRowsInserted(first, last);
+//    }
+//
+//    public void add(Object[] row) {
+//        int index = getDataVector().size();
+//        getDataVector().add(row);
+//        fireTableRowsInserted(index, index);
+//    }
     
 	void setName(String name) {
 		this.name = name;
