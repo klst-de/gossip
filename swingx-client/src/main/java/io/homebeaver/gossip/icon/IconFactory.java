@@ -3,6 +3,8 @@ package io.homebeaver.gossip.icon;
 import javax.swing.UIManager;
 
 import org.jdesktop.swingx.demos.svg.FeatheRactivity;
+import org.jdesktop.swingx.demos.svg.FeatheRalert_octagon;
+import org.jdesktop.swingx.demos.svg.FeatheRalert_triangle;
 import org.jdesktop.swingx.demos.svg.FeatheRcalendar;
 import org.jdesktop.swingx.demos.svg.FeatheRcheck;
 import org.jdesktop.swingx.demos.svg.FeatheRcrosshair;
@@ -11,6 +13,8 @@ import org.jdesktop.swingx.demos.svg.FeatheRfeather;
 import org.jdesktop.swingx.demos.svg.FeatheRfile_text;
 import org.jdesktop.swingx.demos.svg.FeatheRfolder;
 import org.jdesktop.swingx.demos.svg.FeatheRgit_pull_request;
+import org.jdesktop.swingx.demos.svg.FeatheRhelp_circle;
+import org.jdesktop.swingx.demos.svg.FeatheRinfo;
 import org.jdesktop.swingx.demos.svg.FeatheRserver;
 import org.jdesktop.swingx.demos.svg.FeatheRsettings;
 import org.jdesktop.swingx.demos.svg.FeatheRsidebar;
@@ -146,8 +150,16 @@ public class IconFactory {
 			return getCALENDAR(size);
 		else if("CANCEL".equalsIgnoreCase(name))
 			return getCANCEL(size);
+		else if("ERROR".equalsIgnoreCase(name))
+			return getERROR(size);
+		else if("INFO".equalsIgnoreCase(name))
+			return getINFO(size);
 		else if("OK".equalsIgnoreCase(name))
 			return getOK(size);
+		else if("QUESTION".equalsIgnoreCase(name))
+			return getQUESTION(size);
+		else if("WARN".equalsIgnoreCase(name))
+			return getWARN(size);
 		/* zur INFO aus X_AD_Menu : 
  TODO besser MTreeNode.getImageIcon(MTreeNode.getImageIndex(imageIndicator), int size)
 		public static final String ACTION_Form        = "X"; z.B. Tree Maintenance ==> icon wie W
@@ -193,6 +205,19 @@ public class IconFactory {
 	}
 	public static JXIcon getTLGREEN(int size) {
 		return TrafficLightGreenIcon.of(size, size);
+	}
+
+	public static JXIcon getINFO(int size) {
+		return monochrom ? FeatheRinfo.of(size, size) : TangoROptionPane_information.of(size, size);
+	}
+	public static JXIcon getQUESTION(int size) {
+		return monochrom ? FeatheRhelp_circle.of(size, size) : TangoROptionPane_question.of(size, size);
+	}
+	public static JXIcon getWARN(int size) {
+		return monochrom ? FeatheRalert_triangle.of(size, size) : TangoROptionPane_warning.of(size, size);
+	}
+	public static JXIcon getERROR(int size) {
+		return monochrom ? FeatheRalert_octagon.of(size, size) : TangoROptionPane_error.of(size, size);
 	}
 
 	public static JXIcon getSERVER(int size) {
