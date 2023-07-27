@@ -663,7 +663,7 @@ public final class Gossip
 		System.out.println("startup "+(successful ? "successful" : "NOT successful : don't test connection, need to call"));
 
 		//  Start with class as argument - or if nothing provided with Client
-//		String className = "io.homebeaver.gossip.AMenu";
+//		String className = "io.homebeaver.gossip.AMenu"; // Application Menu Controller @see (client)org.compiere.apps.AMenu
 		String className = "io.homebeaver.gossip.RootFrame";
 //	per args:	String className = "io.homebeaver.gossip.db.CConnectionDialog";
 		for (int i = 0; i < args.length; i++) {
@@ -676,7 +676,7 @@ public final class Gossip
 		//
 		try
 		{
-			System.out.println("startClass: "+className);
+			System.out.println(Gossip.class.getCanonicalName()+" startClass: "+className);
 			Class<?> startClass = Class.forName(className);
 			startClass.getDeclaredConstructor().newInstance();
 		}

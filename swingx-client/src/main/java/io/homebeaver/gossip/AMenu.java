@@ -92,6 +92,7 @@ import io.homebeaver.gossip.swingx.CFrame;
  * 
  */
 //copied from package org.compiere.apps
+@Deprecated
 public final class AMenu extends CFrame // CFrame extends JXFrame
 //	implements ActionListener, PropertyChangeListener, ChangeListener
 {
